@@ -143,3 +143,16 @@ export interface HealthStatus {
 export interface ApiError {
   detail: string;
 }
+
+/** Whether this device carries an offline map tile pack. */
+export interface TileStatus {
+  available: boolean;
+  path: string | null;
+  name?: string | null;
+  format: string;
+  minZoom?: number | null;
+  maxZoom?: number | null;
+  /** [west, south, east, north] */
+  bounds?: number[] | null;
+  attribution?: string | null;
+}

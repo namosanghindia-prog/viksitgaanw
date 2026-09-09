@@ -231,3 +231,17 @@ class HealthOut(ApiModel):
 
 class ReferenceOut(ApiModel):
     lists: dict[str, Any]
+
+
+class TileStatusOut(ApiModel):
+    """Whether an offline map tile pack is installed on this device."""
+
+    available: bool
+    path: str | None = None
+    name: str | None = None
+    format: str = "png"
+    min_zoom: int | None = None
+    max_zoom: int | None = None
+    #: [west, south, east, north]
+    bounds: list[float] | None = None
+    attribution: str | None = None

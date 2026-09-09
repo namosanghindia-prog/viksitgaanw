@@ -29,6 +29,11 @@ class Settings(BaseSettings):
     #: Bilingual reference lists shared with the frontend.
     reference_dir: Path = REPO_ROOT / "packages" / "shared" / "reference"
 
+    #: Optional offline map tile pack (MBTiles). When absent the map falls
+    #: back to online imagery, which is fine for a prototype but not for a
+    #: field device.
+    tiles_path: Path | None = REPO_ROOT / "data" / "tiles" / "india.mbtiles"
+
     host: str = "127.0.0.1"
     port: int = 8756
 

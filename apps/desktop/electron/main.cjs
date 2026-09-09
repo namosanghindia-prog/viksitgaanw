@@ -7,7 +7,7 @@
  * Nothing here reaches the internet.
  */
 
-const { app, BrowserWindow, shell } = require('electron');
+const { app, BrowserWindow, session, shell } = require('electron');
 const { spawn } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -143,6 +143,30 @@ async function waitForBackend(timeoutMs = 60_000) {
   return false;
 }
 
+/**
+ * Permissions.
+ *
+ * Geolocation is allowed because marking a plot is a core feature. Everything
+ * else -- camera, microphone, notifications, MIDI -- is denied: this app has
+ * no use for them, and a default-deny list means a future dependency cannot
+ * quietly start asking.
+ *
+ * Note for desktop: Chromium resolves geolocation through a network service
+ * that needs a Google API key, so on a laptop with no GPS radio this can fail
+ * even with permission granted. The map's tap-to-place pin works regardless,
+ * which is why it is not treated as a fallback but as the primary path.
+ */
+const ALLOWED_PERMISSIONS = new Set(['geolocation']);
+
+function applyPermissionPolicy() {
+  session.defaultSession.setPermissionRequestHandler((_webContents, permission, callback) => {
+    callback(ALLOWED_PERMISSIONS.has(permission));
+  });
+  session.defaultSession.setPermissionCheckHandler((_webContents, permission) =>
+    ALLOWED_PERMISSIONS.has(permission),
+  );
+}
+
 function createWindow() {
   mainWindow = new BrowserWindow({
     width: 1280,
@@ -202,6 +226,7 @@ if (!app.requestSingleInstanceLock()) {
   });
 
   app.whenReady().then(async () => {
+    applyPermissionPolicy();
     startBackend();
     await waitForBackend();
     createWindow();

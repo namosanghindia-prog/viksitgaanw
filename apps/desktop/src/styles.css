@@ -819,3 +819,73 @@ code {
     gap: 2px;
   }
 }
+
+/* ------------------------------------------------------------------ *
+ * Map
+ * ------------------------------------------------------------------ */
+
+.map {
+  position: relative;
+  height: 320px;
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--wheat-dark);
+}
+
+.map__canvas {
+  position: absolute;
+  inset: 0;
+}
+
+.map__overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: var(--wheat-dark);
+  color: var(--ink-muted);
+  z-index: 500;
+}
+
+.map__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.map__coords {
+  font-family: 'Cascadia Mono', Consolas, monospace;
+  background: var(--wheat-dark);
+  padding: 6px 12px;
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+}
+
+/* The pin is drawn rather than loaded as an image, so it needs no asset path
+   and renders identically under file:// in a packaged build. */
+.mappin {
+  display: grid;
+  place-items: center;
+}
+
+.mappin__dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--danger);
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 2px rgba(179, 38, 30, 0.35);
+}
+
+/* Leaflet paints its own controls; keep them legible against our palette. */
+.leaflet-container {
+  font: inherit;
+  background: var(--wheat-dark);
+}
+
+.leaflet-control-attribution {
+  font-size: 0.7rem;
+}

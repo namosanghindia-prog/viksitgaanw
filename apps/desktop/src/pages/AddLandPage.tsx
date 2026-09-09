@@ -11,6 +11,7 @@ import {
 
 import { ChoiceGroup } from '../components/ChoiceGroup';
 import { LocationCascader } from '../components/LocationCascader';
+import { LocationMap, type Coordinates } from '../components/LocationMap';
 import { Picker } from '../components/Picker';
 import { useI18n } from '../i18n';
 import { api } from '../lib/api';
@@ -34,6 +35,7 @@ interface FormState {
   waterDepthUnit: string;
   irrigationType: string | null;
   existingCrops: string[];
+  coordinates: Coordinates | null;
   notes: string;
 }
 
@@ -51,6 +53,7 @@ const INITIAL: FormState = {
   waterDepthUnit: 'foot',
   irrigationType: null,
   existingCrops: [],
+  coordinates: null,
   notes: '',
 };
 
@@ -150,6 +153,8 @@ export function AddLandPage() {
       waterDepthUnit: depthValid ? form.waterDepthUnit : null,
       irrigationType: form.irrigationType,
       existingCrops: form.existingCrops,
+      latitude: form.coordinates?.latitude ?? null,
+      longitude: form.coordinates?.longitude ?? null,
       notes: form.notes.trim() || null,
     };
 
@@ -194,6 +199,11 @@ export function AddLandPage() {
             value={form.location}
             onChange={(location) => patch({ location })}
             errors={errors}
+          />
+
+          <LocationMap
+            value={form.coordinates}
+            onChange={(coordinates) => patch({ coordinates })}
           />
         </section>
       ) : null}
@@ -448,6 +458,12 @@ function ReviewStep({ form, hectares }: { form: FormState; hectares: number | nu
     [
       t('land.crops'),
       form.existingCrops.map((code) => rt(findItem('crops', code))).join(', ') || '—',
+    ],
+    [
+      t('map.title'),
+      form.coordinates
+        ? `${form.coordinates.latitude.toFixed(5)}, ${form.coordinates.longitude.toFixed(5)}`
+        : '—',
     ],
     [t('land.notes'), form.notes || '—'],
   ];

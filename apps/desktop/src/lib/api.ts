@@ -11,6 +11,7 @@ import type {
   LandParcel,
   LandParcelInput,
   LocationPath,
+  TileStatus,
 } from '@viksitgaanw/shared';
 
 declare global {
@@ -141,6 +142,8 @@ export const api = {
     },
     signal?: AbortSignal,
   ) => request<LocationPath>('/locations/resolve', { params: query, signal }),
+
+  tileStatus: (signal?: AbortSignal) => request<TileStatus>('/tiles/status', { signal }),
 
   listParcels: (signal?: AbortSignal) => request<LandParcel[]>('/land-parcels', { signal }),
 

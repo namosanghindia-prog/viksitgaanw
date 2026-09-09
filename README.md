@@ -64,6 +64,10 @@ npm run build        # production frontend build
   and the hectare figure a bank needs. Units whose size varies by state (bigha,
   katha) are flagged in the UI rather than silently assumed.
 - **Hindi and English** throughout, Hindi by default, switchable at any time.
+- **Map pin-drop with GPS** — mark the exact plot on a Leaflet map, or use the
+  device location. Imagery comes from an offline MBTiles pack served by our own
+  backend when one is installed; only when it is not does it fall back to
+  OpenStreetMap over the internet.
 - **Offline-first plumbing** — a durable sync outbox and an append-only event
   log are written on every change, so the cloud sync worker and usage metering
   can be added later without touching the write paths or backfilling history.
@@ -156,6 +160,38 @@ Leaflet plot mapping.
 
 ---
 
+## Maps and location
+
+The map serves tiles from **an MBTiles pack on disk**, read by the local API
+(`/api/v1/tiles/{z}/{x}/{y}`). MBTiles is SQLite, which the app already speaks,
+so a downloaded region needs no tile server and no extra dependency. Drop a
+pack at `data/tiles/india.mbtiles` (or set `VG_TILES_PATH`) and the map goes
+fully offline; `/api/v1/tiles/status` is what the UI checks.
+
+With no pack installed it falls back to OpenStreetMap tiles over the internet.
+That is fine for development and **not** what should ship to a field device:
+it breaks the offline promise, and the OSM tile policy does not cover app
+traffic at scale. Ship regional packs instead.
+
+The content-security policy stays loopback-only except for `img-src` on the OSM
+tile hosts — images only, never script or fetch, so imagery cannot become a
+code-execution path.
+
+### GPS on desktop is unreliable, by design of the platform
+
+Chromium resolves `navigator.geolocation` through a Google network service that
+requires an API key, so on a laptop with no GPS radio the call fails with
+*"Failed to query location from network service"* even though Electron grants
+the permission. This is expected, not a bug in the app.
+
+Because of that, **tapping the map is the primary way to place a pin**, and GPS
+is the shortcut. A future phone shell will have a real GPS radio and the button
+will simply start working. If desktop GPS is needed sooner, supply a
+`GOOGLE_API_KEY` with the Geolocation API enabled — at the cost of a network
+dependency the rest of the app does not have.
+
+---
+
 ## Configuration
 
 Every setting takes a `VG_`-prefixed environment variable.
@@ -166,3 +202,4 @@ Every setting takes a `VG_`-prefixed environment variable.
 | `VG_REFERENCE_DIR`  | `packages/shared/reference`        | Bilingual reference lists      |
 | `VG_PORT`           | `8756`                             | Local API port                 |
 | `VG_PYTHON`         | repo `.venv`, then `PATH`          | Interpreter the shell spawns   |
+| `VG_TILES_PATH`     | `data/tiles/india.mbtiles`         | Offline map tile pack          |

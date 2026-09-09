@@ -15,7 +15,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .config import get_settings
 from .db import init_db
-from .routers import health, land, locations
+from .routers import health, land, locations, tiles
 
 logger = logging.getLogger("viksitgaanw")
 
@@ -50,6 +50,7 @@ def create_app() -> FastAPI:
     app.include_router(health.router, prefix=API_PREFIX)
     app.include_router(locations.router, prefix=API_PREFIX)
     app.include_router(land.router, prefix=API_PREFIX)
+    app.include_router(tiles.router, prefix=API_PREFIX)
 
     @app.get("/", include_in_schema=False)
     def root() -> dict[str, str]:
