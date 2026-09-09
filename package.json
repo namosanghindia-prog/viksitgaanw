@@ -15,7 +15,8 @@
     "api": "python -m uvicorn app.main:app --app-dir apps/api --host 127.0.0.1 --port 8756 --reload",
     "db:init": "python scripts/init_db.py",
     "db:import-sample": "python scripts/import_lgd.py --sample",
-    "db:import": "python scripts/import_lgd.py --source data/lgd"
+    "db:fetch": "python scripts/fetch_lgd.py",
+    "db:import": "python scripts/import_lgd.py --source data/lgd/dump --replace"
   },
   "engines": {
     "node": ">=18.18"

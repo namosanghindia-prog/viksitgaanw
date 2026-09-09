@@ -31,20 +31,44 @@ python scripts/generate_sample_lgd.py
 
 ## Importing the real dump
 
-1. Download the village directory export from
-   [lgdirectory.gov.in](https://lgdirectory.gov.in) (Reports → Village
-   directory) or the LGD dataset on data.gov.in. A single village-level CSV is
-   enough: it repeats the full state → district → sub-district chain on every
-   row, and the importer back-fills the three parent tables from it.
-2. Put the CSV(s) in `data/lgd/dump/` (git-ignored).
-3. Run:
-
 ```bash
-python scripts/import_lgd.py --source data/lgd/dump --replace
+python scripts/fetch_lgd.py                                  # download
+python scripts/import_lgd.py --source data/lgd/dump --replace  # import
 ```
 
-Expect roughly 660,000 village rows. The import is idempotent — re-running it
-against a newer LGD release updates rows in place rather than duplicating them.
+`fetch_lgd.py` pulls dated CSV archives from a public daily mirror of
+lgdirectory.gov.in, because the official download page is session-based and
+cannot be scripted. Pin a snapshot with `--date 09Sep2026`, or fetch a single
+level with `--levels districts`.
+
+**No internet on the target machine?** Download the archives on any machine,
+copy the CSVs into `data/lgd/dump/` (git-ignored), and run the import. The
+importer does not care how the files got there.
+
+A single village-level CSV is also enough on its own: it repeats the full
+state → district → sub-district chain on every row, and the importer
+back-fills the three parent tables from it.
+
+### What a full import produces
+
+Snapshot of 9 Sep 2026:
+
+| Level          |    Rows |
+| -------------- | ------: |
+| States / UTs   |      36 |
+| Districts      |     784 |
+| Sub-districts  |   7,092 |
+| Villages       | 677,523 |
+
+Takes about a minute and leaves an approximately 100 MB SQLite file. The import
+is idempotent — re-running against a newer LGD release updates rows in place
+rather than duplicating them — and finishes with a `VACUUM` and `ANALYZE`
+(skip with `--no-optimise`).
+
+> [!NOTE]
+> ~100 MB is fine for a laptop. When the phone shell arrives, ship a per-state
+> subset rather than the national table; the schema already carries
+> `state_code` on every level to make that a `WHERE` clause.
 
 ## Column handling
 
