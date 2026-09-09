@@ -67,7 +67,13 @@ def session_scope() -> Iterator[Session]:
 
 
 def init_db() -> None:
-    """Create every table that does not exist yet. Safe to call repeatedly."""
+    """Bring the schema up to date. Safe to call repeatedly.
+
+    Creates missing tables, then applies additive column migrations, because
+    ``create_all`` never alters a table that already exists.
+    """
     from . import models  # noqa: F401  (registers mappers)
+    from .migrations import apply_additive_migrations
 
     models.Base.metadata.create_all(bind=engine)
+    apply_additive_migrations(engine)

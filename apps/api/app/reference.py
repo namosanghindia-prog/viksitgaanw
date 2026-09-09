@@ -19,10 +19,12 @@ from .config import get_settings
 REFERENCE_FILES: dict[str, str] = {
     "area_units": "area-units.json",
     "crops": "crops.json",
+    "depth_units": "depth-units.json",
     "irrigation_types": "irrigation-types.json",
     "ownership_types": "ownership-types.json",
     "soil_types": "soil-types.json",
     "water_sources": "water-sources.json",
+    "water_types": "water-types.json",
 }
 
 
@@ -82,4 +84,12 @@ def area_unit_factor(unit: str) -> float | None:
     for item in get_list("area_units")["items"]:
         if item["code"] == unit:
             return float(item["hectares"])
+    return None
+
+
+def depth_unit_factor(unit: str) -> float | None:
+    """Metres per one unit of ``unit``, or None if the unit is unknown."""
+    for item in get_list("depth_units")["items"]:
+        if item["code"] == unit:
+            return float(item["metres"])
     return None

@@ -14,6 +14,8 @@ from ..db import get_session
 from ..models import District, LandParcel, State, SubDistrict, Village
 from ..schemas import LandParcelCreate, LandParcelOut, LandParcelUpdate
 from ..services.area import UnknownAreaUnitError, hectares_to_acres, to_hectares
+from ..services.depth import UnknownDepthUnitError
+from ..services.depth import to_metres as depth_to_metres
 from ..services.events import EventType, enqueue_sync, record_event
 from ..services.farmers import get_or_create_default_farmer
 from ..services.hierarchy import resolve_location
@@ -40,6 +42,10 @@ def _serialise(session: Session, parcel: LandParcel) -> LandParcelOut:
         area_acres=hectares_to_acres(parcel.area_hectares),
         soil_type=parcel.soil_type,
         water_sources=parcel.water_sources or [],
+        water_type=parcel.water_type,
+        water_depth_value=parcel.water_depth_value,
+        water_depth_unit=parcel.water_depth_unit,
+        water_depth_metres=parcel.water_depth_metres,
         irrigation_type=parcel.irrigation_type,
         existing_crops=parcel.existing_crops or [],
         latitude=parcel.latitude,
@@ -129,6 +135,15 @@ def create_parcel(
     except UnknownAreaUnitError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
+    try:
+        depth_metres = (
+            depth_to_metres(payload.water_depth_value, payload.water_depth_unit)
+            if payload.water_depth_value is not None and payload.water_depth_unit
+            else None
+        )
+    except UnknownDepthUnitError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+
     farmer = get_or_create_default_farmer(session)
 
     parcel = LandParcel(
@@ -145,6 +160,10 @@ def create_parcel(
         area_hectares=hectares,
         soil_type=payload.soil_type,
         water_sources=payload.water_sources,
+        water_type=payload.water_type,
+        water_depth_value=payload.water_depth_value,
+        water_depth_unit=payload.water_depth_unit,
+        water_depth_metres=depth_metres,
         irrigation_type=payload.irrigation_type,
         existing_crops=payload.existing_crops,
         latitude=payload.latitude,
@@ -215,6 +234,23 @@ def update_parcel(
             parcel.area_hectares = to_hectares(parcel.area_value, parcel.area_unit)
         except UnknownAreaUnitError as exc:
             raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+    # Depth and its unit can move independently too.
+    if "water_depth_value" in changes or "water_depth_unit" in changes:
+        if parcel.water_depth_value is None:
+            parcel.water_depth_metres = None
+        elif not parcel.water_depth_unit:
+            raise HTTPException(
+                status_code=422,
+                detail="water_depth_unit is required when a depth is given.",
+            )
+        else:
+            try:
+                parcel.water_depth_metres = depth_to_metres(
+                    parcel.water_depth_value, parcel.water_depth_unit
+                )
+            except UnknownDepthUnitError as exc:
+                raise HTTPException(status_code=422, detail=str(exc)) from exc
 
     if parcel.sync_state == "synced":
         parcel.sync_state = "queued"

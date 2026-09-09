@@ -81,6 +81,27 @@ export function MyLandPage() {
                     <dd>{rt(findItem('soil_types', parcel.soilType))}</dd>
                   </div>
                 ) : null}
+                {parcel.waterType ? (
+                  <div>
+                    <dt>{t('land.waterType')}</dt>
+                    <dd>{rt(findItem('water_types', parcel.waterType))}</dd>
+                  </div>
+                ) : null}
+                {parcel.waterDepthValue && parcel.waterDepthUnit ? (
+                  <div>
+                    <dt>{t('land.waterDepth')}</dt>
+                    <dd>
+                      {formatNumber(parcel.waterDepthValue, lang, 1)}{' '}
+                      {rt(findItem('depth_units', parcel.waterDepthUnit))}
+                      {parcel.waterDepthMetres !== null ? (
+                        <span className="muted">
+                          {' '}
+                          ({formatNumber(parcel.waterDepthMetres, lang, 1)} m)
+                        </span>
+                      ) : null}
+                    </dd>
+                  </div>
+                ) : null}
                 {parcel.existingCrops.length ? (
                   <div>
                     <dt>{t('land.crops')}</dt>

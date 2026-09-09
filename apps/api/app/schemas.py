@@ -10,7 +10,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 from pydantic.alias_generators import to_camel
 
 from . import reference
@@ -67,6 +67,9 @@ class LandParcelBase(ApiModel):
 
     soil_type: str | None = None
     water_sources: list[str] = Field(default_factory=list)
+    water_type: str | None = None
+    water_depth_value: float | None = Field(default=None, gt=0, le=5000)
+    water_depth_unit: str | None = None
     irrigation_type: str | None = None
     existing_crops: list[str] = Field(default_factory=list)
 
@@ -101,6 +104,28 @@ class LandParcelBase(ApiModel):
         if not reference.is_valid("irrigation_types", value):
             raise ValueError(f"Unknown irrigation type: {value}")
         return value
+
+    @field_validator("water_type")
+    @classmethod
+    def _known_water_type(cls, value: str | None) -> str | None:
+        if not reference.is_valid("water_types", value):
+            raise ValueError(f"Unknown water type: {value}")
+        return value
+
+    @field_validator("water_depth_unit")
+    @classmethod
+    def _known_depth_unit(cls, value: str | None) -> str | None:
+        if not reference.is_valid("depth_units", value):
+            raise ValueError(f"Unknown depth unit: {value}")
+        return value
+
+    @model_validator(mode="after")
+    def _depth_needs_a_unit(self) -> "LandParcelBase":
+        """A bare number is meaningless: 40 feet and 40 metres are different
+        wells. Accept a depth only when its unit came with it."""
+        if self.water_depth_value is not None and not self.water_depth_unit:
+            raise ValueError("water_depth_unit is required when a depth is given.")
+        return self
 
     @field_validator("water_sources")
     @classmethod
@@ -144,6 +169,9 @@ class LandParcelUpdate(ApiModel):
     area_unit: str | None = None
     soil_type: str | None = None
     water_sources: list[str] | None = None
+    water_type: str | None = None
+    water_depth_value: float | None = Field(default=None, gt=0, le=5000)
+    water_depth_unit: str | None = None
     irrigation_type: str | None = None
     existing_crops: list[str] | None = None
     latitude: float | None = Field(default=None, ge=-90, le=90)
@@ -156,6 +184,7 @@ class LandParcelOut(LandParcelBase):
     farmer_id: str
     area_hectares: float
     area_acres: float
+    water_depth_metres: float | None = None
     location: LocationPathOut
     sync_state: SyncState
     created_at: datetime

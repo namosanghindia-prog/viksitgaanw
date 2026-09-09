@@ -190,6 +190,15 @@ class LandParcel(Base):
 
     soil_type: Mapped[str | None] = mapped_column(String(32))
     water_sources: Mapped[list[str]] = mapped_column(JSON, default=list)
+
+    # Water quality (sweet / salty / other) and depth to water. Salinity rules
+    # crops in and out, and depth drives the cost of lifting it, so both feed
+    # the suggestion engine and the project report.
+    water_type: Mapped[str | None] = mapped_column(String(32))
+    water_depth_value: Mapped[float | None] = mapped_column(Float)
+    water_depth_unit: Mapped[str | None] = mapped_column(String(16))
+    water_depth_metres: Mapped[float | None] = mapped_column(Float)
+
     irrigation_type: Mapped[str | None] = mapped_column(String(32))
     existing_crops: Mapped[list[str]] = mapped_column(JSON, default=list)
 

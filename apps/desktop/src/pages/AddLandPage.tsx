@@ -1,7 +1,13 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import type { LandParcelInput, LocationSelection } from '@viksitgaanw/shared';
-import { REFERENCE, findItem, hectaresToAcres, toHectares } from '@viksitgaanw/shared';
+import {
+  REFERENCE,
+  findItem,
+  hectaresToAcres,
+  toHectares,
+  toMetres,
+} from '@viksitgaanw/shared';
 
 import { ChoiceGroup } from '../components/ChoiceGroup';
 import { LocationCascader } from '../components/LocationCascader';
@@ -23,6 +29,9 @@ interface FormState {
   ownershipType: string | null;
   soilType: string | null;
   waterSources: string[];
+  waterType: string | null;
+  waterDepthValue: string;
+  waterDepthUnit: string;
   irrigationType: string | null;
   existingCrops: string[];
   notes: string;
@@ -37,6 +46,9 @@ const INITIAL: FormState = {
   ownershipType: null,
   soilType: null,
   waterSources: [],
+  waterType: null,
+  waterDepthValue: '',
+  waterDepthUnit: 'foot',
   irrigationType: null,
   existingCrops: [],
   notes: '',
@@ -65,6 +77,19 @@ export function AddLandPage() {
   const hectares = areaValid ? toHectares(areaNumber, form.areaUnit) : null;
   const unitItem = findItem('area_units', form.areaUnit);
 
+  const depthNumber = Number.parseFloat(form.waterDepthValue);
+  const depthValid = Number.isFinite(depthNumber) && depthNumber > 0;
+  const depthMetres = depthValid ? toMetres(depthNumber, form.waterDepthUnit) : null;
+
+  const depthUnitOptions = useMemo(
+    () =>
+      REFERENCE.depth_units.items.map((item) => ({
+        value: item.code,
+        label: rt(item),
+      })),
+    [rt],
+  );
+
   const areaUnitOptions = useMemo(
     () =>
       REFERENCE.area_units.items.map((item) => ({
@@ -86,6 +111,10 @@ export function AddLandPage() {
     const next: Record<string, string> = {};
     if (!form.label.trim()) next.label = t('error.required');
     if (!areaValid) next.areaValue = t('error.areaPositive');
+    // Depth is optional, but something typed into it must be a real number.
+    if (form.waterDepthValue.trim() && !depthValid) {
+      next.waterDepthValue = t('error.areaPositive');
+    }
     setErrors(next);
     return Object.keys(next).length === 0;
   };
@@ -116,6 +145,9 @@ export function AddLandPage() {
       areaUnit: form.areaUnit,
       soilType: form.soilType,
       waterSources: form.waterSources,
+      waterType: form.waterType,
+      waterDepthValue: depthValid ? depthNumber : null,
+      waterDepthUnit: depthValid ? form.waterDepthUnit : null,
       irrigationType: form.irrigationType,
       existingCrops: form.existingCrops,
       notes: form.notes.trim() || null,
@@ -271,6 +303,54 @@ export function AddLandPage() {
           />
 
           <ChoiceGroup
+            label={t('land.waterType')}
+            hint={t('land.waterTypeHint')}
+            items={REFERENCE.water_types.items}
+            value={form.waterType}
+            onChange={(waterType) => patch({ waterType })}
+          />
+
+          <div className="field-row">
+            <div className="field field--area">
+              <label className="field__label" htmlFor="waterDepth">
+                {t('land.waterDepth')}{' '}
+                <span className="field__optional">({t('common.optional')})</span>
+              </label>
+              <p className="field__hint">{t('land.waterDepthHint')}</p>
+              <input
+                id="waterDepth"
+                className={`input ${errors.waterDepthValue ? 'input--error' : ''}`}
+                type="number"
+                inputMode="decimal"
+                min="0"
+                step="1"
+                value={form.waterDepthValue}
+                onChange={(event) => patch({ waterDepthValue: event.target.value })}
+              />
+              {errors.waterDepthValue ? (
+                <p className="field__error">{errors.waterDepthValue}</p>
+              ) : null}
+            </div>
+
+            <Picker
+              label={t('land.waterDepthUnit')}
+              placeholder={t('land.waterDepthUnit')}
+              options={depthUnitOptions}
+              value={form.waterDepthUnit}
+              onChange={(unit) => patch({ waterDepthUnit: unit ?? 'foot' })}
+            />
+          </div>
+
+          {depthMetres !== null ? (
+            <p className="callout callout--info">
+              {t('land.waterDepthEquivalent', {
+                metres: formatNumber(depthMetres, lang, 2),
+                feet: formatNumber(depthMetres / 0.3048, lang, 0),
+              })}
+            </p>
+          ) : null}
+
+          <ChoiceGroup
             label={t('land.irrigation')}
             items={REFERENCE.irrigation_types.items}
             value={form.irrigationType}
@@ -356,6 +436,13 @@ function ReviewStep({ form, hectares }: { form: FormState; hectares: number | nu
     [
       t('land.water'),
       form.waterSources.map((code) => rt(findItem('water_sources', code))).join(', ') || '—',
+    ],
+    [t('land.waterType'), rt(findItem('water_types', form.waterType)) || '—'],
+    [
+      t('land.waterDepth'),
+      form.waterDepthValue && Number.parseFloat(form.waterDepthValue) > 0
+        ? `${form.waterDepthValue} ${rt(findItem('depth_units', form.waterDepthUnit))}`
+        : '—',
     ],
     [t('land.irrigation'), rt(findItem('irrigation_types', form.irrigationType)) || '—'],
     [

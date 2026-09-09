@@ -20,6 +20,8 @@ export interface ReferenceItem {
   category?: string;
   /** Present on area units: multiplier to convert one unit into hectares. */
   hectares?: number;
+  /** Present on depth units: multiplier to convert one unit into metres. */
+  metres?: number;
   /** Area units whose real size varies by state (bigha, katha). */
   regional?: boolean;
 }
@@ -79,6 +81,11 @@ export interface LandParcelInput {
   areaUnit: string;
   soilType?: string | null;
   waterSources?: string[];
+  /** Water quality: sweet, salty, other. */
+  waterType?: string | null;
+  /** Depth to water, as the farmer stated it. */
+  waterDepthValue?: number | null;
+  waterDepthUnit?: string | null;
   irrigationType?: string | null;
   existingCrops?: string[];
   latitude?: number | null;
@@ -92,6 +99,8 @@ export interface LandParcel extends LandParcelInput {
   /** Normalised area, computed by the API from areaValue + areaUnit. */
   areaHectares: number;
   areaAcres: number;
+  /** Normalised depth, computed by the API. Null when no depth was given. */
+  waterDepthMetres: number | null;
   location: LocationPath;
   syncState: SyncState;
   createdAt: string;
