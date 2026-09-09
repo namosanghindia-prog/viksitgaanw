@@ -1,0 +1,14 @@
+# Normalise line endings. The repo stores LF; Git checks out LF everywhere so
+# a file edited on Windows and one edited on Linux never differ by \r alone.
+# This matches the LF setting in .editorconfig.
+* text=auto eol=lf
+
+# Generated; collapse in diffs and reviews.
+package-lock.json linguist-generated=true -diff
+
+# Binary assets, should Git ever see them.
+*.png binary
+*.jpg binary
+*.ico binary
+*.pdf binary
+*.db binary

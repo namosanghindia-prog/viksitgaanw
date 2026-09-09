@@ -1,0 +1,31 @@
+# node
+node_modules/
+dist/
+dist-electron/
+release/
+*.log
+
+# python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+
+# local database + user data (never commit a villager's farm data)
+*.db
+*.db-journal
+*.db-wal
+*.db-shm
+apps/api/data/
+data/lgd/dump/
+
+# env / secrets
+.env
+.env.*
+!.env.example
+
+# os
+Thumbs.db
+.DS_Store

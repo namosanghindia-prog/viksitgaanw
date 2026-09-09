@@ -1,0 +1,185 @@
+/**
+ * UI strings.
+ *
+ * Hindi is the default, not a translation bolted on afterwards: a large share
+ * of users read Hindi far more comfortably than English, and some read neither
+ * well. Keep sentences short, concrete and free of jargon.
+ */
+
+export const en = {
+  'app.name': 'ViksitGaanw',
+  'app.tagline': 'Your land, your plan',
+
+  'nav.myLand': 'My land',
+  'nav.addLand': 'Add land',
+  'nav.language': 'भाषा / Language',
+
+  'common.next': 'Next',
+  'common.back': 'Back',
+  'common.save': 'Save',
+  'common.saving': 'Saving...',
+  'common.cancel': 'Cancel',
+  'common.delete': 'Delete',
+  'common.edit': 'Edit',
+  'common.optional': 'optional',
+  'common.required': 'required',
+  'common.loading': 'Loading...',
+  'common.search': 'Search',
+  'common.retry': 'Try again',
+  'common.notSelected': 'Not selected',
+  'common.step': 'Step {n} of {total}',
+
+  'status.offlineReady': 'Works without internet',
+  'status.connecting': 'Starting up...',
+  'status.apiDown': 'Cannot reach the local app service.',
+  'status.apiDownHelp':
+    'The background service on this device is not running. Close the app and open it again.',
+  'status.noData': 'Location data is not loaded yet.',
+  'status.noDataHelp':
+    'Run the data import once so the app knows your state, district and village:',
+
+  'location.title': 'Where is your land?',
+  'location.help': 'Choose from the official government village directory.',
+  'location.state': 'State',
+  'location.district': 'District',
+  'location.subdistrict': 'Block / Tehsil',
+  'location.village': 'Village',
+  'location.chooseState': 'Choose a state',
+  'location.chooseDistrict': 'Choose a district',
+  'location.chooseSubdistrict': 'Choose a block or tehsil',
+  'location.chooseVillage': 'Choose a village',
+  'location.searchVillage': 'Type your village name',
+  'location.villageOptional': 'You can skip the village if you are not sure.',
+  'location.noResults': 'No match found.',
+  'location.pickParentFirst': 'Choose the level above first.',
+
+  'land.title': 'Tell us about this land',
+  'land.help': 'Only the size is compulsory. Everything else helps us advise you better.',
+  'land.label': 'Name this plot',
+  'land.labelHint': 'Something you will recognise, like "Canal side field".',
+  'land.area': 'How big is it?',
+  'land.areaUnit': 'Unit',
+  'land.areaRegionalWarning':
+    'A {unit} is a different size in different states. We use {hectares} hectares. Check this matches your area.',
+  'land.areaEquivalent': '= {hectares} hectares ({acres} acres)',
+  'land.surveyNumber': 'Survey / khasra number',
+  'land.ownership': 'How do you hold this land?',
+  'land.soil': 'Soil type',
+  'land.water': 'Water sources',
+  'land.waterHint': 'Choose all that apply.',
+  'land.irrigation': 'Irrigation method',
+  'land.crops': 'What do you grow now?',
+  'land.cropsHint': 'Choose all that apply.',
+  'land.notes': 'Anything else',
+
+  'review.title': 'Check before saving',
+  'review.help': 'Make sure this is right. You can change it later.',
+  'review.location': 'Location',
+  'review.details': 'Land details',
+  'review.saved': 'Saved on this device',
+  'review.savedHelp': 'It will sync to the cloud on its own when you are online.',
+
+  'list.title': 'My land',
+  'list.empty': 'No land added yet.',
+  'list.emptyHelp': 'Add your first plot to get started.',
+  'list.addFirst': 'Add my land',
+  'list.parcelCount': '{n} plot(s)',
+  'list.totalArea': 'Total area',
+  'list.confirmDelete': 'Delete "{label}"? This cannot be undone.',
+
+  'error.required': 'Please fill this in.',
+  'error.areaPositive': 'Enter a number greater than zero.',
+  'error.stateRequired': 'Choose a state.',
+  'error.districtRequired': 'Choose a district.',
+  'error.saveFailed': 'Could not save. {detail}',
+} as const;
+
+export type StringKey = keyof typeof en;
+
+export const hi: Record<StringKey, string> = {
+  'app.name': 'विकसित गाँव',
+  'app.tagline': 'आपकी ज़मीन, आपकी योजना',
+
+  'nav.myLand': 'मेरी ज़मीन',
+  'nav.addLand': 'ज़मीन जोड़ें',
+  'nav.language': 'भाषा / Language',
+
+  'common.next': 'आगे',
+  'common.back': 'पीछे',
+  'common.save': 'सहेजें',
+  'common.saving': 'सहेजा जा रहा है...',
+  'common.cancel': 'रद्द करें',
+  'common.delete': 'हटाएँ',
+  'common.edit': 'बदलें',
+  'common.optional': 'वैकल्पिक',
+  'common.required': 'ज़रूरी',
+  'common.loading': 'लोड हो रहा है...',
+  'common.search': 'खोजें',
+  'common.retry': 'फिर कोशिश करें',
+  'common.notSelected': 'चुना नहीं गया',
+  'common.step': 'चरण {n} / {total}',
+
+  'status.offlineReady': 'बिना इंटरनेट भी चलता है',
+  'status.connecting': 'शुरू हो रहा है...',
+  'status.apiDown': 'इस डिवाइस की सेवा से संपर्क नहीं हो पा रहा।',
+  'status.apiDownHelp': 'पृष्ठभूमि सेवा नहीं चल रही है। ऐप बंद करके दोबारा खोलें।',
+  'status.noData': 'स्थान की जानकारी अभी लोड नहीं हुई है।',
+  'status.noDataHelp': 'एक बार यह कमांड चलाएँ ताकि ऐप को राज्य, ज़िला और गाँव पता चल सके:',
+
+  'location.title': 'आपकी ज़मीन कहाँ है?',
+  'location.help': 'सरकारी गाँव निर्देशिका में से चुनें।',
+  'location.state': 'राज्य',
+  'location.district': 'ज़िला',
+  'location.subdistrict': 'ब्लॉक / तहसील',
+  'location.village': 'गाँव',
+  'location.chooseState': 'राज्य चुनें',
+  'location.chooseDistrict': 'ज़िला चुनें',
+  'location.chooseSubdistrict': 'ब्लॉक या तहसील चुनें',
+  'location.chooseVillage': 'गाँव चुनें',
+  'location.searchVillage': 'अपने गाँव का नाम लिखें',
+  'location.villageOptional': 'पक्का न हो तो गाँव छोड़ सकते हैं।',
+  'location.noResults': 'कुछ नहीं मिला।',
+  'location.pickParentFirst': 'पहले ऊपर वाला चुनें।',
+
+  'land.title': 'इस ज़मीन के बारे में बताएँ',
+  'land.help': 'सिर्फ़ रकबा ज़रूरी है। बाकी जानकारी से सलाह बेहतर होगी।',
+  'land.label': 'इस खेत को नाम दें',
+  'land.labelHint': 'ऐसा नाम जो आप पहचान सकें, जैसे "नहर वाला खेत"।',
+  'land.area': 'रकबा कितना है?',
+  'land.areaUnit': 'इकाई',
+  'land.areaRegionalWarning':
+    '{unit} का आकार हर राज्य में अलग होता है। हम {hectares} हेक्टेयर मान रहे हैं। जाँच लें कि यह सही है।',
+  'land.areaEquivalent': '= {hectares} हेक्टेयर ({acres} एकड़)',
+  'land.surveyNumber': 'खसरा / सर्वे नंबर',
+  'land.ownership': 'ज़मीन किस रूप में है?',
+  'land.soil': 'मिट्टी का प्रकार',
+  'land.water': 'पानी के स्रोत',
+  'land.waterHint': 'जो भी लागू हों सब चुनें।',
+  'land.irrigation': 'सिंचाई का तरीका',
+  'land.crops': 'अभी क्या उगाते हैं?',
+  'land.cropsHint': 'जो भी लागू हों सब चुनें।',
+  'land.notes': 'और कुछ बताना है',
+
+  'review.title': 'सहेजने से पहले जाँच लें',
+  'review.help': 'देख लें कि सब सही है। बाद में बदल भी सकते हैं।',
+  'review.location': 'स्थान',
+  'review.details': 'ज़मीन का विवरण',
+  'review.saved': 'इस डिवाइस पर सहेज लिया गया',
+  'review.savedHelp': 'इंटरनेट आने पर यह अपने आप क्लाउड पर चला जाएगा।',
+
+  'list.title': 'मेरी ज़मीन',
+  'list.empty': 'अभी कोई ज़मीन नहीं जोड़ी गई।',
+  'list.emptyHelp': 'शुरू करने के लिए अपना पहला खेत जोड़ें।',
+  'list.addFirst': 'मेरी ज़मीन जोड़ें',
+  'list.parcelCount': '{n} खेत',
+  'list.totalArea': 'कुल रकबा',
+  'list.confirmDelete': '"{label}" हटाएँ? यह वापस नहीं आएगा।',
+
+  'error.required': 'कृपया यह भरें।',
+  'error.areaPositive': 'शून्य से बड़ी संख्या लिखें।',
+  'error.stateRequired': 'राज्य चुनें।',
+  'error.districtRequired': 'ज़िला चुनें।',
+  'error.saveFailed': 'सहेजा नहीं जा सका। {detail}',
+};
+
+export const DICTIONARIES = { en, hi } as const;

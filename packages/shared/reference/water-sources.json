@@ -1,0 +1,16 @@
+{
+  "key": "water_sources",
+  "version": 1,
+  "multi": true,
+  "items": [
+    { "code": "borewell",   "label": { "en": "Borewell / tubewell", "hi": "बोरवेल / ट्यूबवेल" } },
+    { "code": "open_well",  "label": { "en": "Open well",           "hi": "कुआँ" } },
+    { "code": "canal",      "label": { "en": "Canal",               "hi": "नहर" } },
+    { "code": "river",      "label": { "en": "River / stream",      "hi": "नदी / नाला" } },
+    { "code": "pond_tank",  "label": { "en": "Pond / tank",         "hi": "तालाब" } },
+    { "code": "farm_pond",  "label": { "en": "Farm pond",           "hi": "खेत तालाब" } },
+    { "code": "lift",       "label": { "en": "Lift irrigation",     "hi": "लिफ्ट सिंचाई" } },
+    { "code": "rainfed",    "label": { "en": "Rain only",           "hi": "केवल वर्षा" } },
+    { "code": "other",      "label": { "en": "Other",               "hi": "अन्य" } }
+  ]
+}

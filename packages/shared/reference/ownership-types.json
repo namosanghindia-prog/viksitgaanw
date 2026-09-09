@@ -1,0 +1,11 @@
+{
+  "key": "ownership_types",
+  "version": 1,
+  "items": [
+    { "code": "owned",        "label": { "en": "Owned",              "hi": "स्वयं की" } },
+    { "code": "leased",       "label": { "en": "Leased / rented",    "hi": "पट्टे / किराये पर" } },
+    { "code": "sharecropped", "label": { "en": "Sharecropped",       "hi": "बटाई पर" } },
+    { "code": "ancestral",    "label": { "en": "Ancestral (undivided)", "hi": "पैतृक (अविभाजित)" } },
+    { "code": "community",    "label": { "en": "Community / FPO",    "hi": "सामुदायिक / एफपीओ" } }
+  ]
+}

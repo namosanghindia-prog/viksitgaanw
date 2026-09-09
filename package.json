@@ -1,0 +1,23 @@
+{
+  "name": "viksitgaanw",
+  "version": "0.1.0",
+  "private": true,
+  "description": "ViksitGaanw - offline-first Agricultural Operating System for village India",
+  "workspaces": [
+    "apps/desktop",
+    "packages/shared"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace @viksitgaanw/desktop",
+    "dev:web": "npm run dev:web --workspace @viksitgaanw/desktop",
+    "build": "npm run build --workspace @viksitgaanw/desktop",
+    "typecheck": "npm run typecheck --workspace @viksitgaanw/desktop",
+    "api": "python -m uvicorn app.main:app --app-dir apps/api --host 127.0.0.1 --port 8756 --reload",
+    "db:init": "python scripts/init_db.py",
+    "db:import-sample": "python scripts/import_lgd.py --sample",
+    "db:import": "python scripts/import_lgd.py --source data/lgd"
+  },
+  "engines": {
+    "node": ">=18.18"
+  }
+}

@@ -1,0 +1,17 @@
+{
+  "key": "soil_types",
+  "version": 1,
+  "items": [
+    { "code": "unknown",         "label": { "en": "I am not sure",        "hi": "मुझे पता नहीं है" } },
+    { "code": "alluvial",        "label": { "en": "Alluvial",             "hi": "जलोढ़ (दोमट)" } },
+    { "code": "black",           "label": { "en": "Black (regur)",        "hi": "काली (रेगुर)" } },
+    { "code": "red",             "label": { "en": "Red",                  "hi": "लाल" } },
+    { "code": "laterite",        "label": { "en": "Laterite",             "hi": "लैटेराइट" } },
+    { "code": "sandy",           "label": { "en": "Sandy / desert",       "hi": "रेतीली / मरुस्थलीय" } },
+    { "code": "loamy",           "label": { "en": "Loamy",                "hi": "दोमट" } },
+    { "code": "clayey",          "label": { "en": "Clayey",               "hi": "चिकनी" } },
+    { "code": "mountain_forest", "label": { "en": "Mountain / forest",    "hi": "पर्वतीय / वन" } },
+    { "code": "saline_alkaline", "label": { "en": "Saline / alkaline (usar)", "hi": "लवणीय / क्षारीय (ऊसर)" } },
+    { "code": "peaty_marshy",    "label": { "en": "Peaty / marshy",       "hi": "पीटमय / दलदली" } }
+  ]
+}

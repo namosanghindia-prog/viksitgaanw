@@ -1,0 +1,19 @@
+{
+  "key": "area_units",
+  "version": 1,
+  "items": [
+    { "code": "acre",         "hectares": 0.40468564224,  "regional": false, "label": { "en": "Acre",           "hi": "एकड़" } },
+    { "code": "hectare",      "hectares": 1.0,            "regional": false, "label": { "en": "Hectare",        "hi": "हेक्टेयर" } },
+    { "code": "bigha",        "hectares": 0.25292852640,  "regional": true,  "label": { "en": "Bigha",          "hi": "बीघा" },
+      "note": { "en": "Bigha size differs by state. Default here is the UP 'pucca' bigha (5/8 acre). Confirm your local value.",
+                "hi": "बीघा का आकार राज्य के अनुसार बदलता है। यहाँ डिफ़ॉल्ट यूपी का पक्का बीघा (5/8 एकड़) है। अपना स्थानीय मान जाँच लें।" } },
+    { "code": "katha",        "hectares": 0.01264642632,  "regional": true,  "label": { "en": "Katha",          "hi": "कट्ठा" },
+      "note": { "en": "Taken as 1/20 bigha. Varies by state.", "hi": "1/20 बीघा माना गया है। राज्य अनुसार बदलता है।" } },
+    { "code": "guntha",       "hectares": 0.010117141056,  "regional": false, "label": { "en": "Guntha",         "hi": "गुंठा" } },
+    { "code": "cent",         "hectares": 0.0040468564224,  "regional": false, "label": { "en": "Cent",           "hi": "सेंट" } },
+    { "code": "kanal",        "hectares": 0.05058570528,  "regional": false, "label": { "en": "Kanal",          "hi": "कनाल" } },
+    { "code": "marla",        "hectares": 0.002529285264,  "regional": false, "label": { "en": "Marla",          "hi": "मरला" } },
+    { "code": "square_metre", "hectares": 0.0001,         "regional": false, "label": { "en": "Square metre",   "hi": "वर्ग मीटर" } },
+    { "code": "square_foot",  "hectares": 0.000009290304, "regional": false, "label": { "en": "Square foot",    "hi": "वर्ग फुट" } }
+  ]
+}

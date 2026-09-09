@@ -1,0 +1,78 @@
+"""ViksitGaanw local API.
+
+This process runs on the villager's own device. It is bound to loopback only:
+the "server" is the user's own laptop or phone, and nothing here is meant to be
+reachable from the network.
+"""
+
+from __future__ import annotations
+
+import logging
+from contextlib import asynccontextmanager
+
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+
+from .config import get_settings
+from .db import init_db
+from .routers import health, land, locations
+
+logger = logging.getLogger("viksitgaanw")
+
+API_PREFIX = "/api/v1"
+
+
+@asynccontextmanager
+async def lifespan(_: FastAPI):
+    settings = get_settings()
+    init_db()
+    logger.info("ViksitGaanw API ready. Database: %s", settings.db_path)
+    yield
+
+
+def create_app() -> FastAPI:
+    settings = get_settings()
+    app = FastAPI(
+        title=settings.app_name,
+        version=settings.version,
+        description="Offline-first local API for the ViksitGaanw agricultural OS.",
+        lifespan=lifespan,
+    )
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=settings.cors_origins,
+        allow_credentials=False,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
+    app.include_router(health.router, prefix=API_PREFIX)
+    app.include_router(locations.router, prefix=API_PREFIX)
+    app.include_router(land.router, prefix=API_PREFIX)
+
+    @app.get("/", include_in_schema=False)
+    def root() -> dict[str, str]:
+        return {"name": settings.app_name, "version": settings.version, "docs": "/docs"}
+
+    return app
+
+
+app = create_app()
+
+
+def main() -> None:
+    """Entry point used by the Electron shell and ``python -m app.main``."""
+    import uvicorn
+
+    settings = get_settings()
+    uvicorn.run(
+        "app.main:app",
+        host=settings.host,
+        port=settings.port,
+        log_level="info",
+    )
+
+
+if __name__ == "__main__":
+    main()

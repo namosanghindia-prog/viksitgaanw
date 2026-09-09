@@ -1,0 +1,12 @@
+{
+  "key": "irrigation_types",
+  "version": 1,
+  "items": [
+    { "code": "rainfed",   "label": { "en": "Rainfed (no irrigation)", "hi": "वर्षा आधारित (सिंचाई नहीं)" } },
+    { "code": "flood",     "label": { "en": "Flood / surface",         "hi": "बाढ़ / सतही" } },
+    { "code": "furrow",    "label": { "en": "Furrow",                  "hi": "कूँड़ विधि" } },
+    { "code": "drip",      "label": { "en": "Drip",                    "hi": "ड्रिप" } },
+    { "code": "sprinkler", "label": { "en": "Sprinkler",               "hi": "स्प्रिंकलर" } },
+    { "code": "mixed",     "label": { "en": "Mixed",                   "hi": "मिश्रित" } }
+  ]
+}
