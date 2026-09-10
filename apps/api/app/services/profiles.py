@@ -12,6 +12,7 @@ check in the marketplace starts from :func:`get_owner`.
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 from typing import Any
 
 from pydantic.alias_generators import to_camel
@@ -20,9 +21,9 @@ from sqlalchemy.orm import Session
 
 from .. import reference
 from .. import segments as seg
-from ..models import Profile, State
+from ..models import EquipmentListing, Profile, State
 from ..schemas import ContactOut, ProfileCardOut, ProfileInput, ProfileOut
-from . import kyc
+from . import kyc, media
 from .events import EventType, enqueue_sync, record_event
 from .farmers import get_or_create_default_farmer
 from .hierarchy import location_error, resolve_location
@@ -170,6 +171,11 @@ def delete_owner(session: Session) -> None:
         entity_id=profile.id,
         payload={"segment": profile.segment},
     )
+    media.remove_all(session, "profile", profile.id)
+    for listing in session.scalars(
+        select(EquipmentListing).where(EquipmentListing.profile_id == profile.id)
+    ):
+        media.remove_all(session, "equipment", listing.id)
     session.delete(profile)
 
 
@@ -203,7 +209,12 @@ def type_code(profile: Profile) -> str | None:
 
 
 def card(session: Session, profile: Profile, *, reveal_contact: bool = False) -> ProfileCardOut:
+    from .trust import rating_stats  # noqa: PLC0415 - trust imports this module
+
+    rating_avg, rating_count = rating_stats(session, profile.id)
     return ProfileCardOut(
+        rating_avg=rating_avg,
+        rating_count=rating_count,
         id=profile.id,
         segment=profile.segment,
         display_name=profile.display_name,
@@ -213,10 +224,80 @@ def card(session: Session, profile: Profile, *, reveal_contact: bool = False) ->
         country_code=profile.country_code,
         kyc_status=profile.kyc_status,
         origin=profile.origin,
+        photo_url=media.first_url(session, "profile", profile.id),
         contact=(
             ContactOut(phone=profile.phone, email=profile.email) if reveal_contact else None
         ),
     )
+
+
+def known_profiles(session: Session, owner: Profile, segments: tuple[str, ...]) -> list[Profile]:
+    """Other people on this device's copy of the platform, shared online.
+
+    Used when a seller picks a farmer or distributor for their network: only
+    someone who has chosen to be visible can be picked.
+    """
+    stmt = (
+        select(Profile)
+        .where(Profile.id != owner.id)
+        .where(Profile.visibility == "online")
+        .where(Profile.segment.in_(segments))
+        .order_by(Profile.display_name)
+    )
+    return list(session.scalars(stmt))
+
+
+# --------------------------------------------------------------------------- #
+# Sharing online
+# --------------------------------------------------------------------------- #
+
+
+def _now() -> datetime:
+    return datetime.now(timezone.utc)
+
+
+def share_owner(session: Session) -> Profile:
+    """Make the owner's profile card visible to others on the common timeline.
+
+    The card carries name, organisation, place, type and photo. Phone and
+    email stay private until the owner accepts someone.
+    """
+    profile = require_owner(session)
+    if profile.visibility != "online":
+        profile.visibility = "online"
+        profile.shared_at = _now()
+        record_event(
+            session,
+            EventType.SHARED_ONLINE,
+            entity_type=ENTITY,
+            entity_id=profile.id,
+            payload={"segment": profile.segment},
+        )
+        enqueue_sync(session, entity_type=ENTITY, entity_id=profile.id, operation="share")
+    return profile
+
+
+def unshare_owner(session: Session) -> Profile:
+    """Take the profile offline, and everything shared under it with it.
+
+    A project or machine on the timeline with no visible owner behind it
+    would be a listing nobody can trust, so the two go offline together.
+    """
+    from .sharing import unshare_all_items  # noqa: PLC0415 - avoids an import cycle
+
+    profile = require_owner(session)
+    if profile.visibility == "online":
+        unshare_all_items(session, profile)
+        profile.visibility = "offline"
+        record_event(
+            session,
+            EventType.TAKEN_OFFLINE,
+            entity_type=ENTITY,
+            entity_id=profile.id,
+            payload={"segment": profile.segment},
+        )
+        enqueue_sync(session, entity_type=ENTITY, entity_id=profile.id, operation="unshare")
+    return profile
 
 
 def serialise_owner(session: Session, profile: Profile) -> ProfileOut:
@@ -247,6 +328,9 @@ def serialise_owner(session: Session, profile: Profile) -> ProfileOut:
         kyc_method=profile.kyc_method,
         kyc_methods=kyc.methods_for(profile.segment),
         farmer_id=profile.farmer_id,
+        photo_url=media.first_url(session, "profile", profile.id),
+        visibility=profile.visibility,
+        shared_at=profile.shared_at,
         sync_state=profile.sync_state,
         created_at=profile.created_at,
         updated_at=profile.updated_at,

@@ -26,6 +26,8 @@ from . import segments as seg
 
 AdminLevel = Literal["state", "district", "subdistrict", "village"]
 SyncState = Literal["local_only", "queued", "synced", "conflict"]
+#: offline: only on this device. online: shared to the common timeline.
+Visibility = Literal["offline", "online"]
 
 
 class ApiModel(BaseModel):
@@ -384,10 +386,39 @@ class PartnerDetails(ApiModel):
     #: Indian states the organisation works in, or wants to.
     operating_states: list[str] = Field(default_factory=list)
 
+    #: An organisation that partners farmers may fund them as well. One device
+    #: holds one profile, so this is a switch rather than a second profile.
+    also_invests: bool = False
+    investment_modes: list[str] = Field(default_factory=list)
+    #: Rupees for national partners, US dollars for international ones.
+    ticket_min: float | None = Field(default=None, ge=0)
+    ticket_max: float | None = Field(default=None, gt=0)
+
     @field_validator("partnership_types")
     @classmethod
     def _known_partnerships(cls, values: list[str]) -> list[str]:
         return _check_codes("partnership_types", values, "partnership types")
+
+    @field_validator("investment_modes")
+    @classmethod
+    def _known_modes(cls, values: list[str]) -> list[str]:
+        return _check_codes("investment_modes", values, "investment modes")
+
+    @model_validator(mode="after")
+    def _investing(self) -> "PartnerDetails":
+        if not self.also_invests:
+            self.investment_modes = []
+            self.ticket_min = self.ticket_max = None
+            return self
+        if not self.investment_modes:
+            raise ValueError("Choose at least one way the organisation invests.")
+        if (
+            self.ticket_min is not None
+            and self.ticket_max is not None
+            and self.ticket_min > self.ticket_max
+        ):
+            raise ValueError("The smallest investment cannot be larger than the largest.")
+        return self
 
     @field_validator("crops")
     @classmethod
@@ -643,6 +674,10 @@ class ProfileOut(ApiModel):
     #: How this profile could be verified once KYC is switched on.
     kyc_methods: list[str] = Field(default_factory=list)
     farmer_id: str | None = None
+    #: Where the photo or logo can be fetched, or None.
+    photo_url: str | None = None
+    visibility: Visibility = "offline"
+    shared_at: datetime | None = None
     sync_state: SyncState
     created_at: datetime
     updated_at: datetime
@@ -672,6 +707,10 @@ class ProfileCardOut(ApiModel):
     country_code: str
     kyc_status: str
     origin: str
+    photo_url: str | None = None
+    #: Average stars other people gave after working with them, and how many.
+    rating_avg: float | None = None
+    rating_count: int = 0
     contact: ContactOut | None = None
 
 
@@ -898,6 +937,9 @@ class FitOut(ApiModel):
 
 
 class InterestInput(ApiModel):
+    #: Only needed by a partner organisation that also invests; otherwise the
+    #: responder's segment decides.
+    kind: Seeking | None = None
     amount_offered: float | None = Field(default=None, gt=0, le=10_000_000_000)
     mode: str | None = None
     partnership_type: str | None = None
@@ -974,9 +1016,943 @@ class InvestmentRequestOut(ApiModel):
     insurance_recommended: list[str] = Field(default_factory=list)
     #: Every required category has a current policy -- not merely a promise.
     fully_insured: bool = False
+    visibility: Visibility = "offline"
+    shared_at: datetime | None = None
     origin: str
     created_at: datetime
     updated_at: datetime
+
+
+# --------------------------------------------------------------------------- #
+# Pictures
+# --------------------------------------------------------------------------- #
+
+
+class MediaOut(ApiModel):
+    id: str
+    url: str
+    width: int
+    height: int
+    position: int
+
+
+# --------------------------------------------------------------------------- #
+# Equipment
+# --------------------------------------------------------------------------- #
+
+RentUnit = Literal["hour", "day", "acre", "season"]
+PartnerKind = Literal["farmer", "village", "district", "distributor"]
+
+
+class EquipmentInput(ApiModel):
+    equipment_type: str
+    title: str = Field(min_length=1, max_length=200)
+    brand: str | None = Field(default=None, max_length=80)
+    model: str | None = Field(default=None, max_length=80)
+    year_made: int | None = Field(default=None, ge=1950, le=2100)
+    condition: str = "new"
+    description: str | None = Field(default=None, max_length=4000)
+    for_sale: bool = False
+    sale_price: float | None = Field(default=None, gt=0, le=1_000_000_000)
+    for_rent: bool = False
+    rent_rate: float | None = Field(default=None, gt=0, le=10_000_000)
+    rent_unit: RentUnit | None = None
+    quantity: int = Field(default=1, ge=1, le=100_000)
+    with_operator: bool = False
+    delivery: bool = False
+    state_code: str = Field(min_length=1, max_length=8)
+    district_code: str | None = Field(default=None, max_length=8)
+    subdistrict_code: str | None = Field(default=None, max_length=8)
+    status: Literal["active", "paused", "sold"] = "active"
+
+    @field_validator("title", mode="before")
+    @classmethod
+    def _strip_title(cls, value: Any) -> Any:
+        return value.strip() if isinstance(value, str) else value
+
+    @field_validator(
+        "brand", "model", "description", "district_code", "subdistrict_code", mode="before"
+    )
+    @classmethod
+    def _blank(cls, value: Any) -> Any:
+        return _blank_to_none(value)
+
+    @field_validator("equipment_type")
+    @classmethod
+    def _known_type(cls, value: str) -> str:
+        return _check_code("equipment_types", value, "equipment type")  # type: ignore[return-value]
+
+    @field_validator("condition")
+    @classmethod
+    def _known_condition(cls, value: str) -> str:
+        return _check_code("equipment_conditions", value, "condition")  # type: ignore[return-value]
+
+    @model_validator(mode="after")
+    def _an_offer(self) -> "EquipmentInput":
+        if not (self.for_sale or self.for_rent):
+            raise ValueError("Say whether the machine is for sale, for rent, or both.")
+        if self.for_sale and self.sale_price is None:
+            raise ValueError("Enter the sale price.")
+        if self.for_rent and (self.rent_rate is None or self.rent_unit is None):
+            raise ValueError("Enter the rent and what it is charged per.")
+        if not self.for_sale:
+            self.sale_price = None
+        if not self.for_rent:
+            self.rent_rate = self.rent_unit = None
+        return self
+
+
+class EquipmentOut(ApiModel):
+    id: str
+    equipment_type: str
+    title: str
+    brand: str | None = None
+    model: str | None = None
+    year_made: int | None = None
+    condition: str
+    description: str | None = None
+    for_sale: bool
+    sale_price: float | None = None
+    for_rent: bool
+    rent_rate: float | None = None
+    rent_unit: str | None = None
+    quantity: int
+    with_operator: bool
+    delivery: bool
+    state_code: str
+    district_code: str | None = None
+    subdistrict_code: str | None = None
+    #: "Bangarapet, Kolar, Karnataka".
+    place: str | None = None
+    status: str
+    visibility: Visibility
+    shared_at: datetime | None = None
+    photos: list[MediaOut] = Field(default_factory=list)
+    seller: ProfileCardOut
+    is_mine: bool = False
+    #: The viewer's own enquiry, for anyone but the seller.
+    my_enquiry: "EnquiryOut | None" = None
+    #: All enquiries, for the seller.
+    enquiries: list["EnquiryOut"] = Field(default_factory=list)
+    enquiry_counts: dict[str, int] = Field(default_factory=dict)
+    #: The viewer's partnership with this seller, if any.
+    my_partnership: "PartnershipOut | None" = None
+    origin: str
+    created_at: datetime
+    updated_at: datetime
+
+
+class EnquiryInput(ApiModel):
+    kind: Literal["rent", "buy"]
+    quantity: int = Field(default=1, ge=1, le=100_000)
+    start_date: date | None = None
+    end_date: date | None = None
+    area_acres: float | None = Field(default=None, gt=0, le=100_000)
+    message: str | None = Field(default=None, max_length=2000)
+
+    @field_validator("message", mode="before")
+    @classmethod
+    def _blank(cls, value: Any) -> Any:
+        return _blank_to_none(value)
+
+    @model_validator(mode="after")
+    def _dates(self) -> "EnquiryInput":
+        if self.kind == "buy":
+            self.start_date = self.end_date = None
+            self.area_acres = None
+        elif self.start_date and self.end_date and self.start_date > self.end_date:
+            raise ValueError("The hire cannot end before it starts.")
+        return self
+
+
+class EnquiryOut(ApiModel):
+    id: str
+    listing_id: str
+    kind: str
+    quantity: int
+    start_date: date | None = None
+    end_date: date | None = None
+    area_acres: float | None = None
+    message: str | None = None
+    status: InterestStatus
+    enquirer: ProfileCardOut
+    origin: str
+    created_at: datetime
+    responded_at: datetime | None = None
+
+
+class ResponseUpdate(ApiModel):
+    """accepted / declined by the one asked, withdrawn by the one asking."""
+
+    status: Literal["accepted", "declined", "withdrawn"]
+
+
+class PartnershipInput(ApiModel):
+    """A seller adding a partner to their network."""
+
+    partner_kind: PartnerKind
+    partner_profile_id: str | None = Field(default=None, max_length=36)
+    contact_name: str | None = Field(default=None, max_length=160)
+    contact_phone: str | None = Field(default=None, max_length=20)
+    state_code: str | None = Field(default=None, max_length=8)
+    district_code: str | None = Field(default=None, max_length=8)
+    subdistrict_code: str | None = Field(default=None, max_length=8)
+    village_code: str | None = Field(default=None, max_length=12)
+    role: str
+    equipment_types: list[str] = Field(default_factory=list)
+    commission_percent: float | None = Field(default=None, ge=0, le=100)
+    message: str | None = Field(default=None, max_length=2000)
+
+    @field_validator(
+        "partner_profile_id",
+        "contact_name",
+        "contact_phone",
+        "state_code",
+        "district_code",
+        "subdistrict_code",
+        "village_code",
+        "message",
+        mode="before",
+    )
+    @classmethod
+    def _blank(cls, value: Any) -> Any:
+        return _blank_to_none(value)
+
+    @field_validator("role")
+    @classmethod
+    def _known_role(cls, value: str) -> str:
+        return _check_code("partner_roles", value, "partner role")  # type: ignore[return-value]
+
+    @field_validator("equipment_types")
+    @classmethod
+    def _known_types(cls, values: list[str]) -> list[str]:
+        return _check_codes("equipment_types", values, "equipment types")
+
+    @model_validator(mode="after")
+    def _who_and_where(self) -> "PartnershipInput":
+        if self.contact_phone:
+            self.contact_phone = normalise_phone(self.contact_phone, "IN")
+        if not self.partner_profile_id and not self.contact_name:
+            raise ValueError("Choose a partner on the platform, or write the contact's name.")
+        if self.partner_kind == "village" and not self.village_code:
+            raise ValueError("Choose the village this partnership covers.")
+        if self.partner_kind == "district" and not self.district_code:
+            raise ValueError("Choose the district this partnership covers.")
+        return self
+
+
+class PartnershipAsk(ApiModel):
+    """A farmer or distributor asking a seller to take them on as a partner."""
+
+    role: str
+    equipment_types: list[str] = Field(default_factory=list)
+    message: str | None = Field(default=None, max_length=2000)
+
+    @field_validator("message", mode="before")
+    @classmethod
+    def _blank(cls, value: Any) -> Any:
+        return _blank_to_none(value)
+
+    @field_validator("role")
+    @classmethod
+    def _known_role(cls, value: str) -> str:
+        return _check_code("partner_roles", value, "partner role")  # type: ignore[return-value]
+
+    @field_validator("equipment_types")
+    @classmethod
+    def _known_types(cls, values: list[str]) -> list[str]:
+        return _check_codes("equipment_types", values, "equipment types")
+
+
+class PartnershipUpdate(ApiModel):
+    #: active (accept) | declined | ended
+    status: Literal["active", "declined", "ended"]
+
+
+class PartnershipOut(ApiModel):
+    id: str
+    partner_kind: str
+    role: str
+    equipment_types: list[str]
+    commission_percent: float | None = None
+    message: str | None = None
+    initiated_by: str
+    status: str
+    #: "Rampur Bujurg, Pindra, Varanasi, Uttar Pradesh".
+    area: str | None = None
+    seller: ProfileCardOut
+    partner: ProfileCardOut | None = None
+    #: Off-platform partner, visible to the seller who recorded them.
+    contact_name: str | None = None
+    contact_phone: str | None = None
+    #: True when the device owner is the seller.
+    is_seller: bool
+    origin: str
+    created_at: datetime
+    responded_at: datetime | None = None
+
+
+# --------------------------------------------------------------------------- #
+# Timeline
+# --------------------------------------------------------------------------- #
+
+
+class TimelineItemOut(ApiModel):
+    """One thing someone shared online: a farm project or a machine."""
+
+    type: Literal["project", "equipment"]
+    id: str
+    shared_at: datetime | None = None
+    project: InvestmentRequestOut | None = None
+    equipment: EquipmentOut | None = None
+
+
+EquipmentOut.model_rebuild()
+
+
+
+# --------------------------------------------------------------------------- #
+# Notifications and messages
+# --------------------------------------------------------------------------- #
+
+MessageContext = Literal["interest", "enquiry", "partnership", "deal", "dispute", "group"]
+
+
+class NotificationOut(ApiModel):
+    id: str
+    kind: str
+    #: Names and figures for the app to put into its own sentence.
+    params: dict[str, Any] = Field(default_factory=dict)
+    link: str | None = None
+    entity_type: str | None = None
+    entity_id: str | None = None
+    read: bool
+    created_at: datetime
+
+
+class InboxCounts(ApiModel):
+    notifications: int
+    messages: int
+
+
+class ReadInput(ApiModel):
+    """Mark these notifications read; an empty list means all of them."""
+
+    ids: list[str] = Field(default_factory=list)
+
+
+class MessageInput(ApiModel):
+    body: str = Field(min_length=1, max_length=4000)
+    context_type: MessageContext | None = None
+    context_id: str | None = Field(default=None, max_length=36)
+
+    @field_validator("body", mode="before")
+    @classmethod
+    def _strip(cls, value: Any) -> Any:
+        return value.strip() if isinstance(value, str) else value
+
+
+class MessageOut(ApiModel):
+    id: str
+    body: str
+    context_type: str | None = None
+    context_id: str | None = None
+    mine: bool
+    read: bool
+    created_at: datetime
+
+
+class ConversationOut(ApiModel):
+    other: ProfileCardOut
+    last_message: MessageOut | None = None
+    unread: int = 0
+
+
+# --------------------------------------------------------------------------- #
+# Trust: deals, milestones, disputes, ratings
+# --------------------------------------------------------------------------- #
+
+DealStatus = Literal["drafting", "active", "disputed", "completed", "cancelled"]
+MilestoneStatus = Literal["planned", "submitted", "approved", "rejected"]
+
+
+class MilestoneInput(ApiModel):
+    title: str = Field(min_length=1, max_length=200)
+    description: str | None = Field(default=None, max_length=2000)
+    amount: float = Field(gt=0, le=10_000_000_000)
+    due_date: date | None = None
+
+    @field_validator("title", mode="before")
+    @classmethod
+    def _strip(cls, value: Any) -> Any:
+        return value.strip() if isinstance(value, str) else value
+
+    @field_validator("description", mode="before")
+    @classmethod
+    def _blank(cls, value: Any) -> Any:
+        return _blank_to_none(value)
+
+
+class DealPlanInput(ApiModel):
+    terms: str | None = Field(default=None, max_length=4000)
+    milestones: list[MilestoneInput] = Field(min_length=1, max_length=12)
+
+    @field_validator("terms", mode="before")
+    @classmethod
+    def _blank(cls, value: Any) -> Any:
+        return _blank_to_none(value)
+
+
+class DealInput(DealPlanInput):
+    interest_id: str = Field(min_length=1, max_length=36)
+
+
+class MilestoneSubmit(ApiModel):
+    note: str = Field(min_length=1, max_length=4000)
+
+
+class MilestoneReview(ApiModel):
+    approved: bool
+    note: str | None = Field(default=None, max_length=2000)
+    #: The payment reference of the tranche the investor paid outside the app.
+    release_reference: str | None = Field(default=None, max_length=120)
+
+    @field_validator("note", "release_reference", mode="before")
+    @classmethod
+    def _blank(cls, value: Any) -> Any:
+        return _blank_to_none(value)
+
+
+class MilestoneOut(ApiModel):
+    id: str
+    position: int
+    title: str
+    description: str | None = None
+    amount: float
+    due_date: date | None = None
+    status: MilestoneStatus
+    evidence_note: str | None = None
+    submitted_at: datetime | None = None
+    review_note: str | None = None
+    reviewed_at: datetime | None = None
+    released_at: datetime | None = None
+    release_reference: str | None = None
+    photos: list[MediaOut] = Field(default_factory=list)
+    overdue: bool = False
+
+
+class DisputeInput(ApiModel):
+    deal_id: str = Field(min_length=1, max_length=36)
+    milestone_id: str | None = Field(default=None, max_length=36)
+    reason: str
+    description: str = Field(min_length=1, max_length=4000)
+
+    @field_validator("reason")
+    @classmethod
+    def _known_reason(cls, value: str) -> str:
+        return _check_code("dispute_reasons", value, "dispute reason")  # type: ignore[return-value]
+
+
+class DisputeUpdate(ApiModel):
+    """propose a resolution, confirm the other side's, or withdraw your own."""
+
+    action: Literal["propose", "confirm", "withdraw"]
+    resolution: str | None = Field(default=None, max_length=4000)
+
+
+class DisputeOut(ApiModel):
+    id: str
+    deal_id: str
+    milestone_id: str | None = None
+    opened_by_me: bool
+    reason: str
+    description: str
+    status: Literal["open", "resolved", "withdrawn"]
+    resolution: str | None = None
+    resolution_proposed_by_me: bool | None = None
+    can_confirm: bool = False
+    created_at: datetime
+    resolved_at: datetime | None = None
+
+
+class RatingInput(ApiModel):
+    context_type: Literal["deal", "enquiry", "partnership"]
+    context_id: str = Field(min_length=1, max_length=36)
+    stars: int = Field(ge=1, le=5)
+    comment: str | None = Field(default=None, max_length=1000)
+
+    @field_validator("comment", mode="before")
+    @classmethod
+    def _blank(cls, value: Any) -> Any:
+        return _blank_to_none(value)
+
+
+class RatingOut(ApiModel):
+    id: str
+    stars: int
+    comment: str | None = None
+    context_type: str
+    rater: ProfileCardOut
+    created_at: datetime
+
+
+class RatingSummaryOut(ApiModel):
+    average: float | None = None
+    count: int = 0
+    ratings: list[RatingOut] = Field(default_factory=list)
+
+
+class DealOut(ApiModel):
+    id: str
+    interest_id: str
+    request_id: str
+    request_title: str
+    farmer: ProfileCardOut
+    investor: ProfileCardOut
+    i_am: Literal["farmer", "investor"]
+    amount_total: float
+    amount_released: float
+    mode: str | None = None
+    terms: str | None = None
+    status: DealStatus
+    proposed_by_me: bool
+    can_agree: bool
+    milestones: list[MilestoneOut]
+    disputes: list[DisputeOut] = Field(default_factory=list)
+    can_rate: bool = False
+    my_rating: RatingOut | None = None
+    created_at: datetime
+    agreed_at: datetime | None = None
+    completed_at: datetime | None = None
+
+
+# --------------------------------------------------------------------------- #
+# Farm diary
+# --------------------------------------------------------------------------- #
+
+
+class DiaryInput(ApiModel):
+    activity: str
+    entry_date: date
+    crop: str | None = None
+    notes: str | None = Field(default=None, max_length=4000)
+    quantity: float | None = Field(default=None, ge=0, le=10_000_000)
+    unit: str | None = None
+    #: Rupees spent, or received for a sale.
+    amount: float | None = Field(default=None, ge=0, le=1_000_000_000)
+    product: str | None = Field(default=None, max_length=160)
+    active_ingredient: str | None = Field(default=None, max_length=160)
+    dose: str | None = Field(default=None, max_length=80)
+    pre_harvest_days: int | None = Field(default=None, ge=0, le=365)
+
+    @field_validator("notes", "product", "active_ingredient", "dose", "crop", "unit", mode="before")
+    @classmethod
+    def _blank(cls, value: Any) -> Any:
+        return _blank_to_none(value)
+
+    @field_validator("activity")
+    @classmethod
+    def _known_activity(cls, value: str) -> str:
+        return _check_code("diary_activities", value, "activity")  # type: ignore[return-value]
+
+    @field_validator("crop")
+    @classmethod
+    def _known_crop(cls, value: str | None) -> str | None:
+        return _check_code("crops", value, "crop")
+
+    @field_validator("unit")
+    @classmethod
+    def _known_unit(cls, value: str | None) -> str | None:
+        return _check_code("quantity_units", value, "unit")
+
+    @model_validator(mode="after")
+    def _entry_rules(self) -> "DiaryInput":
+        if self.entry_date > date.today():
+            raise ValueError("A diary entry records what was done; the date cannot be in the future.")
+        if self.activity != "spray":
+            self.pre_harvest_days = None
+        if self.activity == "harvest" and not self.crop:
+            raise ValueError("Say which crop was harvested.")
+        return self
+
+
+class DiaryOut(DiaryInput):
+    id: str
+    parcel_id: str
+    lot_code: str | None = None
+    photos: list[MediaOut] = Field(default_factory=list)
+    #: For a spray: the first day its crop may safely be harvested.
+    safe_to_harvest_on: date | None = None
+    #: For a harvest: sprays whose waiting period had not passed.
+    phi_warnings: list[str] = Field(default_factory=list)
+    created_at: datetime
+
+
+class DiarySummaryOut(ApiModel):
+    entries: int
+    spent: float
+    received: float
+    by_activity: dict[str, float]
+    last_entry: date | None = None
+    #: Crops with a spray still inside its waiting period today.
+    not_safe_to_harvest: list[str] = Field(default_factory=list)
+
+
+# --------------------------------------------------------------------------- #
+# Weather
+# --------------------------------------------------------------------------- #
+
+
+class WeatherDayOut(ApiModel):
+    date: date
+    temp_max: float | None = None
+    temp_min: float | None = None
+    rain_mm: float | None = None
+    rain_chance: float | None = None
+    wind_max_kmh: float | None = None
+
+
+class AdvisoryOut(ApiModel):
+    #: no_spray_rain | no_spray_wind | heavy_rain | heat | frost | dry_spell
+    code: str
+    severity: Literal["info", "warn", "alert"]
+    day: date
+    value: float | None = None
+
+
+class WeatherOut(ApiModel):
+    available: bool
+    latitude: float | None = None
+    longitude: float | None = None
+    #: pin | state -- how precise the forecast position is.
+    basis: str | None = None
+    days: list[WeatherDayOut] = Field(default_factory=list)
+    advisories: list[AdvisoryOut] = Field(default_factory=list)
+    fetched_at: datetime | None = None
+    #: The forecast is older than the refresh interval (the device is offline).
+    stale: bool = False
+    source: str | None = None
+    attribution: str | None = None
+    message: str | None = None
+
+
+# --------------------------------------------------------------------------- #
+# Market prices and exchange rates
+# --------------------------------------------------------------------------- #
+
+
+class PriceRowOut(ApiModel):
+    market: str
+    district_name: str
+    state_name: str
+    commodity: str
+    variety: str | None = None
+    arrival_date: date
+    min_price: float | None = None
+    max_price: float | None = None
+    modal_price: float
+
+
+class PricePointOut(ApiModel):
+    date: date
+    modal_average: float
+    markets: int
+
+
+class PriceSummaryOut(ApiModel):
+    crop: str
+    terms: list[str]
+    latest: list[PriceRowOut]
+    trend: list[PricePointOut]
+    data_as_of: date | None = None
+    rows: int
+    source: str
+
+
+class FxRateOut(ApiModel):
+    currency: str
+    inr_per_unit: float
+    source: str
+    as_of: date
+
+
+class FxOut(ApiModel):
+    rates: list[FxRateOut]
+    refreshed: bool = False
+    message: str | None = None
+
+
+class FxManualInput(ApiModel):
+    inr_per_unit: float = Field(gt=0, le=100_000)
+
+
+# --------------------------------------------------------------------------- #
+# Government schemes
+# --------------------------------------------------------------------------- #
+
+ApplicationStatus = Literal["planning", "documents_ready", "applied", "approved", "rejected"]
+
+
+class SchemeApplicationInput(ApiModel):
+    status: ApplicationStatus = "planning"
+    documents_ready: list[str] = Field(default_factory=list)
+    applied_on: date | None = None
+    reference_number: str | None = Field(default=None, max_length=80)
+    notes: str | None = Field(default=None, max_length=2000)
+
+    @field_validator("reference_number", "notes", mode="before")
+    @classmethod
+    def _blank(cls, value: Any) -> Any:
+        return _blank_to_none(value)
+
+
+class SchemeApplicationOut(SchemeApplicationInput):
+    id: str
+    scheme_code: str
+    created_at: datetime
+    updated_at: datetime
+
+
+class SchemeOut(ApiModel):
+    code: str
+    name: dict[str, str]
+    benefit: dict[str, str]
+    cannot_check: dict[str, str]
+    url: str
+    documents: list[str]
+    #: likely: everything the app can check is met. check: something it
+    #: cannot check decides it. unlikely: something it can check is not met.
+    status: Literal["likely", "check", "unlikely"]
+    reasons: list[str] = Field(default_factory=list)
+    #: Fits what the owner is actually doing (livestock, processing, ...).
+    relevant: bool = False
+    application: SchemeApplicationOut | None = None
+
+
+# --------------------------------------------------------------------------- #
+# Farmer groups
+# --------------------------------------------------------------------------- #
+
+
+class GroupInput(ApiModel):
+    name: str = Field(min_length=1, max_length=200)
+    kind: str
+    description: str | None = Field(default=None, max_length=4000)
+    state_code: str = Field(min_length=1, max_length=8)
+    district_code: str = Field(min_length=1, max_length=8)
+    subdistrict_code: str | None = Field(default=None, max_length=8)
+    crops: list[str] = Field(default_factory=list)
+
+    @field_validator("name", mode="before")
+    @classmethod
+    def _strip(cls, value: Any) -> Any:
+        return value.strip() if isinstance(value, str) else value
+
+    @field_validator("description", "subdistrict_code", mode="before")
+    @classmethod
+    def _blank(cls, value: Any) -> Any:
+        return _blank_to_none(value)
+
+    @field_validator("kind")
+    @classmethod
+    def _known_kind(cls, value: str) -> str:
+        return _check_code("group_kinds", value, "group kind")  # type: ignore[return-value]
+
+    @field_validator("crops")
+    @classmethod
+    def _known_crops(cls, values: list[str]) -> list[str]:
+        return _check_codes("crops", values, "crops")
+
+
+class GroupMemberInput(ApiModel):
+    """A member the group owner adds. Off-platform members are the common case."""
+
+    name: str = Field(min_length=1, max_length=160)
+    phone: str | None = Field(default=None, max_length=20)
+    village_code: str | None = Field(default=None, max_length=12)
+    land_hectares: float = Field(ge=0, le=100_000)
+    crops: list[str] = Field(default_factory=list)
+
+    @field_validator("phone", "village_code", mode="before")
+    @classmethod
+    def _blank(cls, value: Any) -> Any:
+        return _blank_to_none(value)
+
+    @field_validator("crops")
+    @classmethod
+    def _known_crops(cls, values: list[str]) -> list[str]:
+        return _check_codes("crops", values, "crops")
+
+    @model_validator(mode="after")
+    def _phone(self) -> "GroupMemberInput":
+        if self.phone:
+            self.phone = normalise_phone(self.phone, "IN")
+        return self
+
+
+class GroupJoinInput(ApiModel):
+    land_hectares: float = Field(ge=0, le=100_000)
+    crops: list[str] = Field(default_factory=list)
+
+    @field_validator("crops")
+    @classmethod
+    def _known_crops(cls, values: list[str]) -> list[str]:
+        return _check_codes("crops", values, "crops")
+
+
+class GroupMemberOut(ApiModel):
+    id: str
+    profile: ProfileCardOut | None = None
+    name: str | None = None
+    #: Only the group's owner sees members' phone numbers.
+    phone: str | None = None
+    village: str | None = None
+    land_hectares: float
+    crops: list[str]
+    status: Literal["requested", "active", "left"]
+    created_at: datetime
+
+
+class GroupOut(ApiModel):
+    id: str
+    name: str
+    kind: str
+    description: str | None = None
+    state_code: str
+    district_code: str
+    subdistrict_code: str | None = None
+    place: str | None = None
+    crops: list[str]
+    visibility: Visibility
+    shared_at: datetime | None = None
+    owner: ProfileCardOut
+    is_mine: bool
+    member_count: int
+    total_hectares: float
+    #: Everyone for the owner; the viewer's own membership for anyone else.
+    members: list[GroupMemberOut] = Field(default_factory=list)
+    my_membership: GroupMemberOut | None = None
+    request_ids: list[str] = Field(default_factory=list)
+    origin: str
+    created_at: datetime
+
+
+class GroupRequestInput(ApiModel):
+    """An investment request made by a group for its pooled land."""
+
+    opportunity_code: str | None = Field(default=None, max_length=64)
+    title: str = Field(min_length=1, max_length=200)
+    summary: str | None = Field(default=None, max_length=4000)
+    amount_sought: float = Field(gt=0, le=10_000_000_000)
+    own_contribution: float | None = Field(default=None, ge=0, le=10_000_000_000)
+    seeking: list[Seeking] = Field(min_length=1)
+    modes: list[str] = Field(default_factory=list)
+    partnership_types: list[str] = Field(default_factory=list)
+    open_to: list[str] = Field(min_length=1)
+    insurance: list[InsuranceInput] = Field(default_factory=list)
+
+    _known_modes = field_validator("modes")(InvestmentRequestInput._known_modes.__func__)  # type: ignore[attr-defined]
+    _known_partnerships = field_validator("partnership_types")(
+        InvestmentRequestInput._known_partnerships.__func__  # type: ignore[attr-defined]
+    )
+    _known_audience = field_validator("open_to")(InvestmentRequestInput._known_audience.__func__)  # type: ignore[attr-defined]
+    _consistent = model_validator(mode="after")(InvestmentRequestInput._consistent)
+
+
+# --------------------------------------------------------------------------- #
+# Backup, export and erasure
+# --------------------------------------------------------------------------- #
+
+
+class BackupOut(ApiModel):
+    name: str
+    size_bytes: int
+    created_at: datetime
+    includes: list[str]
+    download_path: str
+
+
+class RestoreOut(ApiModel):
+    staged: bool
+    message: str
+
+
+class EraseInput(ApiModel):
+    #: Must be typed exactly, so a mis-tap never erases a farmer's records.
+    confirm: str
+
+
+# --------------------------------------------------------------------------- #
+# Insights
+# --------------------------------------------------------------------------- #
+
+
+class CountBucket(ApiModel):
+    code: str
+    label: str | None = None
+    count: int
+    amount: float = 0.0
+
+
+class InsightsOut(ApiModel):
+    #: national | state | district | subdistrict -- what the numbers cover.
+    scope: str
+    place: str | None = None
+    farmers: int
+    requests_open: int
+    amount_sought: float
+    requests_by_kind: list[CountBucket]
+    requests_by_state: list[CountBucket]
+    interests: int
+    matches: int
+    deals_active: int
+    deals_completed: int
+    amount_released: float
+    machines: int
+    machines_by_type: list[CountBucket]
+    rentals_agreed: int
+    groups: int
+    group_members: int
+    group_hectares: float
+    generated_at: datetime
+
+
+# --------------------------------------------------------------------------- #
+# Cloud sync
+# --------------------------------------------------------------------------- #
+
+
+class SyncConfigInput(ApiModel):
+    #: The sync server, e.g. http://127.0.0.1:8900. None switches sync off.
+    server_url: str | None = Field(default=None, max_length=300)
+
+    @field_validator("server_url", mode="before")
+    @classmethod
+    def _url(cls, value: Any) -> Any:
+        value = _blank_to_none(value)
+        if value is None:
+            return None
+        value = str(value).rstrip("/")
+        if not re.match(r"^https?://[^\s/]+(:\d+)?(/.*)?$", value):
+            raise ValueError("Enter the sync server address, like http://127.0.0.1:8900")
+        return value
+
+
+class SyncStatusOut(ApiModel):
+    enabled: bool
+    server_url: str | None = None
+    device_registered: bool = False
+    pending: int = 0
+    last_push_at: datetime | None = None
+    last_pull_at: datetime | None = None
+    last_error: str | None = None
+
+
+class SyncRunOut(ApiModel):
+    pushed: int
+    pulled: int
+    errors: list[str] = Field(default_factory=list)
+    status: SyncStatusOut
 
 
 # --------------------------------------------------------------------------- #

@@ -1,15 +1,18 @@
 import { useMemo, useState } from 'react';
+import { Link } from 'react-router-dom';
 import type { InvestmentRequest, Seeking } from '@viksitgaanw/shared';
 import { REFERENCE } from '@viksitgaanw/shared';
 
 import { InterestDialog } from '../components/InterestDialog';
+import { MessageLink } from '../components/MessageLink';
 import { Picker } from '../components/Picker';
 import { ContactLine, RequestCard } from '../components/RequestCard';
 import { useI18n } from '../i18n';
 import { api } from '../lib/api';
 import { useAsync } from '../lib/hooks';
 import { useProfile } from '../lib/profile';
-import { isInvestor } from '../lib/segments';
+import { responderKinds } from '../lib/segments';
+import { useSharing } from '../lib/sharing';
 
 /**
  * Open requests the owner's segment has been shown, best match first.
@@ -23,7 +26,7 @@ export function BrowsePage() {
   const { profile } = useProfile();
   const [stateCode, setStateCode] = useState<string | null>(null);
   const [kind, setKind] = useState<string | null>(null);
-  const [answering, setAnswering] = useState<InvestmentRequest | null>(null);
+  const [answering, setAnswering] = useState<{ request: InvestmentRequest; kind: Seeking } | null>(null);
 
   const states = useAsync((signal) => api.states(signal), []);
   const requests = useAsync(
@@ -43,7 +46,7 @@ export function BrowsePage() {
 
   if (!profile) return null;
   const government = profile.segment === 'government';
-  const responderKind: Seeking = isInvestor(profile.segment) ? 'investment' : 'partnership';
+  const kinds = responderKinds(profile);
   const rows = requests.data ?? [];
 
   return (
@@ -96,8 +99,8 @@ export function BrowsePage() {
             {government ? null : (
               <ResponderActions
                 request={request}
-                kind={responderKind}
-                onAnswer={() => setAnswering(request)}
+                kinds={kinds}
+                onAnswer={(kind) => setAnswering({ request, kind })}
                 onChanged={requests.reload}
               />
             )}
@@ -107,8 +110,8 @@ export function BrowsePage() {
 
       {answering ? (
         <InterestDialog
-          request={answering}
-          kind={responderKind}
+          request={answering.request}
+          kind={answering.kind}
           onClose={() => setAnswering(null)}
           onSent={() => {
             setAnswering(null);
@@ -120,23 +123,38 @@ export function BrowsePage() {
   );
 }
 
-/** What an investor or partner can do with one request, given their answer so far. */
+/**
+ * What an investor or partner can do with one request, given their answer so
+ * far. Answering needs the responder's own profile shared, so the farmer can
+ * see who is offering; that is asked for on the way.
+ */
 export function ResponderActions({
   request,
-  kind,
+  kinds,
   onAnswer,
   onChanged,
 }: {
   request: InvestmentRequest;
-  kind: Seeking;
-  onAnswer: () => void;
+  kinds: Seeking[];
+  onAnswer: (kind: Seeking) => void;
   onChanged: () => void;
 }) {
   const { t } = useI18n();
+  const { ensureOnline } = useSharing();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const mine = request.myInterest;
-  const canAnswer = request.status === 'open' && request.seeking.includes(kind);
+  const offerable = kinds.filter((kind) => request.seeking.includes(kind));
+  const canAnswer = request.status === 'open' && offerable.length > 0;
+
+  const answer = async (kind: Seeking) => {
+    setError(null);
+    try {
+      if (await ensureOnline()) onAnswer(kind);
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : String(cause));
+    }
+  };
 
   const withdraw = async () => {
     if (!mine) return;
@@ -174,14 +192,29 @@ export function ResponderActions({
       {error ? <p className="callout callout--error">{error}</p> : null}
 
       <div className="request__actions">
-        {canAnswer && (!mine || mine.status === 'sent' || mine.status === 'withdrawn') ? (
-          <button type="button" className="button button--primary button--small" onClick={onAnswer}>
-            {mine && mine.status === 'sent'
-              ? t('browse.changeOffer')
-              : kind === 'investment'
-                ? t('browse.showInterest')
-                : t('browse.offerPartnership')}
-          </button>
+        {canAnswer && (!mine || mine.status === 'sent' || mine.status === 'withdrawn')
+          ? (mine && mine.status === 'sent' ? [mine.kind] : offerable).map((kind) => (
+              <button
+                key={kind}
+                type="button"
+                className="button button--primary button--small"
+                onClick={() => answer(kind)}
+              >
+                {mine && mine.status === 'sent'
+                  ? t('browse.changeOffer')
+                  : kind === 'investment'
+                    ? t('browse.showInterest')
+                    : t('browse.offerPartnership')}
+              </button>
+            ))
+          : null}
+        {mine?.status === 'accepted' && mine.kind === 'investment' ? (
+          <Link className="button button--primary button--small" to={`/deals/new/${mine.id}`}>
+            📜 {t('deals.planOrOpen')}
+          </Link>
+        ) : null}
+        {mine && mine.status !== 'withdrawn' ? (
+          <MessageLink party={request.requester} className="button button--small button--ghost" />
         ) : null}
         {mine && (mine.status === 'sent' || mine.status === 'accepted') ? (
           <button type="button" className="button button--ghost button--small" onClick={withdraw} disabled={busy}>

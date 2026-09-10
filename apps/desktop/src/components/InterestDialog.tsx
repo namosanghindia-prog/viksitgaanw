@@ -63,6 +63,7 @@ export function InterestDialog({ request, kind, onClose, onSent }: InterestDialo
     setError(null);
     try {
       const updated = await api.sendInterest(request.id, {
+        kind,
         amountOffered: kind === 'investment' && Number.isFinite(amountNumber) && amountNumber > 0 ? amountNumber : null,
         mode: kind === 'investment' ? mode : null,
         partnershipType: kind === 'partnership' ? partnershipType : null,

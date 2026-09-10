@@ -1,0 +1,13 @@
+{
+  "key": "dispute_reasons",
+  "version": 1,
+  "items": [
+    { "code": "payment_not_received", "label": { "en": "Money was not released as agreed", "hi": "तय पैसा जारी नहीं हुआ" } },
+    { "code": "work_not_done",        "label": { "en": "The work was not done",              "hi": "काम नहीं हुआ" } },
+    { "code": "quality",              "label": { "en": "Quality is not as agreed",           "hi": "गुणवत्ता तय के अनुसार नहीं" } },
+    { "code": "delay",                "label": { "en": "Too much delay",                     "hi": "बहुत देरी" } },
+    { "code": "terms_changed",        "label": { "en": "Terms were changed",                 "hi": "शर्तें बदल दी गईं" } },
+    { "code": "misuse",               "label": { "en": "Money used for something else",     "hi": "पैसा किसी और काम में लगाया" } },
+    { "code": "other",                "label": { "en": "Something else",                     "hi": "कुछ और" } }
+  ]
+}

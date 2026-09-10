@@ -1,0 +1,36 @@
+{
+  "key": "partner_roles",
+  "version": 1,
+  "items": [
+    {
+      "code": "rental_point",
+      "label": { "en": "Rental point", "hi": "किराया केंद्र" },
+      "note": { "en": "Keeps machines in the village and rents them out.", "hi": "गाँव में मशीनें रखता है और किराये पर देता है।" }
+    },
+    {
+      "code": "sales_agent",
+      "label": { "en": "Sales agent", "hi": "बिक्री एजेंट" },
+      "note": { "en": "Finds buyers and earns a commission on each sale.", "hi": "खरीदार ढूँढता है और हर बिक्री पर कमीशन पाता है।" }
+    },
+    {
+      "code": "operator",
+      "label": { "en": "Operator", "hi": "मशीन चालक" },
+      "note": { "en": "Runs the machine on other farmers' fields.", "hi": "दूसरे किसानों के खेत में मशीन चलाता है।" }
+    },
+    {
+      "code": "service_centre",
+      "label": { "en": "Service and repair centre", "hi": "सर्विस और मरम्मत केंद्र" },
+      "note": { "en": "Keeps machines running in the area.", "hi": "क्षेत्र में मशीनों को चालू रखता है।" }
+    },
+    {
+      "code": "demo_farm",
+      "label": { "en": "Demonstration farm", "hi": "प्रदर्शन खेत" },
+      "note": { "en": "Shows neighbours the machine working on real fields.", "hi": "पड़ोसियों को असली खेत में मशीन चलाकर दिखाता है।" }
+    },
+    {
+      "code": "distributor",
+      "label": { "en": "Distributor / dealer", "hi": "वितरक / डीलर" },
+      "note": { "en": "Stocks and sells machines across a district or state.", "hi": "ज़िले या राज्य में मशीनें रखता और बेचता है।" }
+    }
+  ]
+}

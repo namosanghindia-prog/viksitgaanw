@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import type { InvestmentRequest } from '@viksitgaanw/shared';
+import type { InvestmentRequest, Seeking } from '@viksitgaanw/shared';
 
 import { InterestDialog } from '../components/InterestDialog';
 import { RequestCard } from '../components/RequestCard';
@@ -8,7 +8,7 @@ import { useI18n } from '../i18n';
 import { api } from '../lib/api';
 import { useAsync } from '../lib/hooks';
 import { useProfile } from '../lib/profile';
-import { isInvestor } from '../lib/segments';
+import { responderKinds } from '../lib/segments';
 import { ResponderActions } from './BrowsePage';
 
 /** Every request the owner has answered, with where each answer stands. */
@@ -16,10 +16,10 @@ export function MyInterestsPage() {
   const { t } = useI18n();
   const { profile } = useProfile();
   const requests = useAsync((signal) => api.myInterests(signal), []);
-  const [answering, setAnswering] = useState<InvestmentRequest | null>(null);
+  const [answering, setAnswering] = useState<{ request: InvestmentRequest; kind: Seeking } | null>(null);
 
   if (!profile) return null;
-  const kind = isInvestor(profile.segment) ? 'investment' : 'partnership';
+  const kinds = responderKinds(profile);
   const rows = requests.data ?? [];
 
   return (
@@ -47,8 +47,8 @@ export function MyInterestsPage() {
           <RequestCard key={request.id} request={request}>
             <ResponderActions
               request={request}
-              kind={kind}
-              onAnswer={() => setAnswering(request)}
+              kinds={kinds}
+              onAnswer={(kind) => setAnswering({ request, kind })}
               onChanged={requests.reload}
             />
           </RequestCard>
@@ -57,8 +57,8 @@ export function MyInterestsPage() {
 
       {answering ? (
         <InterestDialog
-          request={answering}
-          kind={kind}
+          request={answering.request}
+          kind={answering.kind}
           onClose={() => setAnswering(null)}
           onSent={() => {
             setAnswering(null);

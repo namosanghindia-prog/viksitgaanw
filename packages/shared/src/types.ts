@@ -393,7 +393,13 @@ export const AUDIENCE_SEGMENTS: Segment[] = [
   'partner_national',
   'partner_international',
   'government',
+  'farmer',
 ];
+/** Agriculture organisations that sell or rent out machines. */
+export const EQUIPMENT_SELLER_SEGMENTS: Segment[] = ['partner_national', 'partner_international'];
+
+/** offline: only on this device. online: shared on the common timeline. */
+export type Visibility = 'offline' | 'online';
 
 export interface FarmerDetails {
   yearsFarming?: number | null;
@@ -431,6 +437,11 @@ export interface PartnerDetails {
   memberFarmers?: number | null;
   /** International partners only. */
   certificationsRequired?: string[];
+  /** An organisation that partners farmers may fund them too. */
+  alsoInvests?: boolean;
+  investmentModes?: string[];
+  ticketMin?: number | null;
+  ticketMax?: number | null;
 }
 
 export interface GovernmentDetails {
@@ -469,6 +480,9 @@ export interface Profile extends ProfileInput {
   /** How this profile could be verified once KYC is switched on. */
   kycMethods: string[];
   farmerId: string | null;
+  photoUrl: string | null;
+  visibility: Visibility;
+  sharedAt: string | null;
   syncState: SyncState;
   createdAt: string;
   updatedAt: string;
@@ -486,7 +500,11 @@ export interface ProfileCard {
   kycStatus: KycStatus;
   /** local | synced | demo */
   origin: string;
+  photoUrl: string | null;
   contact: { phone: string | null; email: string | null } | null;
+  /** Average stars from completed deals and rentals; null before any. */
+  ratingAvg: number | null;
+  ratingCount: number;
 }
 
 /* ------------------------------------------------------------------ *
@@ -556,6 +574,8 @@ export interface Interest {
 }
 
 export interface InterestInput {
+  /** Only for a partner organisation that also invests. */
+  kind?: Seeking | null;
   amountOffered?: number | null;
   mode?: string | null;
   partnershipType?: string | null;
@@ -593,6 +613,8 @@ export interface InvestmentRequest {
   insuranceRecommended: string[];
   /** Every required category has a current policy, not merely a promise. */
   fullyInsured: boolean;
+  visibility: Visibility;
+  sharedAt: string | null;
   origin: string;
   createdAt: string;
   updatedAt: string;
@@ -653,4 +675,545 @@ export interface InsuranceRequirement {
   required: string[];
   recommended: string[];
   reason: Label | null;
+}
+
+/* ------------------------------------------------------------------ *
+ * Pictures
+ * ------------------------------------------------------------------ */
+
+export interface MediaFile {
+  id: string;
+  /** Relative to the API base, e.g. /media/<id>. */
+  url: string;
+  width: number;
+  height: number;
+  position: number;
+}
+
+/* ------------------------------------------------------------------ *
+ * Equipment
+ * ------------------------------------------------------------------ */
+
+export type RentUnit = 'hour' | 'day' | 'acre' | 'season';
+export type ListingStatus = 'active' | 'paused' | 'sold';
+export type PartnerKind = 'farmer' | 'village' | 'district' | 'distributor';
+export type PartnershipStatus = 'proposed' | 'active' | 'declined' | 'ended';
+
+export interface EquipmentInput {
+  equipmentType: string;
+  title: string;
+  brand?: string | null;
+  model?: string | null;
+  yearMade?: number | null;
+  condition: string;
+  description?: string | null;
+  forSale: boolean;
+  salePrice?: number | null;
+  forRent: boolean;
+  rentRate?: number | null;
+  rentUnit?: RentUnit | null;
+  quantity: number;
+  withOperator: boolean;
+  delivery: boolean;
+  stateCode: string;
+  districtCode?: string | null;
+  subdistrictCode?: string | null;
+  status?: ListingStatus;
+}
+
+export interface EnquiryInput {
+  kind: 'rent' | 'buy';
+  quantity?: number;
+  startDate?: string | null;
+  endDate?: string | null;
+  areaAcres?: number | null;
+  message?: string | null;
+}
+
+export interface Enquiry {
+  id: string;
+  listingId: string;
+  kind: 'rent' | 'buy';
+  quantity: number;
+  startDate: string | null;
+  endDate: string | null;
+  areaAcres: number | null;
+  message: string | null;
+  status: InterestStatus;
+  enquirer: ProfileCard;
+  origin: string;
+  createdAt: string;
+  respondedAt: string | null;
+}
+
+export interface Partnership {
+  id: string;
+  partnerKind: PartnerKind;
+  role: string;
+  equipmentTypes: string[];
+  commissionPercent: number | null;
+  message: string | null;
+  initiatedBy: 'seller' | 'partner';
+  status: PartnershipStatus;
+  area: string | null;
+  seller: ProfileCard;
+  partner: ProfileCard | null;
+  contactName: string | null;
+  contactPhone: string | null;
+  isSeller: boolean;
+  origin: string;
+  createdAt: string;
+  respondedAt: string | null;
+}
+
+export interface Equipment extends Omit<EquipmentInput, 'status'> {
+  id: string;
+  place: string | null;
+  status: ListingStatus;
+  visibility: Visibility;
+  sharedAt: string | null;
+  photos: MediaFile[];
+  seller: ProfileCard;
+  isMine: boolean;
+  myEnquiry: Enquiry | null;
+  enquiries: Enquiry[];
+  enquiryCounts: Partial<Record<InterestStatus, number>>;
+  myPartnership: Partnership | null;
+  origin: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** A seller adding someone to their network. */
+export interface PartnershipInput {
+  partnerKind: PartnerKind;
+  partnerProfileId?: string | null;
+  contactName?: string | null;
+  contactPhone?: string | null;
+  stateCode?: string | null;
+  districtCode?: string | null;
+  subdistrictCode?: string | null;
+  villageCode?: string | null;
+  role: string;
+  equipmentTypes?: string[];
+  commissionPercent?: number | null;
+  message?: string | null;
+}
+
+/** A farmer or distributor asking a seller to take them on. */
+export interface PartnershipAsk {
+  role: string;
+  equipmentTypes?: string[];
+  message?: string | null;
+}
+
+/* ------------------------------------------------------------------ *
+ * The common timeline
+ * ------------------------------------------------------------------ */
+
+export interface TimelineItem {
+  type: 'project' | 'equipment';
+  id: string;
+  sharedAt: string | null;
+  project: InvestmentRequest | null;
+  equipment: Equipment | null;
+}
+
+/* ------------------------------------------------------------------ *
+ * Inbox: notifications and messages
+ * ------------------------------------------------------------------ */
+
+export interface AppNotification {
+  id: string;
+  /** interest_received, deal_active, weather_alert, ... -- the app words it. */
+  kind: string;
+  params: Record<string, string | number | null>;
+  link: string | null;
+  entityType: string | null;
+  entityId: string | null;
+  read: boolean;
+  createdAt: string;
+}
+
+export interface InboxCounts {
+  notifications: number;
+  messages: number;
+}
+
+export type MessageContext = 'interest' | 'enquiry' | 'partnership' | 'deal' | 'dispute' | 'group';
+
+export interface Message {
+  id: string;
+  body: string;
+  contextType: MessageContext | null;
+  contextId: string | null;
+  mine: boolean;
+  read: boolean;
+  createdAt: string;
+}
+
+export interface Conversation {
+  other: ProfileCard;
+  lastMessage: Message | null;
+  unread: number;
+}
+
+/* ------------------------------------------------------------------ *
+ * Trust: deals, milestones, disputes, ratings
+ * ------------------------------------------------------------------ */
+
+export type DealStatus = 'drafting' | 'active' | 'disputed' | 'completed' | 'cancelled';
+export type MilestoneStatus = 'planned' | 'submitted' | 'approved' | 'rejected';
+
+export interface MilestoneInput {
+  title: string;
+  description?: string | null;
+  amount: number;
+  dueDate?: string | null;
+}
+
+export interface Milestone {
+  id: string;
+  position: number;
+  title: string;
+  description: string | null;
+  amount: number;
+  dueDate: string | null;
+  status: MilestoneStatus;
+  evidenceNote: string | null;
+  submittedAt: string | null;
+  reviewNote: string | null;
+  reviewedAt: string | null;
+  releasedAt: string | null;
+  releaseReference: string | null;
+  photos: MediaFile[];
+  overdue: boolean;
+}
+
+export interface Dispute {
+  id: string;
+  dealId: string;
+  milestoneId: string | null;
+  openedByMe: boolean;
+  reason: string;
+  description: string;
+  status: 'open' | 'resolved' | 'withdrawn';
+  resolution: string | null;
+  resolutionProposedByMe: boolean | null;
+  canConfirm: boolean;
+  createdAt: string;
+  resolvedAt: string | null;
+}
+
+export interface Rating {
+  id: string;
+  stars: number;
+  comment: string | null;
+  contextType: string;
+  rater: ProfileCard;
+  createdAt: string;
+}
+
+export interface RatingSummary {
+  average: number | null;
+  count: number;
+  ratings: Rating[];
+}
+
+export interface Deal {
+  id: string;
+  interestId: string;
+  requestId: string;
+  requestTitle: string;
+  farmer: ProfileCard;
+  investor: ProfileCard;
+  iAm: 'farmer' | 'investor';
+  amountTotal: number;
+  amountReleased: number;
+  mode: string | null;
+  terms: string | null;
+  status: DealStatus;
+  proposedByMe: boolean;
+  canAgree: boolean;
+  milestones: Milestone[];
+  disputes: Dispute[];
+  canRate: boolean;
+  myRating: Rating | null;
+  createdAt: string;
+  agreedAt: string | null;
+  completedAt: string | null;
+}
+
+/* ------------------------------------------------------------------ *
+ * Farm diary and weather
+ * ------------------------------------------------------------------ */
+
+export interface DiaryInput {
+  activity: string;
+  /** yyyy-mm-dd, today or earlier. */
+  entryDate: string;
+  crop?: string | null;
+  notes?: string | null;
+  quantity?: number | null;
+  unit?: string | null;
+  amount?: number | null;
+  product?: string | null;
+  activeIngredient?: string | null;
+  dose?: string | null;
+  preHarvestDays?: number | null;
+}
+
+export interface DiaryEntry extends DiaryInput {
+  id: string;
+  parcelId: string;
+  lotCode: string | null;
+  photos: MediaFile[];
+  safeToHarvestOn: string | null;
+  phiWarnings: string[];
+  createdAt: string;
+}
+
+export interface DiarySummary {
+  entries: number;
+  spent: number;
+  received: number;
+  byActivity: Record<string, number>;
+  lastEntry: string | null;
+  notSafeToHarvest: string[];
+}
+
+export interface WeatherDay {
+  date: string;
+  tempMax: number | null;
+  tempMin: number | null;
+  rainMm: number | null;
+  rainChance: number | null;
+  windMaxKmh: number | null;
+}
+
+export interface Advisory {
+  code: 'no_spray_rain' | 'no_spray_wind' | 'heavy_rain' | 'heat' | 'frost' | 'dry_spell' | string;
+  severity: 'info' | 'warn' | 'alert';
+  day: string;
+  value: number | null;
+}
+
+export interface Weather {
+  available: boolean;
+  latitude: number | null;
+  longitude: number | null;
+  basis: 'pin' | 'state' | null;
+  days: WeatherDay[];
+  advisories: Advisory[];
+  fetchedAt: string | null;
+  stale: boolean;
+  source: string | null;
+  attribution: string | null;
+  message: string | null;
+}
+
+/* ------------------------------------------------------------------ *
+ * Market prices and exchange rates
+ * ------------------------------------------------------------------ */
+
+export interface PriceRow {
+  market: string;
+  districtName: string;
+  stateName: string;
+  commodity: string;
+  variety: string | null;
+  arrivalDate: string;
+  minPrice: number | null;
+  maxPrice: number | null;
+  modalPrice: number;
+}
+
+export interface PricePoint {
+  date: string;
+  modalAverage: number;
+  markets: number;
+}
+
+export interface PriceSummary {
+  crop: string;
+  terms: string[];
+  latest: PriceRow[];
+  trend: PricePoint[];
+  dataAsOf: string | null;
+  rows: number;
+  source: string;
+}
+
+export interface FxRate {
+  currency: string;
+  inrPerUnit: number;
+  source: string;
+  asOf: string;
+}
+
+export interface FxRates {
+  rates: FxRate[];
+  refreshed: boolean;
+  message: string | null;
+}
+
+/* ------------------------------------------------------------------ *
+ * Government schemes
+ * ------------------------------------------------------------------ */
+
+export type ApplicationStatus = 'planning' | 'documents_ready' | 'applied' | 'approved' | 'rejected';
+
+export interface SchemeApplicationInput {
+  status?: ApplicationStatus;
+  documentsReady?: string[];
+  appliedOn?: string | null;
+  referenceNumber?: string | null;
+  notes?: string | null;
+}
+
+export interface SchemeApplication extends Required<SchemeApplicationInput> {
+  id: string;
+  schemeCode: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Scheme {
+  code: string;
+  name: Label;
+  benefit: Label;
+  cannotCheck: Label;
+  url: string;
+  documents: string[];
+  status: 'likely' | 'check' | 'unlikely';
+  reasons: string[];
+  relevant: boolean;
+  application: SchemeApplication | null;
+}
+
+/* ------------------------------------------------------------------ *
+ * Farmer groups
+ * ------------------------------------------------------------------ */
+
+export interface GroupInput {
+  name: string;
+  kind: string;
+  description?: string | null;
+  stateCode: string;
+  districtCode: string;
+  subdistrictCode?: string | null;
+  crops: string[];
+}
+
+export interface GroupMemberInput {
+  name: string;
+  phone?: string | null;
+  villageCode?: string | null;
+  landHectares: number;
+  crops: string[];
+}
+
+export interface GroupMember {
+  id: string;
+  profile: ProfileCard | null;
+  name: string | null;
+  phone: string | null;
+  village: string | null;
+  landHectares: number;
+  crops: string[];
+  status: 'requested' | 'active' | 'left';
+  createdAt: string;
+}
+
+export interface FarmerGroup {
+  id: string;
+  name: string;
+  kind: string;
+  description: string | null;
+  stateCode: string;
+  districtCode: string;
+  subdistrictCode: string | null;
+  place: string | null;
+  crops: string[];
+  visibility: Visibility;
+  sharedAt: string | null;
+  owner: ProfileCard;
+  isMine: boolean;
+  memberCount: number;
+  totalHectares: number;
+  members: GroupMember[];
+  myMembership: GroupMember | null;
+  requestIds: string[];
+  origin: string;
+  createdAt: string;
+}
+
+export interface GroupRequestInput {
+  opportunityCode?: string | null;
+  title: string;
+  summary?: string | null;
+  amountSought: number;
+  ownContribution?: number | null;
+  seeking: Seeking[];
+  modes: string[];
+  partnershipTypes: string[];
+  openTo: Segment[];
+}
+
+/* ------------------------------------------------------------------ *
+ * My data: backups, export, erasure; insights; sync
+ * ------------------------------------------------------------------ */
+
+export interface Backup {
+  name: string;
+  sizeBytes: number;
+  createdAt: string;
+  includes: string[];
+  downloadPath: string;
+}
+
+export interface CountBucket {
+  code: string;
+  label: string | null;
+  count: number;
+  amount: number;
+}
+
+export interface Insights {
+  scope: 'national' | 'state' | 'district' | 'subdistrict';
+  place: string | null;
+  farmers: number;
+  requestsOpen: number;
+  amountSought: number;
+  requestsByKind: CountBucket[];
+  requestsByState: CountBucket[];
+  interests: number;
+  matches: number;
+  dealsActive: number;
+  dealsCompleted: number;
+  amountReleased: number;
+  machines: number;
+  machinesByType: CountBucket[];
+  rentalsAgreed: number;
+  groups: number;
+  groupMembers: number;
+  groupHectares: number;
+  generatedAt: string;
+}
+
+export interface SyncStatus {
+  enabled: boolean;
+  serverUrl: string | null;
+  deviceRegistered: boolean;
+  pending: number;
+  lastPushAt: string | null;
+  lastPullAt: string | null;
+  lastError: string | null;
+}
+
+export interface SyncRun {
+  pushed: number;
+  pulled: number;
+  errors: string[];
+  status: SyncStatus;
 }

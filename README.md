@@ -4,21 +4,27 @@ A village-focused Agricultural Operating System for India. It runs on the
 villager's own laptop or phone — that device *is* the server — works fully
 offline, and syncs to the cloud only when there is internet.
 
-**Current state: phase 1 complete, phase 2 started.** A farmer can enter a
+**Current state: phase 2 largely built, in development.** A farmer can enter a
 plot, see ranked farming and agri-business options costed for that specific
 piece of land, and generate a bank-format project report as a PDF in their own
-language. Profiles now exist for all six kinds of user, and a farmer can turn a
-plot and its report into an investment request that investors and partners
-answer. See [Roadmap](#roadmap) for what is next.
+language. Profiles exist for all six kinds of user; a farmer (or a group of
+farmers pooling land) turns a plot into an investment request that investors
+and partners answer; an accepted investment becomes a deal paid in stages
+against evidence, with disputes and ratings. Around that: messages and
+notifications, a farm diary with traceability certificates, weather advice,
+mandi prices, government-scheme checks, backups and an opt-in sync. See
+[Roadmap](#roadmap) for what is next.
 
 > [!WARNING]
 > **Development build — not for public release.** Nothing here should be
 > published online or put in front of real users yet: there is no identity
-> verification (every profile shows as unverified), no cloud sync (requests do
-> not travel between devices except through the sample-data script), no trust
-> or milestone layer for real money, and the foreign-investment and insurance
-> guidance has not been reviewed by a lawyer or checked against current scheme
-> notifications. Server-side error messages are English only.
+> verification (every profile shows as unverified); sync works only against the
+> development sync server in `apps/sync`, which has no hardening, rate limits or
+> hosting and must only be run on your own machine or network; the deal and
+> milestone layer records payments made bank to bank but has had no legal or
+> financial-regulation review; scheme eligibility, insurance and
+> foreign-investment guidance have not been checked by a lawyer or against
+> current government notifications. Server-side error messages are English only.
 
 ---
 
@@ -62,12 +68,15 @@ The download is ~10 MB and the import takes about a minute, producing a
 ```bash
 npm run api          # local FastAPI backend on 127.0.0.1:8756 (docs at /docs)
 npm run dev:web      # Vite dev server on 127.0.0.1:5273, in a normal browser
-cd apps/api && python -m pytest    # API test suite (335 tests)
+cd apps/api && python -m pytest    # API test suite (394 tests)
 npm run typecheck    # TypeScript
 npm run build        # production frontend build
 python scripts/check_translations.py   # report translation coverage
-python scripts/seed_demo_marketplace.py            # sample marketplace data
+python scripts/seed_demo_marketplace.py            # sample marketplace data (+ inbox)
 python scripts/seed_demo_marketplace.py --remove   # ...and take it out again
+npm run sync-server  # development sync server on 127.0.0.1:8900 (local only)
+python scripts/import_mandi_prices.py --csv prices.csv          # Agmarknet CSV
+python scripts/import_mandi_prices.py --fetch --api-key <key>   # data.gov.in
 ```
 
 ---
@@ -120,10 +129,55 @@ python scripts/seed_demo_marketplace.py --remove   # ...and take it out again
   see it. Investors and partners browse requests ranked by how well they match
   their own profile, and answer; the farmer accepts or declines. No money moves
   through the app yet.
+- **Offline until shared** — profiles, projects and machines are saved on the
+  device only. *Share online* puts them on a common **timeline** of farm
+  projects and machines; *Take offline* removes them. Profile photos and
+  organisation logos, with location data stripped from the picture.
+- **Equipment marketplace** — agriculture organisations list machines for sale
+  or rent with pictures; farmers ask to rent or buy; sellers build a partner
+  network of farmers, villages, districts and distributors, and farmers can ask
+  to become a seller's direct partner.
 - **Insurance** — crop cover per plot and season, personal and trade cover on
   profiles, and project cover on every request, with the categories a project
   *must* carry decided by the kind of farming it is. See
   [Profiles and the marketplace](#profiles-and-the-marketplace).
+- **Notifications and messages** — a bell and a message icon in the top bar.
+  Notifications store only a kind and the names in it, so they read in whatever
+  language the app is in. People can message each other once one has answered
+  the other's request, machine, partnership or group — without handing out a
+  phone number.
+- **Deals paid in stages** — an accepted investment becomes a deal plan: the
+  money split into stages, each saying what work it pays for. Both sides agree
+  the plan; the farmer shows each stage done with a note and photos; the
+  investor approves (recording the bank reference of the payment) or sends it
+  back. The app never holds money. Either side can report a problem, which
+  pauses the deal until both agree a fix. Completed deals are rated, and ratings
+  show on profile cards. Completion and each release are billing events.
+- **Farm diary and traceability** — per plot: sowing, sprays (with product,
+  dose and pre-harvest interval), fertiliser, harvests and sales, with photos.
+  Every harvest gets a lot code and a printable traceability record; a harvest
+  taken before a spray's waiting period ended is flagged.
+- **Weather advice** — a 7-day forecast per plot (Open-Meteo, kept for offline
+  use) turned into plain advice: do not spray before rain or in wind, heavy
+  rain, heat, frost, dry spells. Alerts reach the notification bell.
+- **Mandi prices and exchange rates** — Agmarknet prices per crop, the owner's
+  state first, with a 30-day trend; imported from a CSV or fetched with a
+  data.gov.in key. International profiles see amounts as "≈ £/$/€" beside
+  rupees, from stored rates that can be set by hand.
+- **Government schemes** — 15 central schemes checked against the profile and
+  land ("you may be eligible", "ask at the office", "probably not"), each with
+  what the app cannot check, the papers needed and an application tracker.
+- **Farmer groups** — farmers and FPOs/cooperatives/SHGs form groups, add
+  members (including people with no phone), approve join requests, and ask for
+  investment on the pooled land of all members at once.
+- **My data** — one-file backups (database, pictures and reports) and restore,
+  a copy of everything held about the owner, and erasure behind a typed
+  confirmation.
+- **Insights** — counts of farmers, requests, offers, deals, money released,
+  machines and groups, for the owner's block, district, state or all of India.
+- **Read aloud** — a "Listen" button on requests, notifications, messages,
+  schemes, weather and deals, using the device's own voices.
+- **Opt-in sync** — see [Sync](#sync).
 
 ---
 
@@ -185,6 +239,9 @@ mid-write on a machine that may lose power.
 | `profiles`                                     | All six user segments; one row is the device owner |
 | `investment_requests`, `investment_interests`  | The marketplace: farmers' asks and the answers     |
 | `insurance_policies`                           | Cover on a plot, a profile or a request            |
+| `equipment_listings`, `equipment_enquiries`    | Machines for sale or rent, and asks to rent or buy |
+| `equipment_partnerships`                       | Each seller's network of partners                  |
+| `media_files`                                  | Index of photos; the files sit beside the database |
 | `sync_queue`                                   | Durable outbox for the eventual cloud push         |
 | `app_events`                                   | Append-only log; the basis for usage metering      |
 | `dataset_meta`                                 | Which LGD release produced the location names      |
@@ -364,6 +421,45 @@ policy cannot be deleted while the request is open. Investors see who insures
 the project, for how much and until when, but the policy number stays masked
 and the premium hidden until the farmer accepts them.
 
+**Offline until shared.** Every profile, project and machine starts with
+`visibility = offline`: it exists on the device and nowhere else. *Share
+online* sets it `online`, stamps `shared_at`, and queues a `share` entry in the
+sync outbox; *Take offline* reverses it. A project or machine can only be
+shared once its owner's profile is shared, and taking the profile offline takes
+everything under it offline too. Answering a request, asking about a machine or
+asking to partner all need the asker's own profile shared, so the other side
+can see who they are dealing with. The sync worker, when it is built, must
+publish only `online` rows to the shared marketplace (`services/sharing.py`).
+
+**The common timeline.** `GET /timeline` merges shared projects and machines,
+newest first. Everyone reads the same feed, but projects still honour their
+audiences (other farmers are now one of them, on by default and read-only),
+and government officers still see only their own area.
+
+**Photos.** `PUT /profile/photo` and `POST /equipment/{id}/photos` take the
+image itself as the request body. Every picture is re-encoded with Pillow:
+that proves it is an image, applies the phone's rotation, drops EXIF (which can
+carry the GPS position of a farmer's house) and resizes it — 512 px for a
+profile, 1280 px for a machine, four pictures per machine. Files live in a
+`media` folder beside the database, so they follow it into the user-data
+directory in a packaged build.
+
+**Organisations that invest.** A partner organisation can tick *we also
+invest* and give its investment modes and ticket size; it then answers a
+farmer's request with either a partnership or an investment offer. Companies,
+funds, banks and CSR foundations that only invest use the investor profiles.
+
+**Equipment.** Partner organisations list machines (type, condition, year,
+rent per hour, day, acre or season, sale price, quantity, operator, delivery,
+place). Anyone else can ask to rent — with dates and acreage — or to buy; the
+seller agrees or declines, and agreeing shares both sides' contact and records
+`equipment_enquiry.accepted`. A seller's **partner network** holds farmers,
+villages, districts and distributors in roles such as rental point, operator,
+sales agent, service centre or distributor, with the machines covered and a
+commission. A partner not on the platform is recorded by name and phone and is
+active at once; one on the platform must accept. A farmer can ask a seller to
+make them a direct partner, covering their own village.
+
 **Events.** `profile.*`, `investment_request.*` and `investment_interest.*`
 are recorded, with `investment_interest.accepted` as its own event: it is the
 match the success fee will eventually be measured against. `deal.completed`
@@ -375,6 +471,31 @@ in for it: it adds sample requests in real LGD districts (plus one in the
 owner's own district), and on a farmer's device sample answers to the farmer's
 open requests. Everything it writes is `origin = demo`, labelled "Sample data"
 in the app, and removed by `--remove`.
+
+---
+
+## Sync
+
+Sync is off until the owner enters a sync server address under **More → My
+data & sync**. Then, every five minutes and on "Sync now":
+
+- **Only what is shared online leaves the device.** The outbox holds every
+  change, but land, the diary, drafts and anything offline are *held*, never
+  sent. Taking an item offline sends a deletion.
+- **The server enforces ownership.** A device registers for one profile (the
+  first device to claim a profile id owns it). It may write only its own
+  records; the other party in an interest, enquiry, deal or dispute may change
+  only its status (and a deal's milestones), never its content.
+- **Contact details are redacted** — phone numbers, emails and policy numbers
+  are removed from what other devices pull until the two people are connected
+  (an accepted interest, enquiry or partnership, or a deal).
+- **Requests reach only their chosen audiences.**
+- What arrives is written locally and turned into notifications on the
+  receiving device.
+
+The server in `apps/sync/server.py` (FastAPI + its own SQLite, `VG_SYNC_DB`)
+exists to develop and test this against. It is **not** a production service.
+`apps/api/tests/test_sync.py` runs two devices against it end to end.
 
 ---
 
@@ -401,15 +522,20 @@ bills on the latter two, and retrofitting an event log means losing history.
 Phase 1 is complete: offline location selector, land intake, suggestion engine,
 and project report PDFs.
 
-Phase 2, done: profiles for all six segments, investment requests, interests,
-match scoring, and insurance on plots, profiles and projects. Phase 2, next: cloud sync so requests and interests travel
-between devices, KYC through an authorised provider, the trust/dispute layer
-with milestone-based fund release (required before any money moves), FPO
-grouping, mandi prices, equipment rental.
+Phase 2, done: profiles for all six segments with photos, investment requests,
+interests, match scoring, insurance on plots, profiles and projects, offline-
+until-shared visibility with a common timeline, the equipment marketplace with
+seller partner networks, notifications and messages, deals with milestone
+release, disputes and ratings, farmer groups with pooled requests, mandi
+prices, the farm diary, weather advice, backups and the sync protocol with a
+development server. Phase 2, next: KYC through an authorised provider, a
+production sync service (PostgreSQL, authentication beyond device tokens,
+abuse controls), legal review of the deal and dispute terms, and rating
+enquiries and partnerships as well as deals.
 
-Phase 3: self-hosted map and geocoding infrastructure, government scheme
-aggregator, partnership-based verification tier, international market
-intelligence.
+Phase 3: self-hosted map and geocoding infrastructure, scheme application
+assistance beyond tracking, partnership-based verification tier, voice input,
+more languages in the app itself (reports already cover 22).
 
 Integration points already stubbed: `services/kyc.py` and the `Profile.kyc_*`
 columns for Aadhaar eKYC, DigiLocker and the later police-verification tier;
@@ -485,4 +611,9 @@ Every setting takes a `VG_`-prefixed environment variable.
 | `VG_KNOWLEDGE_DIR`  | `packages/shared/knowledge`        | Options, markets, translations |
 | `VG_FONTS_DIR`      | `data/fonts`                       | Fonts for report scripts       |
 | `VG_REPORTS_DIR`    | OS user-data dir (Electron)        | Where generated PDFs are kept  |
+| `VG_MEDIA_DIR`      | next to the database, `media/`     | Photos and logos               |
+| `VG_BACKUPS_DIR`    | next to the database, `backups/`   | One-file backups               |
+| `VG_ALLOW_NETWORK`  | `true`                             | `false` keeps the API offline  |
+| `VG_DATA_GOV_API_KEY` | none                             | Fetch Agmarknet mandi prices   |
+| `VG_SYNC_DB`        | `apps/sync/data/sync.db`           | Development sync server's DB   |
 | `VG_ALLOW_NETWORK`  | `true`                             | Permit the two online lookups  |

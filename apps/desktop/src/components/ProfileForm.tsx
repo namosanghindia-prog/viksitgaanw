@@ -76,6 +76,10 @@ function defaultDetails(segment: Segment): Details {
       gstin: '',
       memberFarmers: '',
       certificationsRequired: [],
+      alsoInvests: false,
+      investmentModes: [],
+      ticketMin: '',
+      ticketMax: '',
     };
   }
   return { level: null, department: '', designation: '', employeeId: '' };
@@ -253,6 +257,7 @@ export function ProfileForm({
     if (partner) {
       if (!details.organisationType) next.organisationType = chooseOne;
       if (!list('partnershipTypes').length) next.partnershipTypes = chooseOne;
+      if (details.alsoInvests && !list('investmentModes').length) next.investmentModes = chooseOne;
     }
     if (government) {
       if (!level) next.level = chooseOne;
@@ -697,6 +702,50 @@ export function ProfileForm({
               value={list('certificationsRequired')}
               onChange={(value) => setDetail('certificationsRequired', value)}
             />
+          ) : null}
+
+          <CheckField
+            label={t('profile.alsoInvests')}
+            checked={Boolean(details.alsoInvests)}
+            onChange={(value) => setDetail('alsoInvests', value)}
+          />
+          {details.alsoInvests ? (
+            <>
+              <ChoiceGroup
+                label={t('profile.modes')}
+                items={REFERENCE.investment_modes.items}
+                multiple
+                value={list('investmentModes')}
+                onChange={(value) => setDetail('investmentModes', value)}
+              />
+              {errorBelow('investmentModes')}
+              <fieldset className="field">
+                <legend className="field__label">
+                  {t('profile.ticket', { currency: t(international ? 'currency.USD' : 'currency.INR') })}{' '}
+                  <span className="field__optional">({t('common.optional')})</span>
+                </legend>
+                <div className="field-row">
+                  <TextField
+                    id="partnerTicketMin"
+                    label={t('profile.ticketMin')}
+                    type="number"
+                    inputMode="numeric"
+                    min={0}
+                    value={text('ticketMin')}
+                    onChange={(value) => setDetail('ticketMin', value)}
+                  />
+                  <TextField
+                    id="partnerTicketMax"
+                    label={t('profile.ticketMax')}
+                    type="number"
+                    inputMode="numeric"
+                    min={0}
+                    value={text('ticketMax')}
+                    onChange={(value) => setDetail('ticketMax', value)}
+                  />
+                </div>
+              </fieldset>
+            </>
           ) : null}
         </section>
       ) : null}

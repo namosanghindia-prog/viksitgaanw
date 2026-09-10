@@ -12,10 +12,13 @@
       no offline tile pack is installed. Images only -- not script, not fetch
       -- so map imagery can never become a code-execution path. A field device
       should carry a tile pack and never hit this fallback.
+
+      Profile photos and machine pictures are served by the local API, so
+      img-src also allows loopback.
     -->
     <meta
       http-equiv="Content-Security-Policy"
-      content="default-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' http://127.0.0.1:* http://localhost:* ws://127.0.0.1:* ws://localhost:*; img-src 'self' data: https://tile.openstreetmap.org https://a.tile.openstreetmap.org https://b.tile.openstreetmap.org https://c.tile.openstreetmap.org"
+      content="default-src 'self'; style-src 'self' 'unsafe-inline'; connect-src 'self' http://127.0.0.1:* http://localhost:* ws://127.0.0.1:* ws://localhost:*; img-src 'self' data: http://127.0.0.1:* http://localhost:* https://tile.openstreetmap.org https://a.tile.openstreetmap.org https://b.tile.openstreetmap.org https://c.tile.openstreetmap.org"
     />
     <title>ViksitGaanw</title>
   </head>

@@ -32,8 +32,24 @@ from app.db import init_db, session_scope  # noqa: E402
 from app.main import app  # noqa: E402
 from app.models import (  # noqa: E402
     AppEvent,
+    Deal,
+    DiaryEntry,
+    Dispute,
+    EquipmentEnquiry,
+    EquipmentListing,
+    EquipmentPartnership,
     Farmer,
+    FarmerGroup,
+    FxRate,
     InsurancePolicy,
+    MandiPrice,
+    MediaFile,
+    Message,
+    Notification,
+    Rating,
+    SchemeApplication,
+    SyncSetting,
+    WeatherCache,
     InvestmentInterest,
     InvestmentRequest,
     LandParcel,
@@ -59,7 +75,28 @@ def clean_user_data() -> None:
     with session_scope() as session:
         session.execute(delete(SyncQueueEntry))
         session.execute(delete(AppEvent))
+        # Newer platform tables first: they point at everything else.
+        for model in (
+            Message,
+            Notification,
+            Dispute,
+            Rating,
+            Deal,
+            DiaryEntry,
+            WeatherCache,
+            MandiPrice,
+            FxRate,
+            SchemeApplication,
+            SyncSetting,
+        ):
+            session.execute(delete(model))
+        session.execute(delete(InvestmentRequest).where(InvestmentRequest.group_id.is_not(None)))
+        session.execute(delete(FarmerGroup))
         # The marketplace hangs off profiles, parcels and reports.
+        session.execute(delete(MediaFile))
+        session.execute(delete(EquipmentEnquiry))
+        session.execute(delete(EquipmentPartnership))
+        session.execute(delete(EquipmentListing))
         session.execute(delete(InsurancePolicy))
         session.execute(delete(InvestmentInterest))
         session.execute(delete(InvestmentRequest))
@@ -73,6 +110,21 @@ def clean_user_data() -> None:
 @pytest.fixture()
 def client() -> TestClient:
     return TestClient(app)
+
+
+def become(profile_id: str) -> None:
+    """Make ``profile_id`` the device owner.
+
+    One device is one person, so a test of a two-sided flow (a deal, a group
+    join) takes turns being each side -- as two devices would, through sync.
+    """
+    from app.models import Profile
+
+    with session_scope() as session:
+        for profile in session.query(Profile).filter(Profile.is_device_owner.is_(True)):
+            profile.is_device_owner = False
+        session.flush()
+        session.get(Profile, profile_id).is_device_owner = True
 
 
 # Codes from the bundled sample (see scripts/generate_sample_lgd.py).

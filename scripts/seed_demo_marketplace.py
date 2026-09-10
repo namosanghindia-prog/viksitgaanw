@@ -13,7 +13,14 @@ arrive. This script stands in for sync. It adds:
   investors, partners and government officers (one is placed in the device
   owner's own district, so a block officer or a local investor sees one too);
 * if this device belongs to a farmer, sample interests from an investor and
-  a partner on each of the farmer's open requests.
+  a partner on each of the farmer's open requests;
+* sample equipment sellers with machines for sale and rent, and -- if this
+  device belongs to a seller -- sample rent and buy enquiries on its shared
+  machines and a sample farmer asking to become its partner;
+* an inbox notification for each sample interest, enquiry and partner
+  request, the way one appears when sync delivers it.
+
+Sample items are shared online, as anything arriving by sync would be.
 
 Every row it writes has ``origin = "demo"``, the app labels it "Sample", and
 ``--remove`` deletes exactly those rows and nothing else.
@@ -23,7 +30,7 @@ from __future__ import annotations
 
 import argparse
 import sys
-from datetime import date, timedelta
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -35,14 +42,20 @@ from sqlalchemy.orm import Session  # noqa: E402
 from app.db import init_db, session_scope  # noqa: E402
 from app.models import (  # noqa: E402
     District,
+    EquipmentEnquiry,
+    EquipmentListing,
+    EquipmentPartnership,
     InsurancePolicy,
     InvestmentInterest,
     InvestmentRequest,
+    Notification,
     Profile,
     State,
     SubDistrict,
 )
 from app.services.marketplace import make_listing, opportunity_summary  # noqa: E402
+from app.services.notify import notify  # noqa: E402
+from app.services.notify import notify  # noqa: E402
 from app.services.profiles import get_owner  # noqa: E402
 
 DEMO = "demo"
@@ -180,6 +193,44 @@ SAMPLE_PARTNER = {
 }
 
 
+#: Two sample machinery organisations and what they offer. Places are looked
+#: up like the requests; a seller whose district is missing is skipped.
+SAMPLE_SELLERS: list[dict] = [
+    {
+        "profile": {
+            "segment": "partner_national",
+            "display_name": "Sanjay Deshmukh",
+            "organisation_name": "Kisan Yantra Seva (sample)",
+            "phone": "+919000000003",
+            "email": "sanjay@kisanyantra.example",
+            "details": {"organisation_type": "agri_company", "partnership_types": ["equipment", "training"]},
+        },
+        "place": ("Maharashtra", "Nashik"),
+        "machines": [
+            {"equipment_type": "tractor", "title": "45 HP tractor with driver", "condition": "good", "year_made": 2021, "for_rent": True, "rent_rate": 900, "rent_unit": "hour", "quantity": 3, "with_operator": True, "description": "Available for ploughing, rotavator and haulage. Diesel included in the rate."},
+            {"equipment_type": "rotavator", "title": "Rotavator, 7 feet", "condition": "like_new", "year_made": 2024, "for_rent": True, "rent_rate": 1800, "rent_unit": "acre", "for_sale": True, "sale_price": 115000, "quantity": 2},
+            {"equipment_type": "drone", "title": "Spraying drone with trained pilot", "condition": "new", "year_made": 2026, "for_rent": True, "rent_rate": 450, "rent_unit": "acre", "with_operator": True, "quantity": 1, "description": "10-litre tank. Covers an acre in about seven minutes. Pilot is licensed."},
+        ],
+    },
+    {
+        "profile": {
+            "segment": "partner_national",
+            "display_name": "Gurpreet Kaur",
+            "organisation_name": "Doaba Agro Machines (sample)",
+            "phone": "+919000000004",
+            "email": "gurpreet@doaba.example",
+            "details": {"organisation_type": "input_supplier", "partnership_types": ["equipment"]},
+        },
+        "place": ("Punjab", "Ludhiana"),
+        "machines": [
+            {"equipment_type": "harvester", "title": "Combine harvester for wheat and paddy", "condition": "good", "year_made": 2020, "for_rent": True, "rent_rate": 2200, "rent_unit": "acre", "with_operator": True, "delivery": True, "quantity": 2, "description": "Travels to Haryana and western Uttar Pradesh in season. Book two weeks ahead."},
+            {"equipment_type": "seed_drill", "title": "Happy seeder (sow without burning straw)", "condition": "new", "year_made": 2026, "for_sale": True, "sale_price": 165000, "for_rent": True, "rent_rate": 2500, "rent_unit": "day", "quantity": 4},
+            {"equipment_type": "chaff_cutter", "title": "Electric chaff cutter, 2 HP", "condition": "new", "year_made": 2026, "for_sale": True, "sale_price": 18500, "delivery": True, "quantity": 20},
+        ],
+    },
+]
+
+
 def _find_place(session: Session, state_name: str, district_name: str):
     state = session.scalars(
         select(State).where(func.lower(State.name) == state_name.lower())
@@ -210,6 +261,8 @@ def _add_request(session: Session, spec: dict, place: tuple[str, str, str | None
         district_code=district_code,
         origin=DEMO,
         is_device_owner=False,
+        visibility="online",
+        shared_at=_shared_at(),
         details={"needs": ["investment"]},
     )
     session.add(farmer)
@@ -230,7 +283,8 @@ def _add_request(session: Session, spec: dict, place: tuple[str, str, str | None
         seeking=spec["seeking"],
         modes=spec["modes"],
         partnership_types=spec["partnerships"],
-        open_to=spec["open_to"],
+        # Other farmers see it on the common timeline, as the app's default.
+        open_to=[*spec["open_to"], "farmer"],
         listing=make_listing(
             session,
             state_code=state_code,
@@ -242,6 +296,8 @@ def _add_request(session: Session, spec: dict, place: tuple[str, str, str | None
             plan=spec["plan"],
         ),
         status="open",
+        visibility="online",
+        shared_at=_shared_at(),
         origin=DEMO,
     )
     session.add(request)
@@ -271,8 +327,12 @@ def _add_interests(session: Session, owner: Profile) -> int:
     if not requests:
         return 0
 
-    investor = Profile(is_device_owner=False, origin=DEMO, country_code="IN", **SAMPLE_INVESTOR)
-    partner = Profile(is_device_owner=False, origin=DEMO, country_code="IN", **SAMPLE_PARTNER)
+    investor = Profile(
+        is_device_owner=False, origin=DEMO, country_code="IN", visibility="online", **SAMPLE_INVESTOR
+    )
+    partner = Profile(
+        is_device_owner=False, origin=DEMO, country_code="IN", visibility="online", **SAMPLE_PARTNER
+    )
     session.add_all([investor, partner])
     session.flush()
 
@@ -280,7 +340,8 @@ def _add_interests(session: Session, owner: Profile) -> int:
     for request in requests:
         existing = {interest.profile_id for interest in request.interests}
         if "investment" in request.seeking and investor.id not in existing:
-            session.add(
+            _received(
+                session, owner, request, investor,
                 InvestmentInterest(
                     request_id=request.id,
                     profile_id=investor.id,
@@ -290,11 +351,12 @@ def _add_interests(session: Session, owner: Profile) -> int:
                     message="We fund orchards and protected cultivation. Could we visit the field next month?",
                     status="sent",
                     origin=DEMO,
-                )
+                ),
             )
             added += 1
         if "partnership" in request.seeking and partner.id not in existing:
-            session.add(
+            _received(
+                session, owner, request, partner,
                 InvestmentInterest(
                     request_id=request.id,
                     profile_id=partner.id,
@@ -303,15 +365,156 @@ def _add_interests(session: Session, owner: Profile) -> int:
                     message="Our FPO can buy the full harvest at the agreed grade and help with spray schedules.",
                     status="sent",
                     origin=DEMO,
+                ),
+            )
+            added += 1
+    return added
+
+
+def _received(
+    session: Session, owner: Profile, request: InvestmentRequest, sender: Profile, interest: InvestmentInterest
+) -> None:
+    session.add(interest)
+    session.flush()
+    notify(
+        session, owner.id, "interest_received",
+        params={"name": sender.organisation_name or sender.display_name, "title": request.title},
+        link="/requests", entity_type="investment_interest", entity_id=interest.id,
+    )
+
+
+_CLOCK = {"step": 0}
+
+
+def _shared_at() -> datetime:
+    """Stagger sample share times, so the timeline has an order to show."""
+    _CLOCK["step"] += 1
+    return datetime.now(timezone.utc) - timedelta(hours=3 * _CLOCK["step"])
+
+
+def _add_sellers(session: Session) -> int:
+    added = 0
+    for spec in SAMPLE_SELLERS:
+        place = _find_place(session, *spec["place"])
+        if place is None:
+            print(f"  skipped seller in {spec['place'][1]}: not in the imported LGD data")
+            continue
+        state_code, district_code, subdistrict_code = place
+        seller = Profile(
+            is_device_owner=False,
+            origin=DEMO,
+            country_code="IN",
+            state_code=state_code,
+            district_code=district_code,
+            visibility="online",
+            shared_at=_shared_at(),
+            **spec["profile"],
+        )
+        session.add(seller)
+        session.flush()
+        for machine in spec["machines"]:
+            session.add(
+                EquipmentListing(
+                    profile_id=seller.id,
+                    state_code=state_code,
+                    district_code=district_code,
+                    subdistrict_code=subdistrict_code,
+                    visibility="online",
+                    shared_at=_shared_at(),
+                    status="active",
+                    origin=DEMO,
+                    **machine,
                 )
             )
             added += 1
     return added
 
 
+def _add_seller_activity(session: Session, owner: Profile) -> tuple[int, int]:
+    """Sample enquiries on the owner's shared machines, and a partner request."""
+    farmer = Profile(
+        segment="farmer",
+        display_name="Baldev Singh (sample)",
+        phone="+919000000200",
+        country_code="IN",
+        state_code=owner.state_code,
+        district_code=owner.district_code,
+        is_device_owner=False,
+        origin=DEMO,
+        visibility="online",
+        details={"needs": ["equipment"]},
+    )
+    session.add(farmer)
+    session.flush()
+
+    enquiries = 0
+    listings = session.scalars(
+        select(EquipmentListing)
+        .where(EquipmentListing.profile_id == owner.id)
+        .where(EquipmentListing.visibility == "online")
+        .where(EquipmentListing.status == "active")
+    ).all()
+    for listing in listings:
+        kind = "rent" if listing.for_rent else "buy"
+        start = date.today() + timedelta(days=10)
+        enquiry = EquipmentEnquiry(
+            listing_id=listing.id,
+            profile_id=farmer.id,
+            kind=kind,
+            quantity=1,
+            start_date=start if kind == "rent" else None,
+            end_date=start + timedelta(days=2) if kind == "rent" else None,
+            area_acres=4 if kind == "rent" and listing.rent_unit == "acre" else None,
+            message="Need it before the rains. Can your operator come to our village?",
+            status="sent",
+            origin=DEMO,
+        )
+        session.add(enquiry)
+        session.flush()
+        notify(
+            session, owner.id, "enquiry_received",
+            params={"name": farmer.display_name, "title": listing.title, "kind": kind},
+            link="/my-machines", entity_type="equipment_enquiry", entity_id=enquiry.id,
+        )
+        enquiries += 1
+
+    partnership = EquipmentPartnership(
+        seller_profile_id=owner.id,
+        partner_kind="farmer",
+        partner_profile_id=farmer.id,
+        state_code=owner.state_code,
+        district_code=owner.district_code,
+        role="rental_point",
+        message="I have a shed by the main road and can keep two machines for hire in our village.",
+        initiated_by="partner",
+        status="proposed",
+        origin=DEMO,
+    )
+    session.add(partnership)
+    session.flush()
+    notify(
+        session, owner.id, "partnership_requested", params={"name": farmer.display_name},
+        link="/partners", entity_type="equipment_partnership", entity_id=partnership.id,
+    )
+    return enquiries, 1
+
+
 def remove(session: Session) -> int:
     counts = 0
-    for model in (InsurancePolicy, InvestmentInterest, InvestmentRequest, Profile):
+    # Notifications have no origin of their own: they go with what they are about.
+    for model in (InvestmentInterest, EquipmentEnquiry, EquipmentPartnership):
+        demo_ids = select(model.id).where(model.origin == DEMO)
+        result = session.execute(delete(Notification).where(Notification.entity_id.in_(demo_ids)))
+        counts += result.rowcount or 0
+    for model in (
+        InsurancePolicy,
+        InvestmentInterest,
+        InvestmentRequest,
+        EquipmentEnquiry,
+        EquipmentPartnership,
+        EquipmentListing,
+        Profile,
+    ):
         result = session.execute(delete(model).where(model.origin == DEMO))
         counts += result.rowcount or 0
     return counts
@@ -353,8 +556,16 @@ def main(argv: list[str] | None = None) -> int:
             added += 1
         print(f"Added {added} sample requests.")
 
+        print(f"Added {_add_sellers(session)} sample machines for sale or rent.")
+
         if owner is not None and owner.segment == "farmer":
             print(f"Added {_add_interests(session, owner)} sample interests on your own requests.")
+        elif owner is not None and owner.segment.startswith("partner_") and owner.state_code:
+            enquiries, partners = _add_seller_activity(session, owner)
+            print(
+                f"Added {enquiries} sample enquiries on your shared machines "
+                f"and {partners} sample partner request."
+            )
         elif owner is None:
             print("No profile on this device yet: set one up in the app, then run this again.")
 

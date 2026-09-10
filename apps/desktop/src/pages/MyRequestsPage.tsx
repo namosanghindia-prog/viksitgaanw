@@ -4,7 +4,9 @@ import type { Interest, InvestmentRequest } from '@viksitgaanw/shared';
 import { findItem } from '@viksitgaanw/shared';
 
 import { InsuranceManager } from '../components/InsuranceManager';
+import { MessageLink } from '../components/MessageLink';
 import { ContactLine, PartyLine, RequestCard } from '../components/RequestCard';
+import { ShareControl } from '../components/ShareControl';
 import { useI18n } from '../i18n';
 import { api } from '../lib/api';
 import { formatDate, formatMoneyShort } from '../lib/format';
@@ -62,6 +64,14 @@ export function MyRequestsPage() {
       <div className="requests">
         {rows.map((request) => (
           <RequestCard key={request.id} request={request} showRequester={false}>
+            <ShareControl
+              visibility={request.visibility}
+              sharedAt={request.sharedAt}
+              onShare={() => api.shareRequest(request.id)}
+              onUnshare={() => api.unshareRequest(request.id)}
+              onChanged={requests.reload}
+            />
+            {request.visibility === 'offline' ? <p className="muted small">{t('share.draftNote')}</p> : null}
             <section className="answers">
               <h4 className="answers__title">{t('insurance.requestTitle')}</h4>
               <InsuranceManager
@@ -155,6 +165,14 @@ function Answers({
             <div className="answer__foot">
               <span className={`badge badge--status-${interest.status}`}>
                 {t(`interestStatus.${interest.status}`)}
+              </span>
+              <span className="answer__actions">
+                <MessageLink party={interest.responder} className="button button--small button--ghost" />
+                {interest.status === 'accepted' && interest.kind === 'investment' ? (
+                  <Link className="button button--small button--primary" to={`/deals/new/${interest.id}`}>
+                    📜 {t('deals.planOrOpen')}
+                  </Link>
+                ) : null}
               </span>
               {interest.status === 'sent' && request.status === 'open' ? (
                 <span className="answer__actions">

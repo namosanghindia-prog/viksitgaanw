@@ -29,7 +29,12 @@ RESPONDERS: tuple[str, ...] = INVESTORS + PARTNERS
 
 #: Segments a farmer may show a request to. Government is there so a block
 #: officer can help with schemes -- but only if the farmer ticks the box.
-AUDIENCES: tuple[str, ...] = RESPONDERS + (GOVERNMENT,)
+#: Other farmers see it on the common timeline, read-only, if chosen.
+AUDIENCES: tuple[str, ...] = RESPONDERS + (GOVERNMENT, FARMER)
+
+#: Agriculture organisations that sell or rent out machines and build a
+#: partner network of farmers, villages, districts and distributors.
+EQUIPMENT_SELLERS: tuple[str, ...] = PARTNERS
 
 #: Segments based outside India. Everyone else must be in India.
 INTERNATIONAL: tuple[str, ...] = ("investor_international", "partner_international")
@@ -38,6 +43,18 @@ INTERNATIONAL: tuple[str, ...] = ("investor_international", "partner_internation
 PERSONAL_INVESTOR_TYPES: frozenset[str] = frozenset({"individual", "angel", "nri"})
 
 
-def interest_kind(segment: str) -> str:
-    """What a responder in ``segment`` offers: money, or a working partnership."""
-    return "investment" if segment in INVESTORS else "partnership"
+def interest_kinds(segment: str, details: dict | None = None) -> tuple[str, ...]:
+    """What a responder in ``segment`` may offer.
+
+    Investors offer money. Partner organisations offer a working partnership,
+    and money too if their profile says they also invest -- a device holds one
+    profile, so an agri-company that partners farmers and funds them should
+    not need two.
+    """
+    if segment in INVESTORS:
+        return ("investment",)
+    if segment in PARTNERS:
+        if (details or {}).get("also_invests"):
+            return ("partnership", "investment")
+        return ("partnership",)
+    return ()

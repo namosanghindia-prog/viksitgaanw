@@ -5,8 +5,13 @@ import { findItem, pickLabel } from '@viksitgaanw/shared';
 
 import { useI18n } from '../i18n';
 import { formatDate, formatMoneyShort, formatNumber } from '../lib/format';
-import { SEGMENT_ICON, typeItem } from '../lib/segments';
+import { approxForeign, useFxRates, viewerCurrency } from '../lib/fx';
+import { useProfile } from '../lib/profile';
+import { typeItem } from '../lib/segments';
+import { Avatar } from './Avatar';
 import { InsuranceRow } from './InsuranceRow';
+import { ReadAloud } from './ReadAloud';
+import { RatingBadge } from './Stars';
 
 /** "Pindra, Varanasi, Uttar Pradesh" from the request's frozen snapshot. */
 export function listingPlace(request: InvestmentRequest): string {
@@ -23,9 +28,12 @@ export function PartyLine({ party }: { party: ProfileCard }) {
   const type = typeItem(party.typeCode);
   return (
     <div className="party">
-      <span className="party__icon" aria-hidden="true">
-        {SEGMENT_ICON[party.segment] ?? '👤'}
-      </span>
+      <Avatar
+        url={party.photoUrl}
+        name={party.organisationName || party.displayName}
+        segment={party.segment}
+        size="sm"
+      />
       <div className="party__main">
         <strong>{party.organisationName || party.displayName}</strong>
         {party.organisationName ? <span className="muted"> · {party.displayName}</span> : null}
@@ -39,6 +47,7 @@ export function PartyLine({ party }: { party: ProfileCard }) {
         {party.kycStatus === 'verified' ? '✓ ' : ''}
         {t(`kyc.${party.kycStatus}`)}
       </span>
+      <RatingBadge average={party.ratingAvg} count={party.ratingCount} />
       {party.origin === 'demo' ? <span className="badge badge--sample">{t('card.sample')}</span> : null}
     </div>
   );
@@ -74,11 +83,23 @@ interface RequestCardProps {
  */
 export function RequestCard({ request, showRequester = true, children }: RequestCardProps) {
   const { t, lang, rt } = useI18n();
+  const { profile } = useProfile();
   const [open, setOpen] = useState(false);
   const { land, plan, opportunity } = request.listing;
+  const currency = viewerCurrency(profile);
+  const rates = useFxRates(Boolean(currency));
 
   const money = (rupees: number) => `₹${formatMoneyShort(rupees, lang, t)}`;
+  const foreign = approxForeign(request.amountSought, currency, rates, lang);
   const statusLabel = t(`requestStatus.${request.status}`);
+  const spoken = [
+    request.title,
+    listingPlace(request),
+    `${t('card.amount')}: ${money(request.amountSought)}`,
+    request.summary ?? '',
+  ]
+    .filter(Boolean)
+    .join('. ');
 
   return (
     <article className={`request ${request.status !== 'open' ? 'request--closed' : ''}`}>
@@ -120,7 +141,10 @@ export function RequestCard({ request, showRequester = true, children }: Request
       <dl className="request__figures">
         <div>
           <dt>{t('card.amount')}</dt>
-          <dd className="request__figure request__figure--lead">{money(request.amountSought)}</dd>
+          <dd className="request__figure request__figure--lead">
+            {money(request.amountSought)}
+            {foreign ? <span className="request__fx"> ≈ {foreign}</span> : null}
+          </dd>
         </div>
         {request.ownContribution ? (
           <div>
@@ -172,14 +196,17 @@ export function RequestCard({ request, showRequester = true, children }: Request
 
       {showRequester ? <PartyLine party={request.requester} /> : null}
 
-      <button
-        type="button"
-        className="button button--ghost button--small request__toggle"
-        onClick={() => setOpen((value) => !value)}
-        aria-expanded={open}
-      >
-        {open ? '▾' : '▸'} {open ? t('card.hideDetails') : t('card.showDetails')}
-      </button>
+      <div className="request__toolbar">
+        <button
+          type="button"
+          className="button button--ghost button--small request__toggle"
+          onClick={() => setOpen((value) => !value)}
+          aria-expanded={open}
+        >
+          {open ? '▾' : '▸'} {open ? t('card.hideDetails') : t('card.showDetails')}
+        </button>
+        <ReadAloud text={spoken} />
+      </div>
 
       {open ? (
         <div className="request__detail">

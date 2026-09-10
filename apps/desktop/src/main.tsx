@@ -4,6 +4,7 @@ import { HashRouter } from 'react-router-dom';
 
 import { App } from './App';
 import { I18nProvider } from './i18n';
+import { InboxProvider } from './lib/inbox';
 import { ProfileProvider } from './lib/profile';
 import './styles.css';
 
@@ -16,9 +17,11 @@ createRoot(container).render(
   <React.StrictMode>
     <I18nProvider>
       <ProfileProvider>
-        <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-          <App />
-        </HashRouter>
+        <InboxProvider>
+          <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+            <App />
+          </HashRouter>
+        </InboxProvider>
       </ProfileProvider>
     </I18nProvider>
   </React.StrictMode>,

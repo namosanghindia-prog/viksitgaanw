@@ -1,0 +1,154 @@
+{
+  "key": "schemes",
+  "version": 1,
+  "dataAsOf": "2026-09",
+  "about": "Central government schemes farmers and farm organisations most often use. The app can only check what it knows -- profile type, land, water, what the project is -- so every result is 'you may be eligible', never a decision. Each scheme lists what the app cannot check, and links the official page, which is the only place terms are final. Review against current notifications before release; scheme terms change.",
+  "documents": [
+    { "code": "aadhaar", "label": { "en": "Aadhaar card", "hi": "आधार कार्ड" } },
+    { "code": "land_record", "label": { "en": "Land record (khatauni / 7-12 / RoR)", "hi": "भूमि अभिलेख (खतौनी / 7-12 / आरओआर)" } },
+    { "code": "tenancy_proof", "label": { "en": "Tenancy or sharecropping proof", "hi": "पट्टे या बटाई का प्रमाण" } },
+    { "code": "bank_account", "label": { "en": "Bank passbook", "hi": "बैंक पासबुक" } },
+    { "code": "photo", "label": { "en": "Passport-size photo", "hi": "पासपोर्ट साइज़ फ़ोटो" } },
+    { "code": "project_report", "label": { "en": "Project report (DPR)", "hi": "परियोजना रिपोर्ट (डीपीआर)" } },
+    { "code": "quotation", "label": { "en": "Supplier quotation", "hi": "आपूर्तिकर्ता का कोटेशन" } },
+    { "code": "registration", "label": { "en": "Registration certificate of the organisation", "hi": "संस्था का पंजीकरण प्रमाणपत्र" } },
+    { "code": "sowing_proof", "label": { "en": "Sowing certificate / declaration", "hi": "बुवाई प्रमाणपत्र / घोषणा" } }
+  ],
+  "items": [
+    {
+      "code": "pm_kisan",
+      "name": { "en": "PM-KISAN Samman Nidhi", "hi": "पीएम-किसान सम्मान निधि" },
+      "benefit": { "en": "Rs 6,000 a year, paid in three instalments into the bank account of landholding farmer families.", "hi": "भूमिधारक किसान परिवारों के बैंक खाते में सालाना ₹6,000, तीन किस्तों में।" },
+      "cannotCheck": { "en": "Income-tax payers, government employees, pensioners above a limit and professionals such as doctors are excluded.", "hi": "आयकर दाता, सरकारी कर्मचारी, एक सीमा से अधिक पेंशन पाने वाले और डॉक्टर जैसे पेशेवर इसमें शामिल नहीं।" },
+      "url": "https://pmkisan.gov.in/",
+      "documents": ["aadhaar", "land_record", "bank_account"],
+      "eligibility": { "segments": ["farmer"], "requiresLand": true, "ownershipTypes": ["owned", "ancestral"] }
+    },
+    {
+      "code": "pmfby",
+      "name": { "en": "Pradhan Mantri Fasal Bima Yojana (crop insurance)", "hi": "प्रधानमंत्री फसल बीमा योजना" },
+      "benefit": { "en": "Low-premium insurance for notified crops against drought, flood, pests and other losses. Tenants and sharecroppers can join too.", "hi": "अधिसूचित फसलों का सूखा, बाढ़, कीट आदि से कम प्रीमियम पर बीमा। पट्टेदार और बटाईदार भी जुड़ सकते हैं।" },
+      "cannotCheck": { "en": "The crop must be notified for your area and season; enrolment closes on fixed dates each season.", "hi": "फसल आपके क्षेत्र और मौसम के लिए अधिसूचित होनी चाहिए; हर मौसम में नामांकन तय तारीख पर बंद होता है।" },
+      "url": "https://pmfby.gov.in/",
+      "documents": ["aadhaar", "land_record", "tenancy_proof", "bank_account", "sowing_proof"],
+      "eligibility": { "segments": ["farmer"], "requiresLand": true }
+    },
+    {
+      "code": "kcc",
+      "name": { "en": "Kisan Credit Card", "hi": "किसान क्रेडिट कार्ड" },
+      "benefit": { "en": "Short-term credit for crops, animals and fisheries, with interest help for prompt repayment.", "hi": "फसल, पशुपालन और मछली पालन के लिए अल्पकालीन ऋण, समय पर चुकाने पर ब्याज में छूट।" },
+      "cannotCheck": { "en": "The bank decides the limit from your land, crops and repayment record.", "hi": "सीमा बैंक आपकी ज़मीन, फसल और चुकौती के रिकॉर्ड से तय करता है।" },
+      "url": "https://www.myscheme.gov.in/schemes/kcc",
+      "documents": ["aadhaar", "land_record", "photo", "bank_account"],
+      "eligibility": { "segments": ["farmer"], "requiresLand": true, "notIf": { "detail": "has_kcc" } }
+    },
+    {
+      "code": "pm_kmy",
+      "name": { "en": "PM Kisan Maan Dhan (pension)", "hi": "पीएम किसान मानधन (पेंशन)" },
+      "benefit": { "en": "A pension of Rs 3,000 a month from age 60 for small and marginal farmers who contribute a small amount each month.", "hi": "छोटे और सीमांत किसानों को 60 वर्ष की उम्र से ₹3,000 मासिक पेंशन, हर महीने थोड़ा अंशदान करने पर।" },
+      "cannotCheck": { "en": "You must join between the ages of 18 and 40.", "hi": "18 से 40 वर्ष की उम्र में जुड़ना होता है।" },
+      "url": "https://maandhan.in/",
+      "documents": ["aadhaar", "land_record", "bank_account"],
+      "eligibility": { "segments": ["farmer"], "requiresLand": true, "maxHectares": 2 }
+    },
+    {
+      "code": "shc",
+      "name": { "en": "Soil Health Card", "hi": "मृदा स्वास्थ्य कार्ड" },
+      "benefit": { "en": "Free soil testing with a card telling you which nutrients your field needs.", "hi": "मुफ़्त मिट्टी जाँच, और एक कार्ड जो बताता है कि खेत को कौन-से पोषक तत्व चाहिए।" },
+      "cannotCheck": { "en": "Samples are collected by the agriculture department on its own schedule.", "hi": "नमूने कृषि विभाग अपने समय पर लेता है।" },
+      "url": "https://soilhealth.dac.gov.in/",
+      "documents": ["aadhaar", "land_record"],
+      "eligibility": { "segments": ["farmer"], "requiresLand": true }
+    },
+    {
+      "code": "pmksy_pdmc",
+      "name": { "en": "Per Drop More Crop (drip and sprinkler subsidy)", "hi": "प्रति बूँद अधिक फसल (ड्रिप व स्प्रिंकलर सब्सिडी)" },
+      "benefit": { "en": "Subsidy on drip and sprinkler irrigation, higher for small and marginal farmers.", "hi": "ड्रिप और स्प्रिंकलर सिंचाई पर सब्सिडी, छोटे व सीमांत किसानों के लिए ज़्यादा।" },
+      "cannotCheck": { "en": "The subsidy share and the approved suppliers are set by your state.", "hi": "सब्सिडी का हिस्सा और मान्य आपूर्तिकर्ता आपका राज्य तय करता है।" },
+      "url": "https://pmksy.gov.in/",
+      "documents": ["aadhaar", "land_record", "bank_account", "quotation"],
+      "eligibility": { "segments": ["farmer"], "requiresLand": true, "requiresWater": true, "notIf": { "irrigation": ["drip", "sprinkler"] } }
+    },
+    {
+      "code": "pm_kusum",
+      "name": { "en": "PM-KUSUM (solar pumps)", "hi": "पीएम-कुसुम (सोलर पंप)" },
+      "benefit": { "en": "Subsidised standalone solar pumps, and solar panels for existing grid-connected pumps.", "hi": "अलग सोलर पंप पर सब्सिडी, और ग्रिड से जुड़े मौजूदा पंप के लिए सोलर पैनल।" },
+      "cannotCheck": { "en": "Your state's nodal agency opens applications in rounds.", "hi": "आपके राज्य की नोडल एजेंसी आवेदन चरणों में खोलती है।" },
+      "url": "https://pmkusum.mnre.gov.in/",
+      "documents": ["aadhaar", "land_record", "bank_account"],
+      "eligibility": { "segments": ["farmer"], "requiresLand": true, "waterSources": ["borewell", "open_well", "farm_pond", "pond_tank", "river", "canal"] }
+    },
+    {
+      "code": "smam",
+      "name": { "en": "Sub-Mission on Agricultural Mechanisation", "hi": "कृषि यंत्रीकरण उप-मिशन" },
+      "benefit": { "en": "Subsidy on farm machinery, and support to set up custom hiring centres for machines.", "hi": "कृषि मशीनरी पर सब्सिडी, और मशीन किराया केंद्र खोलने में सहायता।" },
+      "cannotCheck": { "en": "Machines must be bought from approved makers; applications go through the state portal.", "hi": "मशीनें मान्य निर्माताओं से खरीदनी होती हैं; आवेदन राज्य पोर्टल से होते हैं।" },
+      "url": "https://agrimachinery.nic.in/",
+      "documents": ["aadhaar", "land_record", "bank_account", "quotation"],
+      "eligibility": { "segments": ["farmer", "partner_national"], "organisationTypes": ["fpo", "cooperative", "shg"] }
+    },
+    {
+      "code": "aif",
+      "name": { "en": "Agriculture Infrastructure Fund", "hi": "कृषि अवसंरचना कोष" },
+      "benefit": { "en": "Loans for storage, processing and other post-harvest infrastructure with interest subvention and a credit guarantee.", "hi": "भंडारण, प्रसंस्करण और कटाई के बाद के ढाँचे के लिए ब्याज सहायता और ऋण गारंटी वाले ऋण।" },
+      "cannotCheck": { "en": "The bank must approve the project.", "hi": "परियोजना को बैंक की मंज़ूरी चाहिए।" },
+      "url": "https://agriinfra.dac.gov.in/",
+      "documents": ["aadhaar", "land_record", "bank_account", "project_report", "registration"],
+      "eligibility": { "segments": ["farmer", "partner_national"], "organisationTypes": ["fpo", "cooperative", "shg", "agri_company", "food_processor"], "relevantKinds": ["processing", "service", "horticulture"] }
+    },
+    {
+      "code": "pmfme",
+      "name": { "en": "PM Formalisation of Micro Food Processing Enterprises", "hi": "पीएम सूक्ष्म खाद्य प्रसंस्करण उद्यम योजना" },
+      "benefit": { "en": "A credit-linked capital subsidy for small food processing units, plus training and branding help.", "hi": "छोटी खाद्य प्रसंस्करण इकाइयों के लिए ऋण से जुड़ी पूँजी सब्सिडी, साथ में प्रशिक्षण और ब्रांडिंग सहायता।" },
+      "cannotCheck": { "en": "The unit must be a micro enterprise; the district resource person helps with the application.", "hi": "इकाई सूक्ष्म उद्यम होनी चाहिए; ज़िले का संसाधन व्यक्ति आवेदन में मदद करता है।" },
+      "url": "https://pmfme.mofpi.gov.in/",
+      "documents": ["aadhaar", "bank_account", "project_report", "quotation"],
+      "eligibility": { "segments": ["farmer", "partner_national"], "organisationTypes": ["fpo", "cooperative", "shg", "food_processor"], "relevantKinds": ["processing"] }
+    },
+    {
+      "code": "midh",
+      "name": { "en": "Mission for Integrated Development of Horticulture", "hi": "एकीकृत बागवानी विकास मिशन" },
+      "benefit": { "en": "Support for orchards, polyhouses, shade-nets, nurseries and post-harvest handling of fruit and vegetables.", "hi": "बाग, पॉलीहाउस, शेड-नेट, नर्सरी और फल-सब्ज़ी के कटाई बाद प्रबंधन के लिए सहायता।" },
+      "cannotCheck": { "en": "Components and rates are set by the state horticulture department.", "hi": "घटक और दरें राज्य बागवानी विभाग तय करता है।" },
+      "url": "https://midh.gov.in/",
+      "documents": ["aadhaar", "land_record", "bank_account", "project_report"],
+      "eligibility": { "segments": ["farmer", "partner_national"], "requiresLand": true, "organisationTypes": ["fpo", "cooperative"], "relevantKinds": ["horticulture", "protected", "vegetable", "spice"] }
+    },
+    {
+      "code": "nlm",
+      "name": { "en": "National Livestock Mission", "hi": "राष्ट्रीय पशुधन मिशन" },
+      "benefit": { "en": "Capital subsidy for poultry, sheep, goat, pig and fodder enterprises, and livestock insurance support.", "hi": "मुर्गी, भेड़, बकरी, सुअर और चारा उद्यमों के लिए पूँजी सब्सिडी, और पशु बीमा में सहायता।" },
+      "cannotCheck": { "en": "A bank loan or own funds must cover the rest of the project.", "hi": "परियोजना का बाकी हिस्सा बैंक ऋण या अपने पैसे से होना चाहिए।" },
+      "url": "https://nlm.udyamimitra.in/",
+      "documents": ["aadhaar", "land_record", "bank_account", "project_report"],
+      "eligibility": { "segments": ["farmer", "partner_national"], "organisationTypes": ["fpo", "cooperative", "shg"], "relevantKinds": ["livestock"] }
+    },
+    {
+      "code": "pmmsy",
+      "name": { "en": "Pradhan Mantri Matsya Sampada Yojana (fisheries)", "hi": "प्रधानमंत्री मत्स्य संपदा योजना" },
+      "benefit": { "en": "Support for fish ponds, hatcheries, cold chain and fishers' welfare.", "hi": "मछली तालाब, हैचरी, कोल्ड चेन और मछुआरों के कल्याण के लिए सहायता।" },
+      "cannotCheck": { "en": "Applications go through the state fisheries department.", "hi": "आवेदन राज्य मत्स्य विभाग से होते हैं।" },
+      "url": "https://pmmsy.dof.gov.in/",
+      "documents": ["aadhaar", "land_record", "bank_account", "project_report"],
+      "eligibility": { "segments": ["farmer", "partner_national"], "organisationTypes": ["fpo", "cooperative", "shg"], "relevantKinds": ["livestock"] }
+    },
+    {
+      "code": "enam",
+      "name": { "en": "e-NAM (national online mandi)", "hi": "ई-नाम (राष्ट्रीय ऑनलाइन मंडी)" },
+      "benefit": { "en": "Sell produce to buyers beyond your own mandi through online bidding at e-NAM mandis.", "hi": "ई-नाम मंडियों में ऑनलाइन बोली से अपनी मंडी के बाहर के खरीदारों को उपज बेचें।" },
+      "cannotCheck": { "en": "Your nearest mandi must be on e-NAM.", "hi": "आपकी नज़दीकी मंडी ई-नाम से जुड़ी होनी चाहिए।" },
+      "url": "https://enam.gov.in/",
+      "documents": ["aadhaar", "bank_account"],
+      "eligibility": { "segments": ["farmer", "partner_national"], "organisationTypes": ["fpo", "cooperative"] }
+    },
+    {
+      "code": "fpo_scheme",
+      "name": { "en": "Formation and Promotion of 10,000 FPOs", "hi": "10,000 एफपीओ का गठन और संवर्धन" },
+      "benefit": { "en": "Handholding, a matching equity grant and a credit guarantee for new farmer producer organisations.", "hi": "नए किसान उत्पादक संगठनों को मार्गदर्शन, बराबरी का इक्विटी अनुदान और ऋण गारंटी।" },
+      "cannotCheck": { "en": "The FPO must be registered and meet the minimum membership for its area.", "hi": "एफपीओ पंजीकृत होना चाहिए और अपने क्षेत्र की न्यूनतम सदस्य संख्या पूरी करनी चाहिए।" },
+      "url": "https://sfacindia.com/",
+      "documents": ["registration", "bank_account", "project_report"],
+      "eligibility": { "segments": ["partner_national"], "organisationTypes": ["fpo"] }
+    }
+  ]
+}

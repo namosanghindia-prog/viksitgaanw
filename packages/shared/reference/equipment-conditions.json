@@ -1,0 +1,10 @@
+{
+  "key": "equipment_conditions",
+  "version": 1,
+  "items": [
+    { "code": "new",       "label": { "en": "New",                 "hi": "नई" } },
+    { "code": "like_new",  "label": { "en": "Used — like new",     "hi": "पुरानी — लगभग नई" } },
+    { "code": "good",      "label": { "en": "Used — good",         "hi": "पुरानी — अच्छी" } },
+    { "code": "fair",      "label": { "en": "Used — needs work",   "hi": "पुरानी — मरम्मत चाहिए" } }
+  ]
+}

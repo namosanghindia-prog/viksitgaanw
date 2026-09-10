@@ -53,6 +53,8 @@ def insert_profile(segment: str, **fields) -> str:
         "details": {},
         "origin": "synced",
         "is_device_owner": False,
+        # Anything that reached this device by sync was shared online.
+        "visibility": "online",
     }
     defaults.update(fields)
     with session_scope() as session:
@@ -89,6 +91,7 @@ def insert_request(profile_id: str, **fields) -> str:
             "opportunity_kind": "horticulture",
             "listing": listing,
             "status": "open",
+            "visibility": "online",
             "origin": "synced",
         }
         defaults.update(fields)
@@ -120,6 +123,15 @@ def insert_interest(request_id: str, profile_id: str, **fields) -> str:
         return interest.id
 
 
+def make_owner(client, body: dict) -> dict:
+    """Create this device's profile and share it online, as answering requires."""
+    response = client.post("/api/v1/profile", json=body)
+    assert response.status_code == 201, response.text
+    shared = client.post("/api/v1/profile/share")
+    assert shared.status_code == 200, shared.text
+    return shared.json()
+
+
 def event_types() -> list[str]:
     with session_scope() as session:
         return list(session.scalars(select(AppEvent.event_type)))
@@ -134,9 +146,7 @@ def farmer(client) -> dict:
 
 @pytest.fixture()
 def investor(client) -> dict:
-    response = client.post("/api/v1/profile", json=investor_india_body())
-    assert response.status_code == 201, response.text
-    return response.json()
+    return make_owner(client, investor_india_body())
 
 
 # --------------------------------------------------------------------------- #
@@ -359,7 +369,7 @@ def test_investor_withdraws(client, investor):
 
 
 def test_requests_hidden_from_segments_not_chosen(client):
-    client.post("/api/v1/profile", json=investor_international_body())
+    make_owner(client, investor_international_body())
     request_id = insert_request(
         insert_profile("farmer"), open_to=["investor_india", "partner_national"]
     )
@@ -382,7 +392,7 @@ def test_closed_requests_are_not_listed_or_answerable(client, investor):
 
 
 def test_partner_offers_a_partnership(client):
-    client.post("/api/v1/profile", json=partner_national_body())
+    make_owner(client, partner_national_body())
     request_id = insert_request(
         insert_profile("farmer"),
         state_code=MAHARASHTRA,
@@ -405,7 +415,7 @@ def test_partner_offers_a_partnership(client):
 
 
 def test_partner_cannot_answer_an_investment_only_request(client):
-    client.post("/api/v1/profile", json=partner_national_body())
+    make_owner(client, partner_national_body())
     request_id = insert_request(
         insert_profile("farmer"),
         seeking=["investment"],
@@ -434,7 +444,7 @@ def test_filtering_by_kind_and_state(client, investor):
 
 
 def test_block_officer_sees_only_their_block_and_only_with_consent(client):
-    client.post("/api/v1/profile", json=government_body())
+    make_owner(client, government_body())
     farmer_id = insert_profile("farmer")
     in_block = insert_request(farmer_id)
     insert_request(farmer_id, open_to=["investor_india"])  # no consent

@@ -7,7 +7,36 @@
 
 import type {
   AdminUnit,
+  AppNotification,
+  Backup,
+  Conversation,
+  Deal,
+  DiaryEntry,
+  DiaryInput,
+  DiarySummary,
   DprRequest,
+  FarmerGroup,
+  FxRates,
+  GroupInput,
+  GroupMemberInput,
+  GroupRequestInput,
+  InboxCounts,
+  Insights,
+  Message,
+  MessageContext,
+  MilestoneInput,
+  PriceSummary,
+  Rating,
+  RatingSummary,
+  Scheme,
+  SchemeApplication,
+  SchemeApplicationInput,
+  SyncRun,
+  SyncStatus,
+  Weather,
+  EnquiryInput,
+  Equipment,
+  EquipmentInput,
   ExportMarketList,
   GeoLocateResult,
   HealthStatus,
@@ -23,8 +52,12 @@ import type {
   LandParcelInput,
   LocationPath,
   OpportunityList,
+  Partnership,
+  PartnershipAsk,
+  PartnershipInput,
   PlaceSuggestion,
   Profile,
+  ProfileCard,
   ProfileInput,
   ProjectReport,
   ReportLanguage,
@@ -32,6 +65,7 @@ import type {
   Seeking,
   Segment,
   TileStatus,
+  TimelineItem,
 } from '@viksitgaanw/shared';
 
 declare global {
@@ -69,14 +103,16 @@ export class ApiUnreachableError extends Error {
 interface RequestOptions {
   method?: string;
   body?: unknown;
-  params?: Record<string, string | number | undefined | null>;
+  params?: Record<string, string | number | string[] | undefined | null>;
   signal?: AbortSignal;
 }
 
 function buildUrl(path: string, params?: RequestOptions['params']): string {
   const url = new URL(`${API_BASE_URL}${path}`);
   for (const [key, value] of Object.entries(params ?? {})) {
-    if (value !== undefined && value !== null && value !== '') {
+    if (Array.isArray(value)) {
+      for (const entry of value) url.searchParams.append(key, entry);
+    } else if (value !== undefined && value !== null && value !== '') {
       url.searchParams.set(key, String(value));
     }
   }
@@ -125,6 +161,10 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     throw new ApiUnreachableError(error);
   }
 
+  return parseResponse<T>(response);
+}
+
+async function parseResponse<T>(response: Response): Promise<T> {
   if (response.status === 204) return undefined as T;
 
   const text = await response.text();
@@ -137,6 +177,24 @@ async function request<T>(path: string, options: RequestOptions = {}): Promise<T
     );
   }
   return payload as T;
+}
+
+/**
+ * Send a picture as the request body. The backend re-encodes it, so the file
+ * goes as picked -- no resizing or form encoding here.
+ */
+async function upload<T>(path: string, file: Blob, method = 'PUT'): Promise<T> {
+  let response: Response;
+  try {
+    response = await fetch(buildUrl(path), {
+      method,
+      headers: { 'Content-Type': file.type || 'application/octet-stream' },
+      body: file,
+    });
+  } catch (error) {
+    throw new ApiUnreachableError(error);
+  }
+  return parseResponse<T>(response);
 }
 
 export const api = {
@@ -311,4 +369,170 @@ export const api = {
     request<InsurancePolicy>(`/insurance/${id}`, { method: 'PUT', body }),
 
   deleteInsurance: (id: string) => request<void>(`/insurance/${id}`, { method: 'DELETE' }),
+
+  /** Absolute URL for a picture path the API returned. */
+  mediaUrl: (path: string | null | undefined) => (path ? `${API_BASE_URL}${path}` : null),
+
+  shareProfile: () => request<Profile>('/profile/share', { method: 'POST' }),
+  unshareProfile: () => request<Profile>('/profile/unshare', { method: 'POST' }),
+  uploadProfilePhoto: (file: Blob) => upload<Profile>('/profile/photo', file),
+  deleteProfilePhoto: () => request<Profile>('/profile/photo', { method: 'DELETE' }),
+
+  /** Other people shared online, for picking a partner. */
+  knownProfiles: (segments: Segment[], signal?: AbortSignal) =>
+    request<ProfileCard[]>('/profiles', { params: { segment: segments }, signal }),
+
+  shareRequest: (id: string) =>
+    request<InvestmentRequest>(`/investment-requests/${id}/share`, { method: 'POST' }),
+  unshareRequest: (id: string) =>
+    request<InvestmentRequest>(`/investment-requests/${id}/unshare`, { method: 'POST' }),
+
+  timeline: (query: { kind?: 'project' | 'equipment'; stateCode?: string }, signal?: AbortSignal) =>
+    request<TimelineItem[]>('/timeline', { params: query, signal }),
+
+  browseEquipment: (
+    query: { type?: string; stateCode?: string; offer?: 'rent' | 'sale' },
+    signal?: AbortSignal,
+  ) => request<Equipment[]>('/equipment', { params: query, signal }),
+  myEquipment: (signal?: AbortSignal) => request<Equipment[]>('/equipment/mine', { signal }),
+  getEquipment: (id: string, signal?: AbortSignal) => request<Equipment>(`/equipment/${id}`, { signal }),
+  createEquipment: (body: EquipmentInput) => request<Equipment>('/equipment', { method: 'POST', body }),
+  updateEquipment: (id: string, body: EquipmentInput) =>
+    request<Equipment>(`/equipment/${id}`, { method: 'PUT', body }),
+  deleteEquipment: (id: string) => request<void>(`/equipment/${id}`, { method: 'DELETE' }),
+  shareEquipment: (id: string) => request<Equipment>(`/equipment/${id}/share`, { method: 'POST' }),
+  unshareEquipment: (id: string) => request<Equipment>(`/equipment/${id}/unshare`, { method: 'POST' }),
+  addEquipmentPhoto: (id: string, file: Blob) => upload<Equipment>(`/equipment/${id}/photos`, file, 'POST'),
+  deleteEquipmentPhoto: (id: string, mediaId: string) =>
+    request<Equipment>(`/equipment/${id}/photos/${mediaId}`, { method: 'DELETE' }),
+
+  sendEnquiry: (listingId: string, body: EnquiryInput) =>
+    request<Equipment>(`/equipment/${listingId}/enquiries`, { method: 'POST', body }),
+  myEnquiries: (signal?: AbortSignal) => request<Equipment[]>('/equipment-enquiries/mine', { signal }),
+  respondToEnquiry: (id: string, status: 'accepted' | 'declined' | 'withdrawn') =>
+    request<Equipment>(`/equipment-enquiries/${id}`, { method: 'PATCH', body: { status } }),
+
+  partnerships: (signal?: AbortSignal) => request<Partnership[]>('/equipment-partnerships', { signal }),
+  addPartner: (body: PartnershipInput) =>
+    request<Partnership>('/equipment-partnerships', { method: 'POST', body }),
+  askToPartner: (sellerId: string, body: PartnershipAsk) =>
+    request<Partnership>(`/equipment-sellers/${sellerId}/partnerships`, { method: 'POST', body }),
+  respondToPartnership: (id: string, status: 'active' | 'declined' | 'ended') =>
+    request<Partnership>(`/equipment-partnerships/${id}`, { method: 'PATCH', body: { status } }),
+
+  /* Inbox */
+  notifications: (signal?: AbortSignal) => request<AppNotification[]>('/notifications', { signal }),
+  inboxCounts: (signal?: AbortSignal) => request<InboxCounts>('/notifications/counts', { signal }),
+  /** Mark these read; no ids marks everything read. */
+  markRead: (ids: string[] = []) => request<void>('/notifications/read', { method: 'POST', body: { ids } }),
+  conversations: (signal?: AbortSignal) => request<Conversation[]>('/conversations', { signal }),
+  thread: (profileId: string, signal?: AbortSignal) =>
+    request<Message[]>(`/conversations/${profileId}/messages`, { signal }),
+  sendMessage: (profileId: string, body: string, context?: { type: MessageContext; id: string }) =>
+    request<Message>(`/conversations/${profileId}/messages`, {
+      method: 'POST',
+      body: { body, contextType: context?.type ?? null, contextId: context?.id ?? null },
+    }),
+
+  /* Deals and milestones */
+  deals: (signal?: AbortSignal) => request<Deal[]>('/deals', { signal }),
+  deal: (id: string, signal?: AbortSignal) => request<Deal>(`/deals/${id}`, { signal }),
+  createDeal: (body: { interestId: string; terms?: string | null; milestones: MilestoneInput[] }) =>
+    request<Deal>('/deals', { method: 'POST', body }),
+  replacePlan: (id: string, body: { terms?: string | null; milestones: MilestoneInput[] }) =>
+    request<Deal>(`/deals/${id}/plan`, { method: 'PUT', body }),
+  agreeDeal: (id: string) => request<Deal>(`/deals/${id}/agree`, { method: 'POST' }),
+  cancelDeal: (id: string) => request<Deal>(`/deals/${id}/cancel`, { method: 'POST' }),
+  submitMilestone: (id: string, note: string) =>
+    request<Deal>(`/milestones/${id}/submit`, { method: 'POST', body: { note } }),
+  reviewMilestone: (
+    id: string,
+    body: { approved: boolean; note?: string | null; releaseReference?: string | null },
+  ) => request<Deal>(`/milestones/${id}/review`, { method: 'POST', body }),
+  addMilestonePhoto: (id: string, file: Blob) => upload<Deal>(`/milestones/${id}/photos`, file, 'POST'),
+  openDispute: (body: { dealId: string; milestoneId?: string | null; reason: string; description: string }) =>
+    request<Deal>('/disputes', { method: 'POST', body }),
+  updateDispute: (id: string, body: { action: 'propose' | 'confirm' | 'withdraw'; resolution?: string | null }) =>
+    request<Deal>(`/disputes/${id}`, { method: 'PATCH', body }),
+  rate: (body: {
+    contextType: 'deal' | 'enquiry' | 'partnership';
+    contextId: string;
+    stars: number;
+    comment?: string | null;
+  }) => request<Rating>('/ratings', { method: 'POST', body }),
+  ratingsFor: (profileId: string, signal?: AbortSignal) =>
+    request<RatingSummary>(`/profiles/${profileId}/ratings`, { signal }),
+
+  /* Farm diary and weather */
+  diary: (parcelId: string, signal?: AbortSignal) =>
+    request<DiaryEntry[]>(`/land-parcels/${parcelId}/diary`, { signal }),
+  diarySummary: (parcelId: string, signal?: AbortSignal) =>
+    request<DiarySummary>(`/land-parcels/${parcelId}/diary/summary`, { signal }),
+  addDiary: (parcelId: string, body: DiaryInput) =>
+    request<DiaryEntry>(`/land-parcels/${parcelId}/diary`, { method: 'POST', body }),
+  updateDiary: (id: string, body: DiaryInput) => request<DiaryEntry>(`/diary/${id}`, { method: 'PUT', body }),
+  deleteDiary: (id: string) => request<void>(`/diary/${id}`, { method: 'DELETE' }),
+  addDiaryPhoto: (id: string, file: Blob) => upload<DiaryEntry>(`/diary/${id}/photos`, file, 'POST'),
+  traceabilityUrl: (id: string) => `${API_BASE_URL}/diary/${id}/traceability.pdf`,
+  weather: (parcelId: string, refresh = false, signal?: AbortSignal) =>
+    request<Weather>(`/land-parcels/${parcelId}/weather`, {
+      params: { refresh: refresh ? 'true' : undefined },
+      signal,
+    }),
+
+  /* Prices and exchange rates */
+  prices: (crop: string, days = 30, signal?: AbortSignal) =>
+    request<PriceSummary>(`/prices/${crop}`, { params: { days }, signal }),
+  importPrices: (file: Blob) => upload<{ imported: number }>('/prices/import', file, 'POST'),
+  fetchPrices: (state?: string) =>
+    request<{ imported: number }>('/prices/fetch', { method: 'POST', params: { state } }),
+  fx: (signal?: AbortSignal) => request<FxRates>('/fx', { signal }),
+  refreshFx: () => request<FxRates>('/fx/refresh', { method: 'POST' }),
+  setFx: (currency: string, inrPerUnit: number) =>
+    request<FxRates>(`/fx/${currency}`, { method: 'PUT', body: { inrPerUnit } }),
+  clearFx: (currency: string) => request<FxRates>(`/fx/${currency}`, { method: 'DELETE' }),
+
+  /* Schemes */
+  schemes: (signal?: AbortSignal) => request<Scheme[]>('/schemes', { signal }),
+  saveApplication: (code: string, body: SchemeApplicationInput) =>
+    request<SchemeApplication>(`/schemes/${code}/application`, { method: 'PUT', body }),
+  deleteApplication: (code: string) => request<void>(`/schemes/${code}/application`, { method: 'DELETE' }),
+
+  /* Groups */
+  groups: (districtCode?: string, signal?: AbortSignal) =>
+    request<FarmerGroup[]>('/groups', { params: { districtCode }, signal }),
+  myGroups: (signal?: AbortSignal) => request<FarmerGroup[]>('/groups/mine', { signal }),
+  group: (id: string, signal?: AbortSignal) => request<FarmerGroup>(`/groups/${id}`, { signal }),
+  createGroup: (body: GroupInput) => request<FarmerGroup>('/groups', { method: 'POST', body }),
+  updateGroup: (id: string, body: GroupInput) => request<FarmerGroup>(`/groups/${id}`, { method: 'PUT', body }),
+  deleteGroup: (id: string) => request<void>(`/groups/${id}`, { method: 'DELETE' }),
+  shareGroup: (id: string) => request<FarmerGroup>(`/groups/${id}/share`, { method: 'POST' }),
+  unshareGroup: (id: string) => request<FarmerGroup>(`/groups/${id}/unshare`, { method: 'POST' }),
+  addMember: (id: string, body: GroupMemberInput) =>
+    request<FarmerGroup>(`/groups/${id}/members`, { method: 'POST', body }),
+  setMemberStatus: (id: string, memberId: string, status: 'active' | 'left') =>
+    request<FarmerGroup>(`/groups/${id}/members/${memberId}`, { method: 'PATCH', params: { status } }),
+  removeMember: (id: string, memberId: string) =>
+    request<FarmerGroup>(`/groups/${id}/members/${memberId}`, { method: 'DELETE' }),
+  joinGroup: (id: string, body: { landHectares: number; crops: string[] }) =>
+    request<FarmerGroup>(`/groups/${id}/join`, { method: 'POST', body }),
+  leaveGroup: (id: string) => request<FarmerGroup>(`/groups/${id}/leave`, { method: 'POST' }),
+  groupRequest: (id: string, body: GroupRequestInput) =>
+    request<InvestmentRequest>(`/groups/${id}/requests`, { method: 'POST', body }),
+
+  /* My data */
+  backups: (signal?: AbortSignal) => request<Backup[]>('/backups', { signal }),
+  createBackup: () => request<Backup>('/backups', { method: 'POST' }),
+  backupUrl: (backup: Backup) => `${API_BASE_URL}${backup.downloadPath}`,
+  restoreBackup: (file: Blob) => upload<{ staged: boolean; message: string }>('/backups/restore', file, 'POST'),
+  myDataUrl: () => `${API_BASE_URL}/my-data`,
+  eraseMyData: (confirm: string) =>
+    request<Record<string, unknown>>('/my-data/erase', { method: 'POST', body: { confirm } }),
+  insights: (signal?: AbortSignal) => request<Insights>('/insights', { signal }),
+
+  /* Sync */
+  syncStatus: (signal?: AbortSignal) => request<SyncStatus>('/sync/status', { signal }),
+  configureSync: (serverUrl: string | null) =>
+    request<SyncStatus>('/sync/config', { method: 'PUT', body: { serverUrl } }),
+  runSync: () => request<SyncRun>('/sync/run', { method: 'POST' }),
 };

@@ -125,6 +125,9 @@ export function MyLandPage() {
               <Link className="button button--small" to={`/land/${parcel.id}/invest`}>
                 {t('nav.findInvestors')}
               </Link>
+              <Link className="button button--small" to={`/land/${parcel.id}/farm`}>
+                📒 {t('farm.open')}
+              </Link>
               <Link className="button button--small button--ghost" to={`/land/${parcel.id}/insurance`}>
                 🛡 {t('insurance.title')}
               </Link>

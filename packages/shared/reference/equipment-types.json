@@ -1,0 +1,40 @@
+{
+  "key": "equipment_types",
+  "version": 1,
+  "categories": [
+    { "code": "power",       "label": { "en": "Power and haulage",       "hi": "शक्ति और ढुलाई" } },
+    { "code": "tillage",     "label": { "en": "Land preparation",        "hi": "ज़मीन की तैयारी" } },
+    { "code": "sowing",      "label": { "en": "Sowing and planting",     "hi": "बुवाई और रोपाई" } },
+    { "code": "protection",  "label": { "en": "Crop protection",         "hi": "फसल सुरक्षा" } },
+    { "code": "water",       "label": { "en": "Water and irrigation",    "hi": "पानी और सिंचाई" } },
+    { "code": "harvest",     "label": { "en": "Harvest and post-harvest", "hi": "कटाई और कटाई के बाद" } },
+    { "code": "livestock",   "label": { "en": "Livestock and dairy",     "hi": "पशुपालन और डेयरी" } },
+    { "code": "other",       "label": { "en": "Other",                   "hi": "अन्य" } }
+  ],
+  "items": [
+    { "code": "tractor",        "category": "power",      "label": { "en": "Tractor",                    "hi": "ट्रैक्टर" } },
+    { "code": "power_tiller",   "category": "power",      "label": { "en": "Power tiller",               "hi": "पावर टिलर" } },
+    { "code": "trolley",        "category": "power",      "label": { "en": "Trolley / trailer",          "hi": "ट्रॉली" } },
+    { "code": "rotavator",      "category": "tillage",    "label": { "en": "Rotavator",                  "hi": "रोटावेटर" } },
+    { "code": "cultivator",     "category": "tillage",    "label": { "en": "Cultivator",                 "hi": "कल्टीवेटर" } },
+    { "code": "plough",         "category": "tillage",    "label": { "en": "Plough / disc harrow",       "hi": "हल / डिस्क हैरो" } },
+    { "code": "laser_leveller", "category": "tillage",    "label": { "en": "Laser land leveller",        "hi": "लेज़र लैंड लेवलर" } },
+    { "code": "seed_drill",     "category": "sowing",     "label": { "en": "Seed drill / happy seeder",  "hi": "सीड ड्रिल / हैप्पी सीडर" } },
+    { "code": "transplanter",   "category": "sowing",     "label": { "en": "Paddy transplanter",         "hi": "धान रोपाई मशीन" } },
+    { "code": "sprayer",        "category": "protection", "label": { "en": "Sprayer",                    "hi": "स्प्रेयर" } },
+    { "code": "drone",          "category": "protection", "label": { "en": "Agricultural drone",         "hi": "कृषि ड्रोन" } },
+    { "code": "pump",           "category": "water",      "label": { "en": "Pump set / solar pump",      "hi": "पंप सेट / सोलर पंप" } },
+    { "code": "drip_kit",       "category": "water",      "label": { "en": "Drip irrigation kit",        "hi": "ड्रिप सिंचाई किट" } },
+    { "code": "sprinkler_set",  "category": "water",      "label": { "en": "Sprinkler set",              "hi": "स्प्रिंकलर सेट" } },
+    { "code": "harvester",      "category": "harvest",    "label": { "en": "Combine harvester",          "hi": "कंबाइन हार्वेस्टर" } },
+    { "code": "reaper",         "category": "harvest",    "label": { "en": "Reaper / reaper-binder",     "hi": "रीपर / रीपर-बाइंडर" } },
+    { "code": "thresher",       "category": "harvest",    "label": { "en": "Thresher",                   "hi": "थ्रेशर" } },
+    { "code": "baler",          "category": "harvest",    "label": { "en": "Straw baler",                "hi": "पुआल बेलर" } },
+    { "code": "grader",         "category": "harvest",    "label": { "en": "Grader / cleaner",           "hi": "ग्रेडर / क्लीनर" } },
+    { "code": "dryer",          "category": "harvest",    "label": { "en": "Dryer / solar dryer",        "hi": "ड्रायर / सोलर ड्रायर" } },
+    { "code": "chaff_cutter",   "category": "livestock",  "label": { "en": "Chaff cutter",               "hi": "चारा कटर" } },
+    { "code": "milking_machine","category": "livestock",  "label": { "en": "Milking machine",            "hi": "दूध निकालने की मशीन" } },
+    { "code": "bulk_milk_cooler","category": "livestock", "label": { "en": "Bulk milk cooler",           "hi": "बल्क मिल्क कूलर" } },
+    { "code": "other",          "category": "other",      "label": { "en": "Other machine",              "hi": "अन्य मशीन" } }
+  ]
+}

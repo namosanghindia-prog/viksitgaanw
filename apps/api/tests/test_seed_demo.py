@@ -32,10 +32,47 @@ def test_seed_gives_an_investor_something_to_browse(client):
     statuses = {policy["status"] for row in rows for policy in row["insurance"]}
     assert statuses == {"insured", "planned"}, "the sample should show both kinds of cover"
 
+    machines = client.get("/api/v1/equipment").json()
+    assert machines and all(machine["origin"] == "demo" for machine in machines)
+    kinds = {item["type"] for item in client.get("/api/v1/timeline").json()}
+    assert kinds == {"project", "equipment"}
+
     # Re-running replaces the sample rather than doubling it.
     before = _count(InvestmentRequest)
     seed_demo_marketplace.main([])
     assert _count(InvestmentRequest) == before
+
+
+def test_seed_gives_a_seller_enquiries_and_a_partner_request(client):
+    import seed_demo_marketplace
+
+    from .test_marketplace import make_owner
+    from .test_profiles import partner_national_body
+
+    make_owner(client, partner_national_body())
+    listing = client.post(
+        "/api/v1/equipment",
+        json={
+            "equipmentType": "rotavator",
+            "title": "Rotavator",
+            "forRent": True,
+            "rentRate": 1800,
+            "rentUnit": "acre",
+            "stateCode": "27",
+            "districtCode": "992701",
+        },
+    ).json()
+    client.post(f"/api/v1/equipment/{listing['id']}/share")
+    seed_demo_marketplace.main([])
+
+    [mine] = client.get("/api/v1/equipment/mine").json()
+    assert mine["enquiryCounts"] == {"sent": 1}
+    partnerships = client.get("/api/v1/equipment-partnerships").json()
+    assert [(p["status"], p["initiatedBy"]) for p in partnerships] == [("proposed", "partner")]
+
+    seed_demo_marketplace.main(["--remove"])
+    assert client.get("/api/v1/equipment-partnerships").json() == []
+    assert client.get("/api/v1/equipment/mine").json()[0]["enquiryCounts"] == {}
 
 
 def test_seed_answers_a_farmers_own_request_and_removes_cleanly(client, parcel_id):

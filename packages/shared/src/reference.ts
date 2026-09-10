@@ -4,8 +4,13 @@ import certifications from '../reference/certifications.json';
 import countries from '../reference/countries.json';
 import cropsRef from '../reference/crops.json';
 import depthUnits from '../reference/depth-units.json';
+import diaryActivities from '../reference/diary-activities.json';
+import disputeReasons from '../reference/dispute-reasons.json';
+import equipmentConditions from '../reference/equipment-conditions.json';
+import equipmentTypes from '../reference/equipment-types.json';
 import farmerNeeds from '../reference/farmer-needs.json';
 import governmentLevels from '../reference/government-levels.json';
+import groupKinds from '../reference/group-kinds.json';
 import insuranceSchemes from '../reference/insurance-schemes.json';
 import insuranceTypes from '../reference/insurance-types.json';
 import investmentModes from '../reference/investment-modes.json';
@@ -13,12 +18,16 @@ import investorTypes from '../reference/investor-types.json';
 import irrigationTypes from '../reference/irrigation-types.json';
 import organisationTypes from '../reference/organisation-types.json';
 import ownershipTypes from '../reference/ownership-types.json';
+import partnerRoles from '../reference/partner-roles.json';
 import partnershipTypes from '../reference/partnership-types.json';
+import quantityUnits from '../reference/quantity-units.json';
+import rentUnits from '../reference/rent-units.json';
 import riskAppetites from '../reference/risk-appetites.json';
 import soilTypes from '../reference/soil-types.json';
 import userSegments from '../reference/user-segments.json';
 import waterSources from '../reference/water-sources.json';
 import waterTypes from '../reference/water-types.json';
+import schemesKnowledge from '../knowledge/schemes.json';
 
 import type { Label, LanguageCode, ReferenceItem, ReferenceList } from './types';
 
@@ -28,8 +37,13 @@ export const REFERENCE = {
   countries: countries as ReferenceList,
   crops: cropsRef as ReferenceList,
   depth_units: depthUnits as ReferenceList,
+  diary_activities: diaryActivities as ReferenceList,
+  dispute_reasons: disputeReasons as ReferenceList,
+  equipment_conditions: equipmentConditions as ReferenceList,
+  equipment_types: equipmentTypes as ReferenceList,
   farmer_needs: farmerNeeds as ReferenceList,
   government_levels: governmentLevels as ReferenceList,
+  group_kinds: groupKinds as ReferenceList,
   insurance_schemes: insuranceSchemes as ReferenceList,
   insurance_types: insuranceTypes as ReferenceList,
   investment_modes: investmentModes as ReferenceList,
@@ -37,7 +51,10 @@ export const REFERENCE = {
   irrigation_types: irrigationTypes as ReferenceList,
   organisation_types: organisationTypes as ReferenceList,
   ownership_types: ownershipTypes as ReferenceList,
+  partner_roles: partnerRoles as ReferenceList,
   partnership_types: partnershipTypes as ReferenceList,
+  quantity_units: quantityUnits as ReferenceList,
+  rent_units: rentUnits as ReferenceList,
   risk_appetites: riskAppetites as ReferenceList,
   soil_types: soilTypes as ReferenceList,
   user_segments: userSegments as ReferenceList,
@@ -107,3 +124,6 @@ export function insuranceCategoriesFor(scope: string): ReferenceItem[] {
 export function schemesFor(category: string): ReferenceItem[] {
   return REFERENCE.insurance_schemes.items.filter((item) => item.categories?.includes(category));
 }
+
+/** Papers a government scheme may ask for, by code. */
+export const SCHEME_DOCUMENTS: ReferenceItem[] = schemesKnowledge.documents as ReferenceItem[];

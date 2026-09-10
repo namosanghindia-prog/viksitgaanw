@@ -148,9 +148,15 @@ def _plan_facts(report: ProjectReport) -> dict[str, Any]:
 
 
 def visible_to(request: InvestmentRequest, viewer: Profile) -> bool:
-    """Whether ``viewer`` may see ``request`` at all."""
+    """Whether ``viewer`` may see ``request`` at all.
+
+    The farmer always sees their own. Anyone else needs the request to be
+    shared online *and* shown to their kind of profile.
+    """
     if request.profile_id == viewer.id:
         return True
+    if request.visibility != "online":
+        return False
     if viewer.segment not in (request.open_to or []):
         return False
     if viewer.segment == seg.GOVERNMENT:
@@ -331,6 +337,8 @@ def serialise_request(
         insurance_required=rule.required,
         insurance_recommended=rule.recommended,
         fully_insured=cover.summary(policies, rule.required)["fully_insured"],
+        visibility=request.visibility,
+        shared_at=request.shared_at,
         origin=request.origin,
         created_at=request.created_at,
         updated_at=request.updated_at,
@@ -520,8 +528,18 @@ def send_interest(
         raise MarketplaceError("This request is not open to your profile type.", 403)
     if request.status != "open":
         raise MarketplaceError("This request is no longer open.")
+    if owner.visibility != "online":
+        raise MarketplaceError(
+            "Share your profile online first, so the farmer can see who is answering."
+        )
 
-    kind = seg.interest_kind(owner.segment)
+    allowed = seg.interest_kinds(owner.segment, owner.details)
+    kind = data.kind or allowed[0]
+    if kind not in allowed:
+        raise MarketplaceError(
+            "Your profile does not offer investment. Tick 'we also invest' on your profile first.",
+            422,
+        )
     if kind not in (request.seeking or []):
         raise MarketplaceError(
             "This farmer is not looking for "

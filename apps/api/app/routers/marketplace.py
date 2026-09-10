@@ -21,7 +21,7 @@ from ..schemas import (
     InvestmentRequestOut,
     InvestmentRequestUpdate,
 )
-from ..services import marketplace
+from ..services import marketplace, sharing
 from ..services.marketplace import MarketplaceError
 from ..services.profiles import get_owner
 
@@ -109,6 +109,33 @@ def update_request(
         marketplace.update_request(session, owner, request, payload)
     except MarketplaceError as exc:
         raise _fail(exc) from exc
+    session.commit()
+    session.refresh(request)
+    return marketplace.serialise_request(session, request, owner)
+
+
+@router.post("/investment-requests/{request_id}/share", response_model=InvestmentRequestOut)
+def share_request(request_id: str, session: Session = Depends(get_session)) -> InvestmentRequestOut:
+    """Put a draft request on the common timeline for the audiences it names."""
+    owner = _owner(session)
+    request = _request_or_404(session, request_id, owner)
+    try:
+        sharing.share_item(session, owner, request)
+    except sharing.SharingError as exc:
+        raise HTTPException(status_code=exc.status, detail=str(exc)) from exc
+    session.commit()
+    session.refresh(request)
+    return marketplace.serialise_request(session, request, owner)
+
+
+@router.post("/investment-requests/{request_id}/unshare", response_model=InvestmentRequestOut)
+def unshare_request(request_id: str, session: Session = Depends(get_session)) -> InvestmentRequestOut:
+    owner = _owner(session)
+    request = _request_or_404(session, request_id, owner)
+    try:
+        sharing.unshare_item(session, owner, request)
+    except sharing.SharingError as exc:
+        raise HTTPException(status_code=exc.status, detail=str(exc)) from exc
     session.commit()
     session.refresh(request)
     return marketplace.serialise_request(session, request, owner)

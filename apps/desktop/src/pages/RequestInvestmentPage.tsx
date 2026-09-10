@@ -43,7 +43,9 @@ export function RequestInvestmentPage() {
   const [seeking, setSeeking] = useState<string[]>(['investment']);
   const [modes, setModes] = useState<string[]>(['loan', 'revenue_share']);
   const [partnershipTypes, setPartnershipTypes] = useState<string[]>([]);
-  const [openTo, setOpenTo] = useState<string[]>(['investor_india', 'partner_national', 'government']);
+  // Other farmers see it on the common timeline, read-only; they cannot
+  // answer or see contact details, so it is on by default.
+  const [openTo, setOpenTo] = useState<string[]>(['investor_india', 'partner_national', 'government', 'farmer']);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [busy, setBusy] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -103,9 +105,16 @@ export function RequestInvestmentPage() {
     [t],
   );
 
-  const audienceItems = useMemo(
-    () => REFERENCE.user_segments.items.filter((item) => AUDIENCE_SEGMENTS.includes(item.code as Segment)),
-    [],
+  const audienceItems = useMemo<ReferenceItem[]>(
+    () =>
+      REFERENCE.user_segments.items
+        .filter((item) => AUDIENCE_SEGMENTS.includes(item.code as Segment))
+        .map((item) =>
+          item.code === 'farmer'
+            ? { ...item, label: { en: t('request.farmerAudience'), hi: t('request.farmerAudience') } }
+            : item,
+        ),
+    [t],
   );
 
   const validate = (): boolean => {
@@ -312,6 +321,7 @@ export function RequestInvestmentPage() {
         <p className="callout callout--info">{t('requests.safety')}</p>
       </section>
 
+      <p className="callout callout--info">{t('share.draftNote')}</p>
       {saveError ? <p className="callout callout--error">{saveError}</p> : null}
 
       <div className="actions">
