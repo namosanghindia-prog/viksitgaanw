@@ -21,8 +21,22 @@ class EventType:
     PARCEL_UPDATED = "land_parcel.updated"
     PARCEL_DELETED = "land_parcel.deleted"
     FARMER_CREATED = "farmer.created"
-    # Reserved for the next slices of phase 1 / phase 2.
+    PROFILE_CREATED = "profile.created"
+    PROFILE_UPDATED = "profile.updated"
+    PROFILE_DELETED = "profile.deleted"
+    REQUEST_CREATED = "investment_request.created"
+    REQUEST_UPDATED = "investment_request.updated"
+    INTEREST_SENT = "investment_interest.sent"
+    INTEREST_UPDATED = "investment_interest.updated"
+    #: A farmer accepted an investor or partner. The unit the success fee
+    #: will eventually be measured against, so it is its own event rather than
+    #: a status inside INTEREST_UPDATED.
+    MATCH_MADE = "investment_interest.accepted"
+    INSURANCE_ADDED = "insurance_policy.added"
+    INSURANCE_UPDATED = "insurance_policy.updated"
+    INSURANCE_REMOVED = "insurance_policy.removed"
     REPORT_GENERATED = "project_report.generated"
+    # Reserved: needs the milestone-based trust layer before real money moves.
     DEAL_COMPLETED = "deal.completed"
 
 

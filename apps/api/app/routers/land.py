@@ -11,14 +11,14 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..db import get_session
-from ..models import District, LandParcel, State, SubDistrict, Village
+from ..models import LandParcel
 from ..schemas import LandParcelCreate, LandParcelOut, LandParcelUpdate
 from ..services.area import UnknownAreaUnitError, hectares_to_acres, to_hectares
 from ..services.depth import UnknownDepthUnitError
 from ..services.depth import to_metres as depth_to_metres
 from ..services.events import EventType, enqueue_sync, record_event
 from ..services.farmers import get_or_create_default_farmer
-from ..services.hierarchy import resolve_location
+from ..services.hierarchy import location_error, resolve_location
 
 router = APIRouter(prefix="/land-parcels", tags=["land"])
 
@@ -70,57 +70,15 @@ def _validate_location(session: Session, payload: LandParcelCreate) -> None:
     A parcel whose district code does not exist would produce a project report
     no bank could verify, so this fails loudly rather than storing it.
     """
-    if session.get(State, payload.state_code) is None:
-        raise HTTPException(
-            status_code=422, detail=f"Unknown state code: {payload.state_code}"
-        )
-
-    district = session.get(District, payload.district_code)
-    if district is None:
-        raise HTTPException(
-            status_code=422, detail=f"Unknown district code: {payload.district_code}"
-        )
-    if district.state_code != payload.state_code:
-        raise HTTPException(
-            status_code=422,
-            detail=f"District {payload.district_code} does not belong to state {payload.state_code}.",
-        )
-
-    if payload.subdistrict_code:
-        subdistrict = session.get(SubDistrict, payload.subdistrict_code)
-        if subdistrict is None:
-            raise HTTPException(
-                status_code=422,
-                detail=f"Unknown sub-district code: {payload.subdistrict_code}",
-            )
-        if subdistrict.district_code != payload.district_code:
-            raise HTTPException(
-                status_code=422,
-                detail=(
-                    f"Sub-district {payload.subdistrict_code} does not belong to "
-                    f"district {payload.district_code}."
-                ),
-            )
-
-    if payload.village_code:
-        if not payload.subdistrict_code:
-            raise HTTPException(
-                status_code=422,
-                detail="A village cannot be set without its sub-district.",
-            )
-        village = session.get(Village, payload.village_code)
-        if village is None:
-            raise HTTPException(
-                status_code=422, detail=f"Unknown village code: {payload.village_code}"
-            )
-        if village.subdistrict_code != payload.subdistrict_code:
-            raise HTTPException(
-                status_code=422,
-                detail=(
-                    f"Village {payload.village_code} does not belong to "
-                    f"sub-district {payload.subdistrict_code}."
-                ),
-            )
+    error = location_error(
+        session,
+        state_code=payload.state_code,
+        district_code=payload.district_code,
+        subdistrict_code=payload.subdistrict_code,
+        village_code=payload.village_code,
+    )
+    if error:
+        raise HTTPException(status_code=422, detail=error)
 
 
 @router.post("", response_model=LandParcelOut, status_code=status.HTTP_201_CREATED)

@@ -4,10 +4,21 @@ A village-focused Agricultural Operating System for India. It runs on the
 villager's own laptop or phone — that device *is* the server — works fully
 offline, and syncs to the cloud only when there is internet.
 
-**Current state: phase 1 complete.** A farmer can enter a plot, see ranked
-farming and agri-business options costed for that specific piece of land, and
-generate a bank-format project report as a PDF in their own language. See
-[Roadmap](#roadmap) for what is next.
+**Current state: phase 1 complete, phase 2 started.** A farmer can enter a
+plot, see ranked farming and agri-business options costed for that specific
+piece of land, and generate a bank-format project report as a PDF in their own
+language. Profiles now exist for all six kinds of user, and a farmer can turn a
+plot and its report into an investment request that investors and partners
+answer. See [Roadmap](#roadmap) for what is next.
+
+> [!WARNING]
+> **Development build — not for public release.** Nothing here should be
+> published online or put in front of real users yet: there is no identity
+> verification (every profile shows as unverified), no cloud sync (requests do
+> not travel between devices except through the sample-data script), no trust
+> or milestone layer for real money, and the foreign-investment and insurance
+> guidance has not been reviewed by a lawyer or checked against current scheme
+> notifications. Server-side error messages are English only.
 
 ---
 
@@ -51,10 +62,12 @@ The download is ~10 MB and the import takes about a minute, producing a
 ```bash
 npm run api          # local FastAPI backend on 127.0.0.1:8756 (docs at /docs)
 npm run dev:web      # Vite dev server on 127.0.0.1:5273, in a normal browser
-cd apps/api && python -m pytest    # API test suite (214 tests)
+cd apps/api && python -m pytest    # API test suite (335 tests)
 npm run typecheck    # TypeScript
 npm run build        # production frontend build
 python scripts/check_translations.py   # report translation coverage
+python scripts/seed_demo_marketplace.py            # sample marketplace data
+python scripts/seed_demo_marketplace.py --remove   # ...and take it out again
 ```
 
 ---
@@ -97,6 +110,20 @@ python scripts/check_translations.py   # report translation coverage
 - **Offline-first plumbing** — a durable sync outbox and an append-only event
   log are written on every change, so the cloud sync worker and usage metering
   can be added later without touching the write paths or backfilling history.
+- **Profiles for six kinds of user** — farmer, Indian investor, international
+  investor, national farmer partner (FPOs, cooperatives, agri-companies,
+  processors, exporters), international farmer partner (foreign buyers,
+  importers, agri-companies, research bodies) and government (Gram Panchayat to
+  central ministry). See [Profiles and the marketplace](#profiles-and-the-marketplace).
+- **Investment requests** — a farmer turns a plot, ideally with its project
+  report, into a request for investment, a partner, or both, and chooses who may
+  see it. Investors and partners browse requests ranked by how well they match
+  their own profile, and answer; the farmer accepts or declines. No money moves
+  through the app yet.
+- **Insurance** — crop cover per plot and season, personal and trade cover on
+  profiles, and project cover on every request, with the categories a project
+  *must* carry decided by the kind of farming it is. See
+  [Profiles and the marketplace](#profiles-and-the-marketplace).
 
 ---
 
@@ -155,6 +182,9 @@ mid-write on a machine that may lose power.
 | `states`, `districts`, `subdistricts`, `villages` | Imported LGD hierarchy (read-only reference)     |
 | `farmers`, `land_parcels`                      | The user's own records                             |
 | `project_reports`                              | Index of generated DPRs; the PDFs live on disk     |
+| `profiles`                                     | All six user segments; one row is the device owner |
+| `investment_requests`, `investment_interests`  | The marketplace: farmers' asks and the answers     |
+| `insurance_policies`                           | Cover on a plot, a profile or a request            |
 | `sync_queue`                                   | Durable outbox for the eventual cloud push         |
 | `app_events`                                   | Append-only log; the basis for usage metering      |
 | `dataset_meta`                                 | Which LGD release produced the location names      |
@@ -261,6 +291,93 @@ bank is asked to lend against.
 
 ---
 
+## Profiles and the marketplace
+
+**One profile per device.** Whoever owns this laptop or phone sets up one
+profile on first run, and the app reshapes itself around it: a farmer sees
+their land and their requests, an investor or partner sees farm projects to
+answer, a government officer sees requests in their jurisdiction. The API has
+no login because it only listens on loopback; every marketplace call acts as
+the device owner. Other people's profiles sit in the same `profiles` table,
+marked `origin = synced`, and only ever reach the UI as cards.
+
+**What each segment records.** Common fields (name, organisation, phone, email,
+place) are columns; what differs is in a `details` JSON column checked against
+a per-segment schema in `apps/api/app/schemas.py`:
+
+| Segment                 | Must give                                               | Checked                                      |
+| ----------------------- | ------------------------------------------------------- | -------------------------------------------- |
+| Farmer                  | Name, mobile, state and district                        | 10-digit Indian mobile; LGD codes            |
+| Indian investor         | Investor type, ways of investing, mobile                | PAN format; organisation name for firms      |
+| International investor  | Investor type, ways of investing, country, email        | Country outside India; FDI acknowledgement   |
+| National farmer partner | Organisation name and type, what it offers, state       | GSTIN format; organisation type for segment  |
+| International partner   | Organisation name and type, what it offers, country     | Country outside India                        |
+| Government              | Office, level, department, designation, official email  | The area the level covers, as LGD codes      |
+
+**Privacy by default.** A request's public face is a `listing` snapshot taken
+when it is published: place names, land facts and the report's headline
+figures. It leaves out the phone number, survey number and pin. Contact details
+are exchanged only when a farmer accepts an interest. International and
+government visibility are both opt-in, and a request a viewer may not see
+returns 404 rather than 403.
+
+**Identity.** Aadhaar numbers are never collected or stored.
+`apps/api/app/services/kyc.py` fixes which verification route applies to which
+segment (Aadhaar eKYC and DigiLocker for farmers, passport checks abroad,
+registration documents for organisations, official email for government) and
+refuses plainly until a UIDAI-authorised KUA is contracted. Every profile is
+shown as "not verified" until then.
+
+**Foreign investment.** Foreign nationals, NRIs and OCIs cannot buy or lease
+Indian farmland, and FDI in farming is permitted only for some activities.
+International investors must acknowledge this to create a profile, farmers are
+warned before showing a request abroad, and investment modes describe a stake
+in the farm *business*, never the land. This is guidance, not legal advice, and
+should be reviewed by counsel before real money moves.
+
+**Match score.** Each request is scored 0–100 against the viewer's profile:
+for investors, preferred states, sectors, ticket size and investment mode; for
+partners, operating states, partnership types and crops. A criterion the
+viewer left blank scores half, so an empty preference is neutral rather than a
+penalty. The reasons are shown beside the score.
+
+**Insurance.** Policies live in one `insurance_policies` table, attached to
+exactly one of a land parcel (crop cover per season, polyhouse structures), the
+owner's profile (a farmer's accident, life, health, animals and machinery; a
+partner's cargo, trade-credit and premises cover), or an investment request
+(the project's own cover). Which categories each place accepts is the `scopes`
+field in `packages/shared/reference/insurance-types.json`, and the schemes —
+PMFBY, RWBCIS, NLM livestock, PMSBY, PMJJBY, PM-JAY, ECGC, or a private
+policy — are in `insurance-schemes.json` with their published premium terms.
+
+What a project must carry is content, not code:
+`packages/shared/knowledge/insurance-rules.json` maps each kind of option (and a
+few specific options) to **required** and **recommended** categories —
+livestock projects require animal cover, polyhouses their structure,
+processing units fire-and-allied cover, and hire centres and drone services
+machinery cover because the law already requires third-party insurance for
+them. A request cannot be published until every required category has either
+a policy or the farmer's promise to insure before funds are released; the
+promise is shown to investors as exactly that, and turns into a policy later
+from *Find investors*. An expired policy does not count, and a required
+policy cannot be deleted while the request is open. Investors see who insures
+the project, for how much and until when, but the policy number stays masked
+and the premium hidden until the farmer accepts them.
+
+**Events.** `profile.*`, `investment_request.*` and `investment_interest.*`
+are recorded, with `investment_interest.accepted` as its own event: it is the
+match the success fee will eventually be measured against. `deal.completed`
+stays reserved for when the trust layer exists.
+
+**Trying it on one machine.** Until cloud sync exists an investor's device has
+no way to receive a farmer's request. `scripts/seed_demo_marketplace.py` stands
+in for it: it adds sample requests in real LGD districts (plus one in the
+owner's own district), and on a farmer's device sample answers to the farmer's
+open requests. Everything it writes is `origin = demo`, labelled "Sample data"
+in the app, and removed by `--remove`.
+
+---
+
 ## Design notes
 
 **Built for the actual user.** A meaningful share of users read slowly or not
@@ -284,16 +401,20 @@ bills on the latter two, and retrofitting an event log means losing history.
 Phase 1 is complete: offline location selector, land intake, suggestion engine,
 and project report PDFs.
 
-Phase 2: investor marketplace and matching, trust/dispute layer with
-milestone-based fund release, FPO grouping, mandi prices, equipment rental.
+Phase 2, done: profiles for all six segments, investment requests, interests,
+match scoring, and insurance on plots, profiles and projects. Phase 2, next: cloud sync so requests and interests travel
+between devices, KYC through an authorised provider, the trust/dispute layer
+with milestone-based fund release (required before any money moves), FPO
+grouping, mandi prices, equipment rental.
 
 Phase 3: self-hosted map and geocoding infrastructure, government scheme
 aggregator, partnership-based verification tier, international market
 intelligence.
 
-Integration points already stubbed: `Farmer.kyc_status` for Aadhaar eKYC and
-DigiLocker; `sync_queue` for cloud sync; `LandParcel.latitude/longitude` for
-Leaflet plot mapping.
+Integration points already stubbed: `services/kyc.py` and the `Profile.kyc_*`
+columns for Aadhaar eKYC, DigiLocker and the later police-verification tier;
+`sync_queue` for cloud sync; `LandParcel.latitude/longitude` for Leaflet plot
+mapping.
 
 ---
 

@@ -122,6 +122,12 @@ export function MyLandPage() {
               >
                 {t('plan.seeOptions')}
               </Link>
+              <Link className="button button--small" to={`/land/${parcel.id}/invest`}>
+                {t('nav.findInvestors')}
+              </Link>
+              <Link className="button button--small button--ghost" to={`/land/${parcel.id}/insurance`}>
+                🛡 {t('insurance.title')}
+              </Link>
               <span className="badge" title={t('review.savedHelp')}>
                 {parcel.syncState === 'synced' ? '☁' : '💾'} {t('review.saved')}
               </span>

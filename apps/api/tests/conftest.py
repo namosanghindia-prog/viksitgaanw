@@ -33,7 +33,11 @@ from app.main import app  # noqa: E402
 from app.models import (  # noqa: E402
     AppEvent,
     Farmer,
+    InsurancePolicy,
+    InvestmentInterest,
+    InvestmentRequest,
     LandParcel,
+    Profile,
     ProjectReport,
     SyncQueueEntry,
 )
@@ -55,6 +59,11 @@ def clean_user_data() -> None:
     with session_scope() as session:
         session.execute(delete(SyncQueueEntry))
         session.execute(delete(AppEvent))
+        # The marketplace hangs off profiles, parcels and reports.
+        session.execute(delete(InsurancePolicy))
+        session.execute(delete(InvestmentInterest))
+        session.execute(delete(InvestmentRequest))
+        session.execute(delete(Profile))
         # Reports hang off a parcel, so they go first.
         session.execute(delete(ProjectReport))
         session.execute(delete(LandParcel))

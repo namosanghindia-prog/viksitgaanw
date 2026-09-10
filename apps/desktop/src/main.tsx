@@ -4,6 +4,7 @@ import { HashRouter } from 'react-router-dom';
 
 import { App } from './App';
 import { I18nProvider } from './i18n';
+import { ProfileProvider } from './lib/profile';
 import './styles.css';
 
 const container = document.getElementById('root');
@@ -14,9 +15,11 @@ if (!container) throw new Error('Root element #root is missing from index.html.'
 createRoot(container).render(
   <React.StrictMode>
     <I18nProvider>
-      <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
-        <App />
-      </HashRouter>
+      <ProfileProvider>
+        <HashRouter future={{ v7_startTransition: true, v7_relativeSplatPath: true }}>
+          <App />
+        </HashRouter>
+      </ProfileProvider>
     </I18nProvider>
   </React.StrictMode>,
 );

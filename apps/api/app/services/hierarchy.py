@@ -29,6 +29,56 @@ class UnknownLocationError(LookupError):
         self.code = code
 
 
+def location_error(
+    session: Session,
+    *,
+    state_code: str | None,
+    district_code: str | None = None,
+    subdistrict_code: str | None = None,
+    village_code: str | None = None,
+) -> str | None:
+    """Why this set of codes is not a real place, or None when it is.
+
+    Each code must exist in the imported LGD dataset and sit under the one
+    above it. A land parcel or a government jurisdiction pointing at a place
+    that does not exist would print an address on a bank document that nobody
+    could verify, so callers reject rather than store it.
+    """
+    if state_code and session.get(State, state_code) is None:
+        return f"Unknown state code: {state_code}"
+
+    if district_code:
+        district = session.get(District, district_code)
+        if district is None:
+            return f"Unknown district code: {district_code}"
+        if district.state_code != state_code:
+            return f"District {district_code} does not belong to state {state_code}."
+
+    if subdistrict_code:
+        subdistrict = session.get(SubDistrict, subdistrict_code)
+        if subdistrict is None:
+            return f"Unknown sub-district code: {subdistrict_code}"
+        if subdistrict.district_code != district_code:
+            return (
+                f"Sub-district {subdistrict_code} does not belong to "
+                f"district {district_code}."
+            )
+
+    if village_code:
+        if not subdistrict_code:
+            return "A village cannot be set without its sub-district."
+        village = session.get(Village, village_code)
+        if village is None:
+            return f"Unknown village code: {village_code}"
+        if village.subdistrict_code != subdistrict_code:
+            return (
+                f"Village {village_code} does not belong to "
+                f"sub-district {subdistrict_code}."
+            )
+
+    return None
+
+
 def resolve_location(
     session: Session,
     *,

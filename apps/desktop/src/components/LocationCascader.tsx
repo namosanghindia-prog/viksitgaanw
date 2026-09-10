@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
-import type { AdminUnit, LocationSelection } from '@viksitgaanw/shared';
+import type { AdminLevel, AdminUnit, LocationSelection } from '@viksitgaanw/shared';
 
 import { useI18n } from '../i18n';
 import { api } from '../lib/api';
@@ -10,7 +10,13 @@ interface LocationCascaderProps {
   value: LocationSelection;
   onChange: (value: LocationSelection) => void;
   errors?: Partial<Record<keyof LocationSelection, string>>;
+  /** The deepest level to offer. A state officer has no use for villages. */
+  depth?: AdminLevel;
+  /** Levels marked as required. Land needs a district; an investor needs nothing. */
+  requiredLevels?: AdminLevel[];
 }
+
+const LEVELS: AdminLevel[] = ['state', 'district', 'subdistrict', 'village'];
 
 const EMPTY: AdminUnit[] = [];
 
@@ -30,8 +36,16 @@ function toOptions(units: AdminUnit[] | null): PickerOption[] {
  * newly-chosen district is how you end up with a project report addressed to a
  * place that does not exist.
  */
-export function LocationCascader({ value, onChange, errors = {} }: LocationCascaderProps) {
+export function LocationCascader({
+  value,
+  onChange,
+  errors = {},
+  depth = 'village',
+  requiredLevels = ['state', 'district'],
+}: LocationCascaderProps) {
   const { t } = useI18n();
+  const shows = (level: AdminLevel) => LEVELS.indexOf(level) <= LEVELS.indexOf(depth);
+  const needs = (level: AdminLevel) => requiredLevels.includes(level);
   const [villageQuery, setVillageQuery] = useState('');
   const debouncedVillageQuery = useDebounced(villageQuery, 250);
 
@@ -40,13 +54,13 @@ export function LocationCascader({ value, onChange, errors = {} }: LocationCasca
   const districts = useAsync(
     (signal) => api.districts(value.stateCode!, signal),
     [value.stateCode],
-    { enabled: Boolean(value.stateCode) },
+    { enabled: Boolean(value.stateCode) && shows('district') },
   );
 
   const subdistricts = useAsync(
     (signal) => api.subdistricts(value.districtCode!, signal),
     [value.districtCode],
-    { enabled: Boolean(value.districtCode) },
+    { enabled: Boolean(value.districtCode) && shows('subdistrict') },
   );
 
   const villages = useAsync(
@@ -59,7 +73,7 @@ export function LocationCascader({ value, onChange, errors = {} }: LocationCasca
         signal,
       ),
     [value.subdistrictCode, debouncedVillageQuery],
-    { enabled: Boolean(value.subdistrictCode) },
+    { enabled: Boolean(value.subdistrictCode) && shows('village') },
   );
 
   const setState = useCallback(
@@ -116,50 +130,60 @@ export function LocationCascader({ value, onChange, errors = {} }: LocationCasca
         value={value.stateCode}
         onChange={setState}
         loading={states.loading}
-        required
+        required={needs('state')}
+        allowClear={!needs('state')}
         error={errors.stateCode}
       />
 
-      <Picker
-        label={t('location.district')}
-        placeholder={t('location.chooseDistrict')}
-        options={toOptions(districts.data)}
-        value={value.districtCode}
-        onChange={setDistrict}
-        disabled={!value.stateCode}
-        disabledHint={t('location.pickParentFirst')}
-        loading={districts.loading}
-        required
-        error={errors.districtCode}
-      />
+      {shows('district') ? (
+        <Picker
+          label={t('location.district')}
+          placeholder={t('location.chooseDistrict')}
+          options={toOptions(districts.data)}
+          value={value.districtCode}
+          onChange={setDistrict}
+          disabled={!value.stateCode}
+          disabledHint={t('location.pickParentFirst')}
+          loading={districts.loading}
+          required={needs('district')}
+          allowClear={!needs('district')}
+          error={errors.districtCode}
+        />
+      ) : null}
 
-      <Picker
-        label={t('location.subdistrict')}
-        placeholder={t('location.chooseSubdistrict')}
-        options={toOptions(subdistricts.data)}
-        value={value.subdistrictCode}
-        onChange={setSubdistrict}
-        disabled={!value.districtCode}
-        disabledHint={t('location.pickParentFirst')}
-        loading={subdistricts.loading}
-        allowClear
-      />
+      {shows('subdistrict') ? (
+        <Picker
+          label={t('location.subdistrict')}
+          placeholder={t('location.chooseSubdistrict')}
+          options={toOptions(subdistricts.data)}
+          value={value.subdistrictCode}
+          onChange={setSubdistrict}
+          disabled={!value.districtCode}
+          disabledHint={t('location.pickParentFirst')}
+          loading={subdistricts.loading}
+          required={needs('subdistrict')}
+          allowClear={!needs('subdistrict')}
+          error={errors.subdistrictCode}
+        />
+      ) : null}
 
-      <Picker
-        label={t('location.village')}
-        placeholder={t('location.chooseVillage')}
-        options={villageOptions}
-        value={value.villageCode}
-        onChange={setVillage}
-        disabled={!value.subdistrictCode}
-        disabledHint={t('location.pickParentFirst')}
-        loading={villages.loading}
-        hint={t('location.villageOptional')}
-        searchValue={villageQuery}
-        onSearchChange={setVillageQuery}
-        searchPlaceholder={t('location.searchVillage')}
-        allowClear
-      />
+      {shows('village') ? (
+        <Picker
+          label={t('location.village')}
+          placeholder={t('location.chooseVillage')}
+          options={villageOptions}
+          value={value.villageCode}
+          onChange={setVillage}
+          disabled={!value.subdistrictCode}
+          disabledHint={t('location.pickParentFirst')}
+          loading={villages.loading}
+          hint={t('location.villageOptional')}
+          searchValue={villageQuery}
+          onSearchChange={setVillageQuery}
+          searchPlaceholder={t('location.searchVillage')}
+          allowClear
+        />
+      ) : null}
     </div>
   );
 }

@@ -1,0 +1,20 @@
+{
+  "key": "organisation_types",
+  "version": 1,
+  "items": [
+    { "code": "fpo",                "segments": ["partner_national"],                          "label": { "en": "Farmer producer organisation (FPO)", "hi": "किसान उत्पादक संगठन (एफपीओ)" } },
+    { "code": "cooperative",        "segments": ["partner_national"],                          "label": { "en": "Cooperative society",                "hi": "सहकारी समिति" } },
+    { "code": "shg",                "segments": ["partner_national"],                          "label": { "en": "Self-help group",                    "hi": "स्वयं सहायता समूह" } },
+    { "code": "exporter",           "segments": ["partner_national"],                          "label": { "en": "Exporter",                           "hi": "निर्यातक" } },
+    { "code": "input_supplier",     "segments": ["partner_national"],                          "label": { "en": "Seed / input company",               "hi": "बीज / कृषि आदान कंपनी" } },
+    { "code": "importer",           "segments": ["partner_international"],                     "label": { "en": "Importer / buyer",                   "hi": "आयातक / खरीदार" } },
+    { "code": "retailer",           "segments": ["partner_international"],                     "label": { "en": "Retail chain",                       "hi": "रिटेल चेन" } },
+    { "code": "development_agency", "segments": ["partner_international"],                     "label": { "en": "Development agency",                 "hi": "विकास एजेंसी" } },
+    { "code": "farmer_cooperative", "segments": ["partner_international"],                     "label": { "en": "Farmer cooperative (abroad)",        "hi": "विदेशी किसान सहकारी संस्था" } },
+    { "code": "agri_company",       "segments": ["partner_national", "partner_international"], "label": { "en": "Agri-business company",              "hi": "कृषि व्यवसाय कंपनी" } },
+    { "code": "food_processor",     "segments": ["partner_national", "partner_international"], "label": { "en": "Food processor",                     "hi": "खाद्य प्रसंस्करण इकाई" } },
+    { "code": "agritech",           "segments": ["partner_national", "partner_international"], "label": { "en": "Agritech company",                   "hi": "एग्रीटेक कंपनी" } },
+    { "code": "research",           "segments": ["partner_national", "partner_international"], "label": { "en": "Research institute / university / KVK", "hi": "शोध संस्थान / विश्वविद्यालय / केवीके" } },
+    { "code": "ngo",                "segments": ["partner_national", "partner_international"], "label": { "en": "NGO / foundation",                   "hi": "स्वयंसेवी संस्था / फ़ाउंडेशन" } }
+  ]
+}

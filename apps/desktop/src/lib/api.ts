@@ -11,13 +11,26 @@ import type {
   ExportMarketList,
   GeoLocateResult,
   HealthStatus,
+  InsuranceCreate,
+  InsuranceInput,
+  InsurancePolicy,
+  InsuranceRequirement,
+  InterestInput,
+  InterestStatus,
+  InvestmentRequest,
+  InvestmentRequestInput,
   LandParcel,
   LandParcelInput,
   LocationPath,
   OpportunityList,
   PlaceSuggestion,
+  Profile,
+  ProfileInput,
   ProjectReport,
   ReportLanguage,
+  RequestStatus,
+  Seeking,
+  Segment,
   TileStatus,
 } from '@viksitgaanw/shared';
 
@@ -84,7 +97,9 @@ function extractDetail(payload: unknown, fallback: string): string {
       const messages = detail
         .map((entry) =>
           typeof entry === 'object' && entry !== null && 'msg' in entry
-            ? String((entry as { msg: unknown }).msg)
+            ? // Pydantic prefixes custom validator messages; the person
+              // reading them does not need to know what raised it.
+              String((entry as { msg: unknown }).msg).replace(/^Value error, /, '')
             : null,
         )
         .filter((message): message is string => Boolean(message));
@@ -235,4 +250,65 @@ export const api = {
 
   /** Absolute URL of a generated PDF, for opening it outside the app. */
   reportFileUrl: (report: ProjectReport) => `${API_BASE_URL}${report.downloadPath}`,
+
+  /** This device's profile, or null before onboarding. */
+  profile: (signal?: AbortSignal) => request<Profile | null>('/profile', { signal }),
+
+  createProfile: (input: ProfileInput) =>
+    request<Profile>('/profile', { method: 'POST', body: input }),
+
+  replaceProfile: (input: ProfileInput) =>
+    request<Profile>('/profile', { method: 'PUT', body: input }),
+
+  deleteProfile: () => request<void>('/profile', { method: 'DELETE' }),
+
+  createRequest: (input: InvestmentRequestInput) =>
+    request<InvestmentRequest>('/investment-requests', { method: 'POST', body: input }),
+
+  myRequests: (signal?: AbortSignal) =>
+    request<InvestmentRequest[]>('/investment-requests/mine', { signal }),
+
+  browseRequests: (
+    query: { stateCode?: string; kind?: string; seeking?: Seeking },
+    signal?: AbortSignal,
+  ) => request<InvestmentRequest[]>('/investment-requests', { params: query, signal }),
+
+  updateRequest: (
+    id: string,
+    changes: { title?: string; summary?: string | null; amountSought?: number; openTo?: Segment[]; status?: RequestStatus },
+  ) => request<InvestmentRequest>(`/investment-requests/${id}`, { method: 'PATCH', body: changes }),
+
+  sendInterest: (requestId: string, body: InterestInput) =>
+    request<InvestmentRequest>(`/investment-requests/${requestId}/interests`, {
+      method: 'POST',
+      body,
+    }),
+
+  myInterests: (signal?: AbortSignal) =>
+    request<InvestmentRequest[]>('/investment-interests/mine', { signal }),
+
+  respondToInterest: (interestId: string, status: Exclude<InterestStatus, 'sent'>) =>
+    request<InvestmentRequest>(`/investment-interests/${interestId}`, {
+      method: 'PATCH',
+      body: { status },
+    }),
+
+  /** Which cover a project for this farming option must carry. */
+  insuranceRequirements: (opportunityCode: string | null, signal?: AbortSignal) =>
+    request<InsuranceRequirement>('/insurance/requirements', {
+      params: { opportunityCode },
+      signal,
+    }),
+
+  /** Policies on one plot, or on the owner's profile when no plot is given. */
+  listInsurance: (parcelId: string | null, signal?: AbortSignal) =>
+    request<InsurancePolicy[]>('/insurance', { params: { parcelId }, signal }),
+
+  addInsurance: (body: InsuranceCreate) =>
+    request<InsurancePolicy>('/insurance', { method: 'POST', body }),
+
+  updateInsurance: (id: string, body: InsuranceInput) =>
+    request<InsurancePolicy>(`/insurance/${id}`, { method: 'PUT', body }),
+
+  deleteInsurance: (id: string) => request<void>(`/insurance/${id}`, { method: 'DELETE' }),
 };

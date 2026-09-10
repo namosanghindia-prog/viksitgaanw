@@ -1,0 +1,9 @@
+{
+  "key": "risk_appetites",
+  "version": 1,
+  "items": [
+    { "code": "low",    "label": { "en": "Low — steady, smaller returns",   "hi": "कम — स्थिर, छोटा लाभ" } },
+    { "code": "medium", "label": { "en": "Medium",                          "hi": "मध्यम" } },
+    { "code": "high",   "label": { "en": "High — bigger returns, more risk", "hi": "अधिक — बड़ा लाभ, ज़्यादा जोखिम" } }
+  ]
+}

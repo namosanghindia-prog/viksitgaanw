@@ -1,0 +1,37 @@
+{
+  "key": "investment_modes",
+  "version": 1,
+  "multi": true,
+  "items": [
+    {
+      "code": "revenue_share",
+      "label": { "en": "Share of harvest income", "hi": "फसल की आमदनी में हिस्सा" },
+      "note": { "en": "An agreed share of sale money for an agreed number of seasons.", "hi": "तय मौसमों तक बिक्री की रकम का तय हिस्सा।" }
+    },
+    {
+      "code": "loan",
+      "label": { "en": "Loan with fixed return", "hi": "तय ब्याज पर ऋण" },
+      "note": { "en": "Repaid in instalments with interest, whatever the harvest.", "hi": "फसल जैसी भी हो, ब्याज सहित किस्तों में चुकाया जाता है।" }
+    },
+    {
+      "code": "equity",
+      "label": { "en": "Stake in the farm business", "hi": "खेती के व्यवसाय में हिस्सेदारी" },
+      "note": { "en": "A share of the business or FPO company, never of the land itself.", "hi": "व्यवसाय या एफपीओ कंपनी में हिस्सा, ज़मीन में कभी नहीं।" }
+    },
+    {
+      "code": "input_finance",
+      "label": { "en": "Seeds, inputs or equipment on credit", "hi": "बीज, खाद या उपकरण उधार पर" },
+      "note": { "en": "Paid back after harvest.", "hi": "फसल के बाद चुकाया जाता है।" }
+    },
+    {
+      "code": "offtake",
+      "label": { "en": "Advance against produce (buy-back)", "hi": "उपज के बदले अग्रिम (वापस खरीद)" },
+      "note": { "en": "The investor pays in advance and is repaid in produce at an agreed price.", "hi": "निवेशक पहले पैसा देता है और तय भाव पर उपज से वापसी होती है।" }
+    },
+    {
+      "code": "grant",
+      "label": { "en": "Grant / CSR support", "hi": "अनुदान / सीएसआर सहायता" },
+      "note": { "en": "Not repaid. Usually tied to a social outcome.", "hi": "वापस नहीं करना होता। आम तौर पर किसी सामाजिक लक्ष्य से जुड़ा।" }
+    }
+  ]
+}

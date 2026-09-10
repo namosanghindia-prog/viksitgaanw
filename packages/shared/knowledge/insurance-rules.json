@@ -1,0 +1,37 @@
+{
+  "key": "insurance_rules",
+  "version": 1,
+  "about": "Which insurance a project must carry before it is shown to investors, and which is advised. 'required' means the farmer must either enter a policy or promise to insure before funds are released; 'recommended' is shown but never enforced. Rules for a specific option override the rule for its kind.",
+  "default": { "required": [], "recommended": ["crop"] },
+  "byKind": {
+    "horticulture": { "required": [], "recommended": ["crop"] },
+    "protected": { "required": ["structure"], "recommended": ["crop"] },
+    "vegetable": { "required": [], "recommended": ["crop"] },
+    "spice": { "required": [], "recommended": ["crop"] },
+    "field_crop": { "required": [], "recommended": ["crop"] },
+    "livestock": { "required": ["livestock"], "recommended": [] },
+    "processing": { "required": ["property"], "recommended": ["machinery"] },
+    "service": { "required": [], "recommended": ["machinery"] }
+  },
+  "byOpportunity": {
+    "custom_hiring_centre": {
+      "required": ["machinery"],
+      "recommended": [],
+      "reason": {
+        "en": "A hire centre's tractors go on public roads, where third-party insurance is compulsory.",
+        "hi": "हायरिंग केंद्र के ट्रैक्टर सार्वजनिक सड़कों पर चलते हैं, जहाँ थर्ड-पार्टी बीमा अनिवार्य है।"
+      }
+    },
+    "drone_spraying_service": {
+      "required": ["machinery"],
+      "recommended": [],
+      "reason": {
+        "en": "India's drone rules make third-party insurance compulsory for every drone flown.",
+        "hi": "भारत के ड्रोन नियमों के तहत उड़ाए जाने वाले हर ड्रोन का थर्ड-पार्टी बीमा अनिवार्य है।"
+      }
+    },
+    "grafted_sapling_nursery": { "required": [], "recommended": ["structure"] },
+    "vermicompost_unit": { "required": [], "recommended": ["property"] },
+    "mushroom_oyster": { "required": [], "recommended": ["property"] }
+  }
+}

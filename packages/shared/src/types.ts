@@ -24,6 +24,15 @@ export interface ReferenceItem {
   metres?: number;
   /** Area units whose real size varies by state (bigha, katha). */
   regional?: boolean;
+  /** Investor and organisation types: which profile segments may pick it. */
+  segments?: string[];
+  /** Government levels: the smallest area the office must name. */
+  jurisdiction?: 'subdistrict' | 'district' | 'state' | 'national';
+  /** Insurance categories: where the cover may be recorded. */
+  scopes?: string[];
+  /** Insurance schemes: which categories the scheme covers. */
+  categories?: string[];
+  url?: string;
 }
 
 export interface ReferenceList {
@@ -360,4 +369,288 @@ export interface ProjectReport {
   netPerYear: number;
   createdAt: string;
   downloadPath: string;
+}
+
+/* ------------------------------------------------------------------ *
+ * Profiles
+ * ------------------------------------------------------------------ */
+
+export type Segment =
+  | 'farmer'
+  | 'investor_india'
+  | 'investor_international'
+  | 'partner_national'
+  | 'partner_international'
+  | 'government';
+
+export const INVESTOR_SEGMENTS: Segment[] = ['investor_india', 'investor_international'];
+export const PARTNER_SEGMENTS: Segment[] = ['partner_national', 'partner_international'];
+export const INTERNATIONAL_SEGMENTS: Segment[] = ['investor_international', 'partner_international'];
+/** Segments a farmer may show a request to. */
+export const AUDIENCE_SEGMENTS: Segment[] = [
+  'investor_india',
+  'investor_international',
+  'partner_national',
+  'partner_international',
+  'government',
+];
+
+export interface FarmerDetails {
+  yearsFarming?: number | null;
+  needs?: string[];
+  fpoMember?: boolean;
+  fpoName?: string | null;
+  hasKcc?: boolean;
+  pmKisan?: boolean;
+}
+
+export interface InvestorDetails {
+  investorType: string;
+  sectors?: string[];
+  modes: string[];
+  /** Rupees for Indian investors, US dollars for international ones. */
+  ticketMin?: number | null;
+  ticketMax?: number | null;
+  preferredStates?: string[];
+  horizonYears?: number | null;
+  riskAppetite?: string | null;
+  /** Indian investors only. */
+  pan?: string | null;
+  /** International investors only; must be true. */
+  complianceAcknowledged?: boolean;
+}
+
+export interface PartnerDetails {
+  organisationType: string;
+  registrationNumber?: string | null;
+  partnershipTypes: string[];
+  crops?: string[];
+  operatingStates?: string[];
+  /** National partners only. */
+  gstin?: string | null;
+  memberFarmers?: number | null;
+  /** International partners only. */
+  certificationsRequired?: string[];
+}
+
+export interface GovernmentDetails {
+  level: string;
+  department: string;
+  designation: string;
+  employeeId?: string | null;
+}
+
+export type ProfileDetails = FarmerDetails | InvestorDetails | PartnerDetails | GovernmentDetails;
+
+export interface ProfileInput {
+  segment: Segment;
+  displayName: string;
+  organisationName?: string | null;
+  phone?: string | null;
+  email?: string | null;
+  preferredLanguage: string;
+  stateCode?: string | null;
+  districtCode?: string | null;
+  subdistrictCode?: string | null;
+  villageCode?: string | null;
+  countryCode: string;
+  city?: string | null;
+  about?: string | null;
+  details: Record<string, unknown>;
+}
+
+export type KycStatus = 'unverified' | 'pending' | 'verified' | 'rejected';
+
+export interface Profile extends ProfileInput {
+  id: string;
+  location: LocationPath;
+  kycStatus: KycStatus;
+  kycMethod: string | null;
+  /** How this profile could be verified once KYC is switched on. */
+  kycMethods: string[];
+  farmerId: string | null;
+  syncState: SyncState;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/** How one party appears to another. Contact appears only once connected. */
+export interface ProfileCard {
+  id: string;
+  segment: Segment;
+  displayName: string;
+  organisationName: string | null;
+  typeCode: string | null;
+  place: string | null;
+  countryCode: string;
+  kycStatus: KycStatus;
+  /** local | synced | demo */
+  origin: string;
+  contact: { phone: string | null; email: string | null } | null;
+}
+
+/* ------------------------------------------------------------------ *
+ * Investment requests and interests
+ * ------------------------------------------------------------------ */
+
+export type Seeking = 'investment' | 'partnership';
+export type RequestStatus = 'open' | 'closed' | 'withdrawn';
+export type InterestStatus = 'sent' | 'accepted' | 'declined' | 'withdrawn';
+
+export interface InvestmentRequestInput {
+  parcelId: string;
+  reportId?: string | null;
+  opportunityCode?: string | null;
+  title: string;
+  summary?: string | null;
+  amountSought: number;
+  ownContribution?: number | null;
+  seeking: Seeking[];
+  modes: string[];
+  partnershipTypes: string[];
+  openTo: Segment[];
+  /** The project's cover; the farming option decides what is required. */
+  insurance?: InsuranceInput[];
+}
+
+/** The public snapshot an investor sees. Frozen when the request was made. */
+export interface RequestListing {
+  version: number;
+  location: Record<AdminLevel, { code: string; name: string } | null>;
+  land: {
+    areaHectares?: number;
+    areaValue?: number;
+    areaUnit?: string;
+    ownershipType?: string | null;
+    soilType?: string | null;
+    waterSources?: string[];
+    waterType?: string | null;
+    waterDepthMetres?: number | null;
+    irrigationType?: string | null;
+    existingCrops?: string[];
+  };
+  opportunity: { code: string; kind: string; name: Label } | null;
+  plan: {
+    reportNumber?: string;
+    reportLanguage?: string;
+    suitabilityScore?: number;
+    totalProjectCost: number;
+    termLoan: number;
+    netPerYear: number;
+  } | null;
+}
+
+export interface Interest {
+  id: string;
+  requestId: string;
+  kind: Seeking;
+  amountOffered: number | null;
+  mode: string | null;
+  partnershipType: string | null;
+  message: string | null;
+  status: InterestStatus;
+  responder: ProfileCard;
+  origin: string;
+  createdAt: string;
+  respondedAt: string | null;
+}
+
+export interface InterestInput {
+  amountOffered?: number | null;
+  mode?: string | null;
+  partnershipType?: string | null;
+  message?: string | null;
+}
+
+export type FitReason = 'state' | 'sector' | 'ticket' | 'mode' | 'partnership' | 'crop';
+
+export interface InvestmentRequest {
+  id: string;
+  title: string;
+  summary: string | null;
+  amountSought: number;
+  ownContribution: number | null;
+  seeking: Seeking[];
+  modes: string[];
+  partnershipTypes: string[];
+  openTo: Segment[];
+  status: RequestStatus;
+  listing: RequestListing;
+  opportunityCode: string | null;
+  opportunityKind: string | null;
+  stateCode: string;
+  districtCode: string;
+  parcelId: string | null;
+  reportId: string | null;
+  requester: ProfileCard;
+  isMine: boolean;
+  interests: Interest[];
+  myInterest: Interest | null;
+  interestCounts: Partial<Record<InterestStatus, number>>;
+  fit: { score: number; reasons: FitReason[] } | null;
+  insurance: InsurancePolicy[];
+  insuranceRequired: string[];
+  insuranceRecommended: string[];
+  /** Every required category has a current policy, not merely a promise. */
+  fullyInsured: boolean;
+  origin: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+/* ------------------------------------------------------------------ *
+ * Insurance
+ * ------------------------------------------------------------------ */
+
+/** `planned` is a promise to insure before funds are released (requests only). */
+export type InsuranceStatus = 'insured' | 'planned';
+export type CropSeason = 'kharif' | 'rabi' | 'zaid' | 'annual';
+
+/** Where a cover is recorded; each allows different categories. */
+export type InsuranceScope = 'request' | 'parcel' | 'farmer' | 'partner';
+
+export interface InsuranceInput {
+  category: string;
+  status?: InsuranceStatus;
+  scheme?: string | null;
+  insurer?: string | null;
+  policyNumber?: string | null;
+  sumInsured?: number | null;
+  premium?: number | null;
+  currency?: string;
+  /** ISO dates, yyyy-mm-dd. */
+  validFrom?: string | null;
+  validUntil?: string | null;
+  season?: CropSeason | null;
+  seasonYear?: number | null;
+  covered?: string | null;
+  notes?: string | null;
+}
+
+export interface InsuranceCreate extends InsuranceInput {
+  parcelId?: string | null;
+  requestId?: string | null;
+  onProfile?: boolean;
+}
+
+export interface InsurancePolicy extends InsuranceInput {
+  id: string;
+  status: InsuranceStatus;
+  currency: string;
+  /** Insured and not past its end date. */
+  isCurrent: boolean;
+  expired: boolean;
+  parcelId: string | null;
+  profileId: string | null;
+  requestId: string | null;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface InsuranceRequirement {
+  opportunityCode: string | null;
+  kind: string | null;
+  required: string[];
+  recommended: string[];
+  reason: Label | null;
 }

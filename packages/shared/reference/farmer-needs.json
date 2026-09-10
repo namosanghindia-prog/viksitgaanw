@@ -1,0 +1,14 @@
+{
+  "key": "farmer_needs",
+  "version": 1,
+  "multi": true,
+  "items": [
+    { "code": "investment",  "label": { "en": "An investor for a project",          "hi": "परियोजना के लिए निवेशक" } },
+    { "code": "loan",        "label": { "en": "A bank loan",                        "hi": "बैंक ऋण" } },
+    { "code": "partnership", "label": { "en": "Contract farming / buy-back partner", "hi": "अनुबंध खेती / वापस खरीद साझेदार" } },
+    { "code": "buyers",      "label": { "en": "Buyers for my produce",              "hi": "मेरी उपज के खरीदार" } },
+    { "code": "equipment",   "label": { "en": "Machinery on rent",                  "hi": "किराये पर मशीनरी" } },
+    { "code": "training",    "label": { "en": "Training and advice",                "hi": "प्रशिक्षण और सलाह" } },
+    { "code": "schemes",     "label": { "en": "Help with government schemes",       "hi": "सरकारी योजनाओं में मदद" } }
+  ]
+}

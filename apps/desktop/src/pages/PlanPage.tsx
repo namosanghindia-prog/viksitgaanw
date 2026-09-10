@@ -127,6 +127,12 @@ export function PlanPage() {
                   </span>
                 </div>
                 <div className="reportlist__actions">
+                  <Link
+                    className="button button--small"
+                    to={`/land/${parcelId}/invest?report=${report.id}`}
+                  >
+                    {t('nav.findInvestors')}
+                  </Link>
                   <a
                     className="button button--small button--primary"
                     href={api.reportFileUrl(report)}
