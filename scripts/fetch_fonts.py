@@ -9,10 +9,10 @@ Run once, while online:
 
 Why this exists at all: a PDF carries its own glyphs, so a report in Odia needs
 an Odia font embedded in it. On Windows the app already falls back to Nirmala
-UI, which ships with the operating system and covers nine Indic scripts, so a
-fresh install can print Hindi, Bengali, Tamil, Telugu, Kannada, Malayalam,
-Gujarati, Gurmukhi and Odia with nothing downloaded. Everything else -- the
-Perso-Arabic scripts used by Urdu, Kashmiri and Sindhi, Ol Chiki for Santali,
+UI, which ships with the operating system and covers nine Indic scripts plus
+Ol Chiki, so a fresh install can print Hindi, Bengali, Tamil, Telugu, Kannada,
+Malayalam, Gujarati, Gurmukhi, Odia and Santali with nothing downloaded.
+Everything else -- the Perso-Arabic scripts used by Urdu, Kashmiri and Sindhi,
 and every script on a machine that is not Windows -- needs the real font.
 
 The fonts are Noto, published by Google under the SIL Open Font License, which

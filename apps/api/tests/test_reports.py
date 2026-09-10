@@ -10,6 +10,8 @@ count that starts late can never be reconstructed.
 
 from __future__ import annotations
 
+import logging
+
 import pytest
 from sqlalchemy import select
 
@@ -156,7 +158,7 @@ def test_an_untranslated_language_still_produces_a_report_and_says_so(
     assert body["translationCoverage"] < 1.0
 
 
-@pytest.mark.parametrize("language", ["mr", "ta"])
+@pytest.mark.parametrize("language", ["bn", "mr", "te", "ta", "kn"])
 def test_a_fully_translated_language_reports_full_coverage(
     client, parcel_id, report_request, language
 ):
@@ -272,3 +274,165 @@ def test_every_script_the_app_offers_has_a_font_mapping():
     """A language offered with no route to a font would be a broken promise."""
     for entry in knowledge.load_languages()["items"]:
         assert entry["script"] in font_service.NOTO_FAMILY, entry["code"]
+
+
+def test_santali_prints_on_windows_with_nothing_downloaded(monkeypatch):
+    """Nirmala UI carries Ol Chiki, so a fresh village laptop needs no download."""
+    import sys
+
+    if sys.platform != "win32" or not font_service._WINDOWS_NIRMALA.is_file():
+        pytest.skip("Nirmala UI is a Windows font")
+
+    monkeypatch.setattr(font_service, "_downloaded", lambda _script, _style: None)
+    font_service.clear_cache()
+    try:
+        assert font_service.resolve("Olck").name == "nirmala"
+    finally:
+        font_service.clear_cache()
+
+
+@pytest.mark.parametrize(
+    "language", [entry["code"] for entry in knowledge.load_languages()["items"]]
+)
+def test_no_character_in_a_report_prints_as_an_empty_box(
+    client, parcel_id, report_request, language, caplog
+):
+    """Every glyph a report uses has to exist in a face embedded in it.
+
+    With shaping on, a missing glyph prints as a blank box and nothing
+    complains. A single-script face such as Noto Sans Ol Chiki has no digits,
+    so without the Latin fallback every figure in a Santali report's financial
+    tables came out empty.
+    """
+    script = knowledge.get_language(language)["script"]
+    if not font_service.is_available(script):
+        pytest.skip(f"no {script} font on this device")
+
+    report_request["language"] = language
+    with caplog.at_level(logging.WARNING, logger="viksitgaanw.dpr"):
+        response = client.post(f"/api/v1/land-parcels/{parcel_id}/reports", json=report_request)
+    assert response.status_code == 201, response.text
+    assert "could not print" not in caplog.text
+
+
+@pytest.mark.parametrize(
+    "language", [entry["code"] for entry in knowledge.load_languages()["items"]]
+)
+def test_the_page_total_is_set_in_a_face_that_has_digits(language):
+    """fpdf2 fills in the page total in the current face and never falls back.
+
+    So the check above cannot see it: a Santali footer read "Page 4 of" with
+    the total silently missing.
+    """
+    from app.services.dpr import _Pdf, _register_fonts
+    from app.services.i18n import Translator
+
+    if not font_service.is_available(knowledge.get_language(language)["script"]):
+        pytest.skip("no font for this script on this device")
+
+    translator = Translator(language=language)
+    pdf = _Pdf(translator, "title")
+    _register_fonts(pdf, translator)
+    cmap = pdf.fonts[pdf.footer_family].cmap
+    assert all(ord(digit) in cmap for digit in "0123456789")
+
+
+def test_a_footer_in_a_borrowed_face_still_prints_its_own_script(
+    client, parcel_id, report_request, monkeypatch, caplog
+):
+    """Once translated, the Santali footer is Ol Chiki words around Latin digits.
+
+    On Windows the borrowed face is Nirmala UI, which happens to carry Ol Chiki
+    as well; this bites where the Latin face is Noto Sans, which does not.
+    """
+    entry = knowledge.get_language("sat")
+    if not font_service.is_available(entry["script"]):
+        pytest.skip("no Ol Chiki font on this device")
+
+    # The language's own name stands in for a translation nobody has made yet.
+    footer = {"strings": {"doc.page": f"{entry['endonym']} {{n}} / {{total}}"}}
+    real = knowledge.load_catalogue
+    monkeypatch.setattr(
+        knowledge, "load_catalogue", lambda code: footer if code == "sat" else real(code)
+    )
+
+    report_request["language"] = "sat"
+    with caplog.at_level(logging.WARNING, logger="viksitgaanw.dpr"):
+        response = client.post(f"/api/v1/land-parcels/{parcel_id}/reports", json=report_request)
+    assert response.status_code == 201, response.text
+    assert "could not print" not in caplog.text
+
+
+# --------------------------------------------------------------------------- #
+# Right to left
+# --------------------------------------------------------------------------- #
+
+#: A few real strings, enough to put Urdu on every kind of line the report
+#: draws: a heading, a paragraph, a bullet and a label/value table.
+_URDU = {
+    "strings": {
+        "doc.title": "تفصیلی منصوبہ رپورٹ",
+        "sec.promoter": "کاشتکار اور زمین",
+        "sec.risks": "خطرات",
+        "f.promoterName": "کاشتکار کا نام",
+        "t.riskIntro": "ہر زرعی منصوبے میں کچھ خطرات ہوتے ہیں۔",
+        "t.riskGeneric1": "موسم خراب ہو سکتا ہے۔",
+    }
+}
+
+
+def _rtl_language() -> str:
+    for entry in knowledge.load_languages()["items"]:
+        if entry.get("rtl"):
+            return entry["code"]
+    raise AssertionError("languages.json offers no right-to-left language")
+
+
+def test_an_untranslated_rtl_report_is_laid_out_left_to_right(monkeypatch):
+    """With nothing translated it is an English report, and must read like one."""
+    from app.services.dpr import _Pdf
+    from app.services.i18n import Translator
+
+    language = _rtl_language()
+    monkeypatch.setattr(knowledge, "catalogue_coverage", lambda _code: 0.0)
+    assert not _Pdf(Translator(language=language), "title").rtl
+
+    monkeypatch.setattr(knowledge, "catalogue_coverage", lambda _code: 0.4)
+    assert _Pdf(Translator(language=language), "title").rtl
+
+
+def test_an_rtl_report_prints_its_own_script_and_the_latin_beside_it(
+    client, parcel_id, report_request, monkeypatch, caplog
+):
+    """Urdu text, English place names, URLs and figures, all on one page.
+
+    Noto Naskh Arabic has no Latin letters, no bullet and no em dash; every one
+    of those has to come from the fallback face rather than print as a box.
+    """
+    language = _rtl_language()
+    if not font_service.is_available(knowledge.get_language(language)["script"]):
+        pytest.skip("no Arabic-script font on this device")
+
+    real = knowledge.load_catalogue
+    monkeypatch.setattr(
+        knowledge,
+        "load_catalogue",
+        lambda code: _URDU if code == language else real(code),
+    )
+
+    report_request["language"] = language
+    with caplog.at_level(logging.WARNING, logger="viksitgaanw.dpr"):
+        response = client.post(f"/api/v1/land-parcels/{parcel_id}/reports", json=report_request)
+    assert response.status_code == 201, response.text
+    assert 0.0 < response.json()["translationCoverage"] < 1.0
+    assert "could not print" not in caplog.text
+
+
+def test_column_alignment_mirrors_for_rtl_and_leaves_centre_alone():
+    from types import SimpleNamespace
+
+    from app.services.dpr import _column_aligns
+
+    aligns = ("LEFT", "CENTER", "RIGHT")
+    assert _column_aligns(SimpleNamespace(rtl=False), aligns) == aligns
+    assert _column_aligns(SimpleNamespace(rtl=True), aligns) == ("RIGHT", "CENTER", "LEFT")

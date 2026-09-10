@@ -9,6 +9,8 @@ income band lower than the cost band, a translation key nobody translated.
 
 from __future__ import annotations
 
+import json
+
 import pytest
 
 from app import knowledge, reference
@@ -249,3 +251,54 @@ def test_every_placeholder_in_a_translation_exists_in_the_english(options):
         for key, value in strings.items():
             expected = set(pattern.findall(english.get(key, "")))
             assert set(pattern.findall(value)) <= expected, f"{entry['code']}:{key}"
+
+
+# --------------------------------------------------------------------------- #
+# Script purity
+# --------------------------------------------------------------------------- #
+
+#: Unicode block per ISO 15924 script code, for the scripts the app offers.
+_SCRIPT_BLOCKS = {
+    "Deva": (0x0900, 0x097F),
+    "Beng": (0x0980, 0x09FF),
+    "Guru": (0x0A00, 0x0A7F),
+    "Gujr": (0x0A80, 0x0AFF),
+    "Orya": (0x0B00, 0x0B7F),
+    "Taml": (0x0B80, 0x0BFF),
+    "Telu": (0x0C00, 0x0C7F),
+    "Knda": (0x0C80, 0x0CFF),
+    "Mlym": (0x0D00, 0x0D7F),
+    "Arab": (0x0600, 0x06FF),
+    "Olck": (0x1C50, 0x1C7F),
+}
+
+#: The danda and double danda live in the Devanagari block but are the shared
+#: full stop of Bengali, Odia, Gurmukhi, Gujarati and others too. Seeing them
+#: in a Bengali file is correct, not a mix-up.
+_SHARED_PUNCTUATION = {0x0964, 0x0965}
+
+
+def test_no_catalogue_mixes_in_another_script():
+    """One stray glyph from the wrong script is invisible until it prints.
+
+    A Bengali character inside the Tamil catalogue renders as a box or as the
+    wrong letter in the middle of an otherwise correct word, and nothing else
+    in the pipeline would notice.
+    """
+    for entry in knowledge.load_languages()["items"]:
+        code, expected = entry["code"], entry["script"]
+        catalogue = knowledge.load_catalogue(code)
+        if not catalogue.get("strings"):
+            continue
+
+        text = json.dumps(catalogue, ensure_ascii=False)
+        strays: dict[str, int] = {}
+        for character in text:
+            point = ord(character)
+            if point in _SHARED_PUNCTUATION:
+                continue
+            for script, (low, high) in _SCRIPT_BLOCKS.items():
+                if low <= point <= high and script != expected:
+                    strays[script] = strays.get(script, 0) + 1
+
+        assert not strays, f"{code} ({expected}) contains {strays}"

@@ -80,6 +80,18 @@ class _Pdf(FPDF):
         super().__init__(orientation="P", unit="mm", format=PAGE_FORMAT)
         self._translator = translator
         self._doc_title = title
+        #: Read once here so every layout helper can ask the page, not the
+        #: translator, which way round it is. An RTL language with no
+        #: translation yet prints an English report, and an English report
+        #: laid out right to left would read backwards to everyone.
+        self.rtl = translator.is_rtl and translator.coverage > 0
+        #: Characters no embedded face could draw. With shaping on, fpdf2
+        #: prints these as blank boxes without a word, so they are counted here.
+        self.unprintable: set[str] = set()
+        #: Faces borrowed from when "body" lacks a glyph, and the face the page
+        #: footer is set in. Both are decided in :func:`_register_fonts`.
+        self.fallback_families: list[str] = []
+        self.footer_family = "body"
         self.set_margins(MARGIN_MM, MARGIN_MM, MARGIN_MM)
         self.set_auto_page_break(auto=True, margin=20)
         self.set_title(title)
@@ -92,7 +104,14 @@ class _Pdf(FPDF):
             return
         self.set_font("body", "", SMALL_SIZE)
         self.set_text_color(*MUTED)
-        self.cell(0, 5, self._doc_title, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+        self.cell(
+            0,
+            5,
+            self._doc_title,
+            new_x=XPos.LMARGIN,
+            new_y=YPos.NEXT,
+            align="R" if self.rtl else "L",
+        )
         self.set_draw_color(*RULE)
         self.set_line_width(0.2)
         self.line(MARGIN_MM, self.get_y(), self.w - MARGIN_MM, self.get_y())
@@ -101,7 +120,12 @@ class _Pdf(FPDF):
 
     def footer(self) -> None:
         self.set_y(-14)
-        self.set_font("body", "", SMALL_SIZE)
+        borrowed = self.footer_family != "body"
+        self.set_font(self.footer_family, "", SMALL_SIZE)
+        if borrowed:
+            # Set in a borrowed face, the footer's own words come back from
+            # the body face -- the reverse of everywhere else in the report.
+            self.set_fallback_fonts(["body"], exact_match=False)
         self.set_text_color(*MUTED)
         self.cell(
             0,
@@ -110,6 +134,16 @@ class _Pdf(FPDF):
             align="C",
         )
         self.set_text_color(*INK)
+        if borrowed:
+            self.set_fallback_fonts(self.fallback_families, exact_match=False)
+
+    def get_fallback_font(self, char: str, style: str = "") -> str | None:
+        # fpdf2 asks this only once the current face has failed, so a None here
+        # means the character is about to print as an empty box.
+        font = super().get_fallback_font(char, style)
+        if font is None:
+            self.unprintable.add(char)
+        return font
 
 
 def _register_fonts(pdf: _Pdf, translator: Translator) -> font_service.FontSet:
@@ -123,6 +157,31 @@ def _register_fonts(pdf: _Pdf, translator: Translator) -> font_service.FontSet:
 
     pdf.add_font("body", "", str(font_set.regular))
     pdf.add_font("body", "B", str(font_set.bold or font_set.regular))
+
+    families = []
+    for index, fallback in enumerate(font_service.fallbacks(font_set)):
+        family = f"fallback{index}"
+        pdf.add_font(family, "", str(fallback.regular))
+        pdf.add_font(family, "B", str(fallback.bold or fallback.regular))
+        families.append(family)
+    if families:
+        pdf.set_fallback_fonts(families, exact_match=False)
+    pdf.fallback_families = families
+
+    # fpdf2 fills in the page total ({nb}) in whatever face is current, and
+    # never looks at the fallbacks for it. Noto Sans Ol Chiki has no 0-9, so
+    # a Santali footer printed "Page 4 of" and stopped. Such a footer is set
+    # in the first face that has the digits.
+    digits = [ord(digit) for digit in "0123456789"]
+    pdf.footer_family = next(
+        (
+            family
+            for family in ("body", *families)
+            if all(point in pdf.fonts[family].cmap for point in digits)
+        ),
+        "body",
+    )
+
     pdf.set_font("body", "", BODY_SIZE)
     # Indic scripts reorder and join; without shaping every matra lands in the
     # wrong place and the report is unreadable to the person it is written for.
@@ -135,13 +194,37 @@ def _register_fonts(pdf: _Pdf, translator: Translator) -> font_service.FontSet:
 # --------------------------------------------------------------------------- #
 
 
+def _text_align(pdf: _Pdf) -> str:
+    """Which edge body text hangs from.
+
+    Urdu, Kashmiri and Sindhi read right to left. HarfBuzz already shapes and
+    orders the glyphs within a line correctly; what it cannot do is decide that
+    the paragraph itself belongs against the other margin.
+    """
+    return "R" if pdf.rtl else "L"
+
+
+def _column_aligns(pdf: _Pdf, aligns: tuple[str, ...]) -> tuple[str, ...]:
+    """Mirror a row of column alignments for a right-to-left report.
+
+    Numbers stay hard against the column edge they are read from, so a LEFT
+    label becomes RIGHT and vice versa. Centred columns are unaffected.
+    """
+    if not pdf.rtl:
+        return aligns
+    flip = {"LEFT": "RIGHT", "RIGHT": "LEFT"}
+    return tuple(flip.get(align, align) for align in aligns)
+
+
 def _heading(pdf: _Pdf, text: str) -> None:
     if pdf.get_y() > pdf.h - 60:
         pdf.add_page()
     pdf.ln(3)
     pdf.set_font("body", "B", HEADING_SIZE)
     pdf.set_text_color(*ACCENT)
-    pdf.multi_cell(0, 6.5, text, new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+    pdf.multi_cell(
+        0, 6.5, text, new_x=XPos.LMARGIN, new_y=YPos.NEXT, align=_text_align(pdf)
+    )
     pdf.set_text_color(*INK)
     pdf.set_draw_color(*RULE)
     pdf.line(MARGIN_MM, pdf.get_y() + 0.5, pdf.w - MARGIN_MM, pdf.get_y() + 0.5)
@@ -154,7 +237,9 @@ def _para(pdf: _Pdf, text: str, *, muted: bool = False, size: float = BODY_SIZE)
         return
     pdf.set_font("body", "", size)
     pdf.set_text_color(*(MUTED if muted else INK))
-    pdf.multi_cell(0, 4.8, text, new_x=XPos.LMARGIN, new_y=YPos.NEXT, align="L")
+    pdf.multi_cell(
+        0, 4.8, text, new_x=XPos.LMARGIN, new_y=YPos.NEXT, align=_text_align(pdf)
+    )
     pdf.set_text_color(*INK)
     pdf.ln(1.8)
 
@@ -165,13 +250,15 @@ def _bullets(pdf: _Pdf, lines: list[str], *, marker: str = "•") -> None:
         if not line:
             continue
         pdf.set_x(MARGIN_MM + 2)
+        # Marker first in logical order for every language: fpdf2's bidi pass
+        # already carries it to the right-hand edge of an Urdu line.
         pdf.multi_cell(
             pdf.w - 2 * MARGIN_MM - 2,
             4.6,
             f"{marker}  {line}",
             new_x=XPos.LMARGIN,
             new_y=YPos.NEXT,
-            align="L",
+            align=_text_align(pdf),
         )
         pdf.ln(0.6)
     pdf.ln(1.5)
@@ -188,9 +275,9 @@ def _facts(pdf: _Pdf, rows: list[tuple[str, str]]) -> None:
         return
     usable = pdf.w - 2 * MARGIN_MM
     with pdf.table(
-        col_widths=(38, 62),
+        col_widths=(38, 62) if not pdf.rtl else (62, 38),
         width=usable,
-        text_align=("LEFT", "LEFT"),
+        text_align=_column_aligns(pdf, ("LEFT", "LEFT")),
         first_row_as_headings=False,
         borders_layout="HORIZONTAL_LINES",
         line_height=5.8,
@@ -198,8 +285,13 @@ def _facts(pdf: _Pdf, rows: list[tuple[str, str]]) -> None:
     ) as table:
         for label, value in rows:
             row = table.row()
-            row.cell(label, style=FontFace(color=MUTED))
-            row.cell(str(value))
+            # Label first in reading order: on the right for a RTL report.
+            if pdf.rtl:
+                row.cell(str(value))
+                row.cell(label, style=FontFace(color=MUTED))
+            else:
+                row.cell(label, style=FontFace(color=MUTED))
+                row.cell(str(value))
     pdf.ln(2.5)
 
 
@@ -215,10 +307,17 @@ def _grid(
         return
     usable = pdf.w - 2 * MARGIN_MM
     columns = len(headers)
+    if pdf.rtl:
+        # Mirror the whole grid: first column on the right, and every row with it.
+        headers = list(reversed(headers))
+        rows = [list(reversed(values)) for values in rows]
+        widths = tuple(reversed(widths)) if widths else None
+        aligns = tuple(reversed(aligns)) if aligns else None
+
     with pdf.table(
         col_widths=widths or tuple([1] * columns),
         width=usable,
-        text_align=aligns or tuple(["RIGHT"] * columns),
+        text_align=_column_aligns(pdf, aligns or tuple(["RIGHT"] * columns)),
         headings_style=_headings_face(),
         borders_layout="HORIZONTAL_LINES",
         line_height=5.4,
@@ -245,7 +344,7 @@ def _notice(pdf: _Pdf, text: str) -> None:
         text,
         new_x=XPos.LMARGIN,
         new_y=YPos.NEXT,
-        align="L",
+        align=_text_align(pdf),
         fill=True,
         border=1,
         padding=(2, 2.5, 2, 2.5),
@@ -271,15 +370,20 @@ def _cover(pdf: _Pdf, data: ReportInput) -> None:
     pdf.add_page()
 
     pdf.ln(28)
+    align = _text_align(pdf)
     pdf.set_font("body", "B", TITLE_SIZE)
     pdf.set_text_color(*ACCENT)
-    pdf.multi_cell(0, 10, t.s("doc.title"), new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+    pdf.multi_cell(
+        0, 10, t.s("doc.title"), new_x=XPos.LMARGIN, new_y=YPos.NEXT, align=align
+    )
     pdf.set_text_color(*INK)
     pdf.ln(1)
 
     pdf.set_font("body", "", 11)
     pdf.set_text_color(*MUTED)
-    pdf.multi_cell(0, 5.4, t.s("doc.subtitle"), new_x=XPos.LMARGIN, new_y=YPos.NEXT)
+    pdf.multi_cell(
+        0, 5.4, t.s("doc.subtitle"), new_x=XPos.LMARGIN, new_y=YPos.NEXT, align=align
+    )
     pdf.set_text_color(*INK)
     pdf.ln(8)
 
@@ -290,6 +394,7 @@ def _cover(pdf: _Pdf, data: ReportInput) -> None:
         t.opportunity_name(data.assessment.opportunity),
         new_x=XPos.LMARGIN,
         new_y=YPos.NEXT,
+        align=align,
     )
     pdf.ln(4)
 
@@ -722,7 +827,9 @@ def _section_export(pdf: _Pdf, data: ReportInput) -> None:
         _bullets(
             pdf,
             [f"{t.label(link.get('label'))} — {link['url']}" for link in links],
-            marker="→",
+            # Not an arrow: Nirmala UI has none. Bidi mirrors this one, so it
+            # still points the reading way in an Urdu report.
+            marker="›",
         )
 
     _notice(pdf, t.label(knowledge.load_export_markets().get("disclaimer")))
@@ -847,7 +954,16 @@ def render(data: ReportInput) -> bytes:
     _section_assumptions(pdf, data)
     _section_disclaimer(pdf, data, font_set)
 
-    return bytes(pdf.output())
+    # Output draws the last page's footer, so it has to happen before counting.
+    document = bytes(pdf.output())
+    if pdf.unprintable:
+        logger.warning(
+            "The %s report could not print %d character(s): %s",
+            translator.language,
+            len(pdf.unprintable),
+            " ".join(f"U+{ord(char):04X}" for char in sorted(pdf.unprintable)),
+        )
+    return document
 
 
 def utc_now() -> datetime:

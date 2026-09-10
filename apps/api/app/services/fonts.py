@@ -11,9 +11,10 @@ Fonts are found in this order:
 1. **A downloaded Noto face** in ``data/fonts``, put there by
    ``scripts/fetch_fonts.py``. This is the portable answer and the one a
    packaged build should ship.
-2. **Nirmala UI**, which is part of Windows and covers nine Indic scripts plus
-   Latin in a single file. It means a fresh install on a village laptop can
-   print a Hindi or Kannada report immediately, with nothing downloaded. It is
+2. **Nirmala UI**, which is part of Windows and covers nine Indic scripts, Ol
+   Chiki and Latin in a single file. It means a fresh install on a village
+   laptop can print a Hindi, Kannada or Santali report immediately, with
+   nothing downloaded. It is
    a collection file, so the face is extracted once into a cache directory
    that fpdf2 can open.
 3. Nothing -- in which case the caller is told which script is missing and how
@@ -52,7 +53,21 @@ NOTO_FAMILY: dict[str, str] = {
 #: Scripts the Windows-bundled Nirmala UI covers. Checked against the font's
 #: own character map at runtime rather than trusted blindly.
 NIRMALA_SCRIPTS = frozenset(
-    {"Latn", "Deva", "Beng", "Guru", "Gujr", "Orya", "Taml", "Telu", "Knda", "Mlym"}
+    {
+        "Latn",
+        "Deva",
+        "Beng",
+        "Guru",
+        "Gujr",
+        "Orya",
+        "Taml",
+        "Telu",
+        "Knda",
+        "Mlym",
+        # Ol Chiki, for Santali: fully covered, and alongside Latin digits the
+        # Noto face lacks, so a Windows install needs no download for it.
+        "Olck",
+    }
 )
 
 #: One representative codepoint per script, used to confirm a candidate font
@@ -194,6 +209,22 @@ def resolve(script: str) -> FontSet:
             )
 
     raise FontUnavailableError(script)
+
+
+def fallbacks(primary: FontSet) -> list[FontSet]:
+    """Faces to borrow a glyph from when ``primary`` has none for it.
+
+    Nirmala UI carries Latin beside nine Indic scripts, but a single-script
+    face does not: Noto Naskh Arabic has no Latin letters, and Noto Sans Ol
+    Chiki not even the digits 0-9. Every report still prints LGD place names,
+    web addresses, rupee figures and bullet marks in whatever script it is
+    written in, so the Latin face fills those gaps.
+    """
+    try:
+        latin = resolve("Latn")
+    except FontUnavailableError:
+        return []
+    return [] if latin.regular == primary.regular else [latin]
 
 
 def is_available(script: str) -> bool:

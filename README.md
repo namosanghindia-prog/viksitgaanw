@@ -32,7 +32,8 @@ python scripts/import_lgd.py --source data/lgd/dump --replace
 
 # 4. Fonts for project reports in Indian scripts.
 #    Optional on Windows: the bundled Nirmala UI already covers nine Indic
-#    scripts. Needed for Urdu/Kashmiri/Sindhi, Santali, and on macOS/Linux.
+#    scripts and Santali's Ol Chiki. Needed for Urdu/Kashmiri/Sindhi, and on
+#    macOS/Linux.
 python scripts/fetch_fonts.py --all
 
 # 5. Run the app (starts the local API, Vite, and Electron together)
@@ -221,11 +222,16 @@ Two things have to be true for that to mean anything, and both are checked:
 
 - **The script has to render.** A PDF carries its own glyphs and Indic scripts
   need real shaping. On Windows the app extracts a face from the bundled Nirmala
-  UI, which covers nine Indic scripts plus Latin, so a fresh install prints
-  Hindi or Kannada with nothing downloaded. For the Perso-Arabic scripts, Ol
-  Chiki, and non-Windows machines, run `python scripts/fetch_fonts.py --all`
+  UI, which covers nine Indic scripts, Ol Chiki and Latin, so a fresh install
+  prints Hindi, Kannada or Santali with nothing downloaded. For the
+  Perso-Arabic scripts and non-Windows machines, run `python scripts/fetch_fonts.py --all`
   once. A language whose script has no font is **refused with the exact command
-  that fixes it**, rather than producing a page of empty boxes.
+  that fixes it**, rather than producing a page of empty boxes. Single-script
+  faces such as Noto Naskh Arabic and Noto Sans Ol Chiki carry no Latin (Ol
+  Chiki not even 0-9), so place names, web addresses and figures borrow from
+  the Latin face, and any character nothing can draw is logged by name.
+  Urdu, Kashmiri and Sindhi reports are laid out right to left once they have
+  any translated text.
 - **The words have to exist.** Coverage counts everything a report can print —
   headings, labels, option names *and* their descriptive paragraphs — not just
   the headings, because a language with the headings alone still produces a
@@ -238,7 +244,8 @@ python scripts/check_translations.py              # coverage per language
 python scripts/check_translations.py --language ta --missing
 ```
 
-Complete today: **English, Hindi, Marathi, Tamil**. Every other language renders
+Complete today: **English, Hindi, Bengali, Marathi, Telugu, Tamil, Kannada**.
+Every other language renders
 correctly and falls back to English; filling one in means adding
 `packages/shared/knowledge/dpr/<code>.json` with the same keys as `en.json` —
 no code change.
