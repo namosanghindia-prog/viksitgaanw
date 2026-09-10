@@ -1,0 +1,252 @@
+[
+  {
+    "code": "dairy_crossbred",
+    "kind": "livestock",
+    "label": { "en": "Crossbred dairy unit", "hi": "संकर नस्ल डेयरी इकाई" },
+    "summary": {
+      "en": "A ten-animal dairy pays cash twice a day, every day, which no crop does. It only works if you grow your own green fodder — bought feed eats the entire margin — so it belongs on land that can spare a corner for napier or maize.",
+      "hi": "दस पशुओं की डेयरी रोज़, दिन में दो बार नकद पैसा देती है, जो कोई फसल नहीं देती। यह तभी चलती है जब हरा चारा आप खुद उगाएँ — खरीदा हुआ दाना पूरा मुनाफ़ा खा जाता है — इसलिए यह उस ज़मीन के लिए है जहाँ नेपियर या मक्के के लिए एक हिस्सा निकाला जा सके।"
+    },
+    "fit": {
+      "soilTypes": [],
+      "regions": ["all_india"],
+      "waterNeed": "medium",
+      "salinityTolerance": "medium",
+      "requiresIrrigation": false,
+      "preferredIrrigation": [],
+      "maxWaterDepthMetres": 300
+    },
+    "sizing": {
+      "mode": "unit",
+      "unitsFromLand": true,
+      "unitLabel": { "en": "10 crossbred milch animals with shed", "hi": "शेड सहित 10 संकर दुधारू पशु" },
+      "landHaPerUnit": 0.4,
+      "minUnits": 1,
+      "maxUnits": 6
+    },
+    "economics": {
+      "capex": { "low": 900000, "high": 1350000 },
+      "opexPerYear": { "low": 650000, "high": 880000 },
+      "revenuePerYear": { "low": 900000, "high": 1250000 },
+      "gestationMonths": 4,
+      "fullYieldYear": 2,
+      "projectLifeYears": 7,
+      "riskLevel": "medium",
+      "labourDaysPerYear": 730
+    },
+    "export": { "potential": "none", "commodity": "milk" },
+    "schemes": ["ahidf", "nlm", "kcc", "agri_infra_fund"],
+    "resources": [
+      { "label": { "en": "Department of Animal Husbandry and Dairying", "hi": "पशुपालन एवं डेयरी विभाग" }, "url": "https://dahd.gov.in/" },
+      { "label": { "en": "National Dairy Development Board", "hi": "राष्ट्रीय डेयरी विकास बोर्ड" }, "url": "https://www.nddb.coop/" }
+    ]
+  },
+  {
+    "code": "goatery_semi_intensive",
+    "kind": "livestock",
+    "label": { "en": "Semi-intensive goat unit", "hi": "अर्ध-सघन बकरी पालन इकाई" },
+    "summary": {
+      "en": "Goats need less capital per animal than cattle, eat browse that cattle refuse, and sell for cash at festivals without any cold chain. Income starts about a year in, when the first kids are ready.",
+      "hi": "बकरी में प्रति पशु पूँजी गाय-भैंस से कम लगती है, वह वे पत्तियाँ-झाड़ियाँ खा लेती है जिन्हें गाय नहीं खाती, और त्योहारों पर बिना किसी कोल्ड चेन के नकद बिक जाती है। आमदनी लगभग एक साल बाद शुरू होती है, जब पहले मेमने तैयार होते हैं।"
+    },
+    "fit": {
+      "soilTypes": [],
+      "regions": ["all_india"],
+      "waterNeed": "low",
+      "salinityTolerance": "high",
+      "requiresIrrigation": false,
+      "preferredIrrigation": [],
+      "maxWaterDepthMetres": 400
+    },
+    "sizing": {
+      "mode": "unit",
+      "unitsFromLand": true,
+      "unitLabel": { "en": "50 does and 2 bucks with shed", "hi": "शेड सहित 50 बकरियाँ और 2 बकरे" },
+      "landHaPerUnit": 0.3,
+      "minUnits": 1,
+      "maxUnits": 6
+    },
+    "economics": {
+      "capex": { "low": 620000, "high": 950000 },
+      "opexPerYear": { "low": 250000, "high": 380000 },
+      "revenuePerYear": { "low": 520000, "high": 780000 },
+      "gestationMonths": 12,
+      "fullYieldYear": 3,
+      "projectLifeYears": 8,
+      "riskLevel": "medium",
+      "labourDaysPerYear": 400
+    },
+    "export": { "potential": "emerging", "commodity": "goat_meat" },
+    "schemes": ["nlm", "kcc", "ahidf"],
+    "resources": [
+      { "label": { "en": "ICAR-Central Institute for Research on Goats", "hi": "आईसीएआर-केंद्रीय बकरी अनुसंधान संस्थान" }, "url": "https://cirg.icar.gov.in/" },
+      { "label": { "en": "National Livestock Mission – subsidy application", "hi": "राष्ट्रीय पशुधन मिशन – अनुदान आवेदन" }, "url": "https://nlm.udyamimitra.in/" }
+    ]
+  },
+  {
+    "code": "backyard_poultry",
+    "kind": "livestock",
+    "label": { "en": "Improved backyard poultry", "hi": "उन्नत देसी मुर्गी पालन" },
+    "summary": {
+      "en": "Dual-purpose birds like Vanaraja or Kadaknath live largely on scavenged feed, need only a night shelter, and fetch two to three times the price of broiler meat. It is the cheapest entry point on this list for a family with very little land.",
+      "hi": "वनराजा या कड़कनाथ जैसी दोहरे उपयोग की मुर्गियाँ बड़ी हद तक बीनकर खाती हैं, केवल रात का बाड़ा चाहिए, और ब्रॉयलर से दो-तीन गुना भाव पाती हैं। बहुत कम ज़मीन वाले परिवार के लिए इस सूची में यही सबसे सस्ता रास्ता है।"
+    },
+    "fit": {
+      "soilTypes": [],
+      "regions": ["all_india"],
+      "waterNeed": "low",
+      "salinityTolerance": "high",
+      "requiresIrrigation": false,
+      "preferredIrrigation": [],
+      "landless": true,
+      "maxWaterDepthMetres": 400
+    },
+    "sizing": {
+      "mode": "unit",
+      "unitsFromLand": false,
+      "unitLabel": { "en": "1,000 dual-purpose birds with night shelter", "hi": "रात के बाड़े सहित 1,000 दोहरे उपयोग की मुर्गियाँ" },
+      "landHaPerUnit": 0.05,
+      "minUnits": 1,
+      "maxUnits": 10
+    },
+    "economics": {
+      "capex": { "low": 150000, "high": 260000 },
+      "opexPerYear": { "low": 350000, "high": 500000 },
+      "revenuePerYear": { "low": 550000, "high": 800000 },
+      "gestationMonths": 5,
+      "fullYieldYear": 1,
+      "projectLifeYears": 7,
+      "riskLevel": "medium",
+      "labourDaysPerYear": 300
+    },
+    "export": { "potential": "none", "commodity": "poultry" },
+    "schemes": ["nlm", "kcc"],
+    "resources": [
+      { "label": { "en": "ICAR-Directorate of Poultry Research", "hi": "आईसीएआर-कुक्कुट अनुसंधान निदेशालय" }, "url": "https://pdonpoultry.icar.gov.in/" },
+      { "label": { "en": "National Livestock Mission – subsidy application", "hi": "राष्ट्रीय पशुधन मिशन – अनुदान आवेदन" }, "url": "https://nlm.udyamimitra.in/" }
+    ]
+  },
+  {
+    "code": "broiler_contract",
+    "kind": "livestock",
+    "label": { "en": "Contract broiler shed", "hi": "अनुबंध ब्रॉयलर शेड" },
+    "summary": {
+      "en": "The company supplies chicks, feed and medicine and buys the birds back; you supply the shed, water, electricity and labour, and are paid growing charges per kilogram. There is no market risk at all, but the margin is fixed and thin, and one disease outbreak can wipe out a cycle.",
+      "hi": "कंपनी चूज़े, दाना और दवा देती है और पक्षी वापस खरीद लेती है; आप शेड, पानी, बिजली और मज़दूरी देते हैं, और प्रति किलो पालन शुल्क पाते हैं। बाज़ार का जोखिम बिल्कुल नहीं है, पर मुनाफ़ा तय और कम है, और एक बार बीमारी फैलने से पूरा चक्र चौपट हो सकता है।"
+    },
+    "fit": {
+      "soilTypes": [],
+      "regions": ["all_india"],
+      "waterNeed": "low",
+      "salinityTolerance": "high",
+      "requiresIrrigation": false,
+      "preferredIrrigation": [],
+      "maxWaterDepthMetres": 400
+    },
+    "sizing": {
+      "mode": "unit",
+      "unitsFromLand": false,
+      "unitLabel": { "en": "5,000-bird environment-controlled shed", "hi": "5,000 पक्षी क्षमता का नियंत्रित वातावरण शेड" },
+      "landHaPerUnit": 0.2,
+      "minUnits": 1,
+      "maxUnits": 5
+    },
+    "economics": {
+      "capex": { "low": 900000, "high": 1500000 },
+      "opexPerYear": { "low": 130000, "high": 220000 },
+      "revenuePerYear": { "low": 400000, "high": 650000 },
+      "gestationMonths": 4,
+      "fullYieldYear": 1,
+      "projectLifeYears": 12,
+      "riskLevel": "low",
+      "labourDaysPerYear": 365
+    },
+    "export": { "potential": "none", "commodity": "poultry" },
+    "schemes": ["ahidf", "nlm", "kcc"],
+    "resources": [
+      { "label": { "en": "Department of Animal Husbandry and Dairying", "hi": "पशुपालन एवं डेयरी विभाग" }, "url": "https://dahd.gov.in/" }
+    ]
+  },
+  {
+    "code": "apiculture",
+    "kind": "livestock",
+    "label": { "en": "Beekeeping with migratory boxes", "hi": "प्रवासी बक्सों के साथ मधुमक्खी पालन" },
+    "summary": {
+      "en": "Bee boxes need no land of your own and pay twice — the honey you sell, and the extra yield on mustard, sunflower or fruit near the hives. Boxes travel by truck to follow the flowering, which is what turns it from a hobby into a business.",
+      "hi": "मधुमक्खी के बक्सों के लिए अपनी ज़मीन नहीं चाहिए और कमाई दो तरफ़ से होती है — बेचा हुआ शहद, और छत्तों के पास सरसों, सूरजमुखी या फल की बढ़ी हुई पैदावार। फूल के मौसम के पीछे बक्से ट्रक से जाते हैं, यही इसे शौक़ से व्यवसाय बनाता है।"
+    },
+    "fit": {
+      "soilTypes": [],
+      "regions": ["all_india"],
+      "excludeStates": ["37"],
+      "waterNeed": "low",
+      "salinityTolerance": "high",
+      "requiresIrrigation": false,
+      "preferredIrrigation": [],
+      "landless": true,
+      "maxWaterDepthMetres": 400
+    },
+    "sizing": {
+      "mode": "unit",
+      "unitsFromLand": false,
+      "unitLabel": { "en": "50 bee colonies with extraction kit", "hi": "निष्कर्षण किट सहित 50 मधुमक्खी वंश" },
+      "landHaPerUnit": 0.02,
+      "minUnits": 1,
+      "maxUnits": 10
+    },
+    "economics": {
+      "capex": { "low": 240000, "high": 400000 },
+      "opexPerYear": { "low": 80000, "high": 140000 },
+      "revenuePerYear": { "low": 240000, "high": 420000 },
+      "gestationMonths": 8,
+      "fullYieldYear": 2,
+      "projectLifeYears": 10,
+      "riskLevel": "medium",
+      "labourDaysPerYear": 180
+    },
+    "export": { "potential": "strong", "commodity": "honey" },
+    "schemes": ["nbhm", "pmfme", "kcc"],
+    "resources": [
+      { "label": { "en": "National Bee Board", "hi": "राष्ट्रीय मधुमक्खी बोर्ड" }, "url": "https://nbb.gov.in/" },
+      { "label": { "en": "APEDA – honey export requirements", "hi": "एपीडा – शहद निर्यात आवश्यकताएँ" }, "url": "https://apeda.gov.in/" }
+    ]
+  },
+  {
+    "code": "inland_fish_pond",
+    "kind": "livestock",
+    "label": { "en": "Inland fish pond (carp polyculture)", "hi": "अंतर्देशीय मत्स्य तालाब (मिश्रित कार्प)" },
+    "summary": {
+      "en": "A dug pond stocked with three or four carp species uses each layer of the water, so one pond produces far more than a single species would. Low, clayey land that holds water and grows a poor crop is exactly the right site.",
+      "hi": "खोदे गए तालाब में तीन-चार तरह की कार्प डालने से पानी की हर परत काम आती है, इसलिए एक ही तालाब से अकेली प्रजाति की तुलना में कहीं ज़्यादा उत्पादन होता है। नीची, चिकनी मिट्टी वाली वह ज़मीन जो पानी रोक लेती है और फसल कमज़ोर देती है, इसके लिए बिल्कुल सही जगह है।"
+    },
+    "fit": {
+      "soilTypes": ["clayey", "alluvial", "loamy", "peaty_marshy"],
+      "avoidSoilTypes": ["sandy", "laterite"],
+      "regions": ["all_india"],
+      "excludeStates": ["37", "8"],
+      "waterNeed": "high",
+      "salinityTolerance": "low",
+      "requiresIrrigation": false,
+      "preferredIrrigation": [],
+      "preferredWaterSources": ["pond_tank", "farm_pond", "canal", "river", "borewell"],
+      "maxWaterDepthMetres": 80
+    },
+    "sizing": { "mode": "area", "minHa": 0.2, "maxHa": 10 },
+    "economics": {
+      "capex": { "low": 600000, "high": 950000 },
+      "opexPerYear": { "low": 350000, "high": 520000 },
+      "revenuePerYear": { "low": 620000, "high": 1000000 },
+      "gestationMonths": 10,
+      "fullYieldYear": 2,
+      "projectLifeYears": 15,
+      "riskLevel": "medium",
+      "labourDaysPerYear": 250
+    },
+    "export": { "potential": "emerging", "commodity": "fish" },
+    "schemes": ["pmmsy", "kcc", "agri_infra_fund"],
+    "resources": [
+      { "label": { "en": "PMMSY – fisheries scheme portal", "hi": "पीएमएमएसवाई – मत्स्य योजना पोर्टल" }, "url": "https://pmmsy.dof.gov.in/" },
+      { "label": { "en": "National Fisheries Development Board", "hi": "राष्ट्रीय मत्स्य विकास बोर्ड" }, "url": "https://nfdb.gov.in/" }
+    ]
+  }
+]

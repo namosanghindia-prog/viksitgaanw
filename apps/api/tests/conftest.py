@@ -20,6 +20,9 @@ sys.path.insert(0, str(REPO_ROOT / "scripts"))
 
 _TEST_DIR = Path(tempfile.mkdtemp(prefix="viksitgaanw-tests-"))
 os.environ["VG_DB_PATH"] = str(_TEST_DIR / "test.db")
+# Generated reports go to the same throwaway directory, so a suite run never
+# leaves PDFs beside a developer's real ones.
+os.environ["VG_REPORTS_DIR"] = str(_TEST_DIR / "reports")
 
 import pytest  # noqa: E402
 from fastapi.testclient import TestClient  # noqa: E402
@@ -27,7 +30,13 @@ from sqlalchemy import delete  # noqa: E402
 
 from app.db import init_db, session_scope  # noqa: E402
 from app.main import app  # noqa: E402
-from app.models import AppEvent, Farmer, LandParcel, SyncQueueEntry  # noqa: E402
+from app.models import (  # noqa: E402
+    AppEvent,
+    Farmer,
+    LandParcel,
+    ProjectReport,
+    SyncQueueEntry,
+)
 
 
 @pytest.fixture(scope="session", autouse=True)
@@ -46,6 +55,8 @@ def clean_user_data() -> None:
     with session_scope() as session:
         session.execute(delete(SyncQueueEntry))
         session.execute(delete(AppEvent))
+        # Reports hang off a parcel, so they go first.
+        session.execute(delete(ProjectReport))
         session.execute(delete(LandParcel))
         session.execute(delete(Farmer))
 
@@ -80,3 +91,59 @@ def parcel_payload() -> dict:
         "irrigationType": "flood",
         "existingCrops": ["wheat", "rice"],
     }
+
+
+@pytest.fixture()
+def parcel_id(client, parcel_payload) -> str:
+    """A saved parcel, for the tests that start from one existing."""
+    response = client.post("/api/v1/land-parcels", json=parcel_payload)
+    assert response.status_code == 201, response.text
+    return response.json()["id"]
+
+
+@pytest.fixture()
+def land_profile():
+    """Build a LandProfile without going through the database.
+
+    The scoring engine deliberately knows nothing about SQLAlchemy, so most of
+    its tests should not need a parcel row either.
+    """
+    from app.services.opportunities import LandProfile
+
+    def build(**overrides):
+        defaults = dict(
+            area_hectares=1.2,
+            state_code=UP,
+            soil_type="alluvial",
+            water_sources=("borewell",),
+            water_type="sweet",
+            water_depth_metres=27.0,
+            irrigation_type="drip",
+            existing_crops=("wheat", "rice"),
+        )
+        defaults.update(overrides)
+        return LandProfile(**defaults)
+
+    return build
+
+
+@pytest.fixture()
+def labels():
+    """The name resolver the engine expects, without a database session."""
+
+    def resolve(list_key: str, code: str | None) -> str:
+        return code or "not stated"
+
+    return resolve
+
+
+@pytest.fixture()
+def db_session():
+    """A plain session, for services that take one directly."""
+    from app.db import SessionLocal
+
+    session = SessionLocal()
+    try:
+        yield session
+    finally:
+        session.close()

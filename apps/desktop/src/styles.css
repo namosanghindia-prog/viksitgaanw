@@ -819,3 +819,308 @@ code {
     gap: 2px;
   }
 }
+
+/* ------------------------------------------------------------------ *
+ * Map
+ * ------------------------------------------------------------------ */
+
+.map {
+  position: relative;
+  height: 320px;
+  border: 2px solid var(--line);
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--wheat-dark);
+}
+
+.map__canvas {
+  position: absolute;
+  inset: 0;
+}
+
+.map__overlay {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  background: var(--wheat-dark);
+  color: var(--ink-muted);
+  z-index: 500;
+}
+
+.map__actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 10px;
+}
+
+.map__coords {
+  font-family: 'Cascadia Mono', Consolas, monospace;
+  background: var(--wheat-dark);
+  padding: 6px 12px;
+  border-radius: var(--radius);
+  font-size: 0.9rem;
+}
+
+/* The pin is drawn rather than loaded as an image, so it needs no asset path
+   and renders identically under file:// in a packaged build. */
+.mappin {
+  display: grid;
+  place-items: center;
+}
+
+.mappin__dot {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--danger);
+  border: 3px solid #fff;
+  box-shadow: 0 0 0 2px rgba(179, 38, 30, 0.35);
+}
+
+/* Leaflet paints its own controls; keep them legible against our palette. */
+.leaflet-container {
+  font: inherit;
+  background: var(--wheat-dark);
+}
+
+.leaflet-control-attribution {
+  font-size: 0.7rem;
+}
+
+/* ------------------------------------------------------------------ *
+ * Business and farming options
+ * ------------------------------------------------------------------ */
+
+.page__lede {
+  margin: 0 0 1.25rem;
+  max-width: 62ch;
+  color: var(--ink-soft, #55605a);
+  line-height: 1.6;
+}
+
+.tabs {
+  display: flex;
+  gap: 0.25rem;
+  margin-bottom: 1.25rem;
+  border-bottom: 1px solid var(--rule, #ddd);
+}
+
+.tab {
+  appearance: none;
+  border: 0;
+  background: none;
+  padding: 0.6rem 1rem;
+  font: inherit;
+  font-weight: 600;
+  color: var(--ink-soft, #55605a);
+  cursor: pointer;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -1px;
+}
+
+.tab:hover { color: var(--ink, #1a201c); }
+
+.tab--active {
+  color: var(--accent, #215732);
+  border-bottom-color: var(--accent, #215732);
+}
+
+.section__title {
+  margin: 1.75rem 0 0.75rem;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.opportunities {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1rem;
+}
+
+.opportunities--muted { opacity: 0.75; }
+
+.opp {
+  border: 1px solid var(--rule, #ddd);
+  border-radius: 10px;
+  background: #fff;
+  padding: 1rem 1.1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.opp--unsuitable { background: #fbfbfa; border-style: dashed; }
+
+.opp__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.75rem;
+}
+
+.opp__name { margin: 0; font-size: 1.02rem; line-height: 1.35; }
+.opp__kind { margin: 0.2rem 0 0; font-size: 0.82rem; color: var(--ink-soft, #55605a); }
+
+.opp__badges {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.25rem;
+  flex-shrink: 0;
+}
+
+.badge--risk-low { background: #e6f4ea; color: #1e6b37; }
+.badge--risk-medium { background: #fdf5e2; color: #8a6100; }
+.badge--risk-high { background: #fdeceb; color: #a32a1f; }
+.badge--export { background: #e8f0fb; color: #1d4e89; }
+
+.opp__summary {
+  margin: 0;
+  font-size: 0.9rem;
+  line-height: 1.55;
+  color: var(--ink-soft, #55605a);
+}
+
+.opp__figures {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.6rem 1rem;
+  margin: 0.25rem 0 0;
+  padding: 0.75rem 0 0;
+  border-top: 1px solid var(--rule, #eee);
+}
+
+.opp__figures > div { margin: 0; }
+.opp__figures dt {
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: var(--ink-soft, #55605a);
+}
+.opp__figures dd { margin: 0.1rem 0 0; }
+
+.opp__figure { font-variant-numeric: tabular-nums; font-weight: 600; }
+.opp__figure--lead { font-size: 1.15rem; color: var(--accent, #215732); }
+
+.opp__foot {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.25rem;
+}
+
+.opp__detail {
+  border-top: 1px solid var(--rule, #eee);
+  padding-top: 0.75rem;
+  font-size: 0.88rem;
+}
+
+.opp__detail h5 {
+  margin: 0.75rem 0 0.35rem;
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--ink-soft, #55605a);
+}
+.opp__detail h5:first-child { margin-top: 0; }
+
+.opp__reasons { margin: 0; padding-left: 1.1rem; line-height: 1.5; }
+.opp__reasons li { margin-bottom: 0.3rem; }
+.opp__reasons--warn li { color: #8a6100; }
+.opp__reasons--bad li { color: #a32a1f; }
+
+.opp__links { margin: 0; padding-left: 1.1rem; line-height: 1.6; }
+.opp__links a { color: var(--accent, #215732); }
+
+.fineprint {
+  margin-top: 2rem;
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: var(--ink-soft, #55605a);
+  max-width: 78ch;
+}
+
+.card--tight { padding: 1rem 1.1rem; }
+
+.reportlist { list-style: none; margin: 0; padding: 0; }
+.reportlist__item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid var(--rule, #eee);
+  flex-wrap: wrap;
+}
+.reportlist__item:last-child { border-bottom: 0; }
+.reportlist__actions { display: flex; gap: 0.4rem; }
+
+.suggestion {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+.suggestion__actions { display: flex; gap: 0.4rem; flex-shrink: 0; }
+
+/* ------------------------------------------------------------------ *
+ * Modal
+ * ------------------------------------------------------------------ */
+
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 1.5rem;
+}
+
+.modal__backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(18, 24, 20, 0.45);
+}
+
+.modal__panel {
+  position: relative;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 18px 48px rgba(18, 24, 20, 0.28);
+  width: min(560px, 100%);
+  max-height: min(86vh, 900px);
+  display: flex;
+  flex-direction: column;
+}
+
+.modal__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+  padding: 1.1rem 1.25rem 0.75rem;
+  border-bottom: 1px solid var(--rule, #eee);
+}
+
+.modal__title { margin: 0; font-size: 1.1rem; }
+.modal__subtitle { margin: 0.2rem 0 0; color: var(--ink-soft, #55605a); font-size: 0.9rem; }
+
+.modal__body { padding: 1rem 1.25rem; overflow-y: auto; }
+
+.modal__foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  padding: 0.85rem 1.25rem;
+  border-top: 1px solid var(--rule, #eee);
+}
+
+@media (max-width: 640px) {
+  .opportunities { grid-template-columns: 1fr; }
+  .opp__figures { grid-template-columns: 1fr; }
+}

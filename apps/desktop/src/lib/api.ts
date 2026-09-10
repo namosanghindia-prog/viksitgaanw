@@ -7,10 +7,18 @@
 
 import type {
   AdminUnit,
+  DprRequest,
+  ExportMarketList,
+  GeoLocateResult,
   HealthStatus,
   LandParcel,
   LandParcelInput,
   LocationPath,
+  OpportunityList,
+  PlaceSuggestion,
+  ProjectReport,
+  ReportLanguage,
+  TileStatus,
 } from '@viksitgaanw/shared';
 
 declare global {
@@ -142,6 +150,8 @@ export const api = {
     signal?: AbortSignal,
   ) => request<LocationPath>('/locations/resolve', { params: query, signal }),
 
+  tileStatus: (signal?: AbortSignal) => request<TileStatus>('/tiles/status', { signal }),
+
   listParcels: (signal?: AbortSignal) => request<LandParcel[]>('/land-parcels', { signal }),
 
   getParcel: (id: string, signal?: AbortSignal) =>
@@ -154,4 +164,75 @@ export const api = {
     request<LandParcel>(`/land-parcels/${id}`, { method: 'PATCH', body: changes }),
 
   deleteParcel: (id: string) => request<void>(`/land-parcels/${id}`, { method: 'DELETE' }),
+
+  /**
+   * Ask the device where it is.
+   *
+   * Called only after the browser's own geolocation has failed, which on the
+   * Electron desktop shell is every time -- Chromium resolves position through
+   * a Google service the build has no key for.
+   */
+  locate: (
+    query: { stateCode?: string; allowNetwork?: boolean; resolvePlace?: boolean },
+    signal?: AbortSignal,
+  ) =>
+    request<GeoLocateResult>('/geo/locate', {
+      params: {
+        stateCode: query.stateCode,
+        allowNetwork: query.allowNetwork === false ? 'false' : undefined,
+        resolvePlace: query.resolvePlace === false ? 'false' : undefined,
+      },
+      signal,
+    }),
+
+  /** Suggest the LGD location for a pin the farmer dropped by hand. */
+  reverseGeocode: (
+    query: { lat: number; lon: number; allowNetwork?: boolean },
+    signal?: AbortSignal,
+  ) =>
+    request<PlaceSuggestion>('/geo/reverse', {
+      params: {
+        lat: query.lat,
+        lon: query.lon,
+        allowNetwork: query.allowNetwork === false ? 'false' : undefined,
+      },
+      signal,
+    }),
+
+  opportunities: (
+    parcelId: string,
+    query: { lang: string; kind?: string; exportOnly?: boolean },
+    signal?: AbortSignal,
+  ) =>
+    request<OpportunityList>(`/land-parcels/${parcelId}/opportunities`, {
+      params: {
+        lang: query.lang,
+        kind: query.kind,
+        exportOnly: query.exportOnly ? 'true' : undefined,
+      },
+      signal,
+    }),
+
+  exportMarkets: (query: { lang: string; commodity?: string }, signal?: AbortSignal) =>
+    request<ExportMarketList>('/export-markets', { params: query, signal }),
+
+  reportLanguages: (lang: string, signal?: AbortSignal) =>
+    request<ReportLanguage[]>('/report-languages', { params: { lang }, signal }),
+
+  createReport: (parcelId: string, body: DprRequest) =>
+    request<ProjectReport>(`/land-parcels/${parcelId}/reports`, {
+      method: 'POST',
+      body,
+    }),
+
+  parcelReports: (parcelId: string, lang: string, signal?: AbortSignal) =>
+    request<ProjectReport[]>(`/land-parcels/${parcelId}/reports`, {
+      params: { lang },
+      signal,
+    }),
+
+  deleteReport: (id: string) => request<void>(`/reports/${id}`, { method: 'DELETE' }),
+
+  /** Absolute URL of a generated PDF, for opening it outside the app. */
+  reportFileUrl: (report: ProjectReport) => `${API_BASE_URL}${report.downloadPath}`,
 };

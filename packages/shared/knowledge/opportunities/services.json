@@ -1,0 +1,174 @@
+[
+  {
+    "code": "custom_hiring_centre",
+    "kind": "service",
+    "label": { "en": "Custom hiring centre for farm machinery", "hi": "कृषि यंत्रों का कस्टम हायरिंग केंद्र" },
+    "summary": {
+      "en": "Own the tractor, rotavator, seed drill, thresher and sprayer that your neighbours cannot afford, and hire them out by the hour. Income comes from other people's fields, so a bad season on your own land does not stop it.",
+      "hi": "ट्रैक्टर, रोटावेटर, सीड ड्रिल, थ्रेशर और स्प्रेयर आपके पास हों जो पड़ोसी नहीं खरीद सकते, और उन्हें घंटे के हिसाब से किराए पर दें। आमदनी दूसरों के खेतों से आती है, इसलिए अपने खेत का बुरा मौसम इसे नहीं रोकता।"
+    },
+    "fit": {
+      "soilTypes": [],
+      "regions": ["all_india"],
+      "waterNeed": "low",
+      "salinityTolerance": "high",
+      "requiresIrrigation": false,
+      "preferredIrrigation": [],
+      "landless": true,
+      "maxWaterDepthMetres": 400
+    },
+    "sizing": {
+      "mode": "unit",
+      "unitsFromLand": false,
+      "unitLabel": { "en": "Tractor with six matched implements", "hi": "छह मिलान यंत्रों सहित एक ट्रैक्टर" },
+      "landHaPerUnit": 0.05,
+      "minUnits": 1,
+      "maxUnits": 3
+    },
+    "economics": {
+      "capex": { "low": 1500000, "high": 2500000 },
+      "opexPerYear": { "low": 320000, "high": 520000 },
+      "revenuePerYear": { "low": 650000, "high": 1050000 },
+      "gestationMonths": 3,
+      "fullYieldYear": 2,
+      "projectLifeYears": 10,
+      "riskLevel": "medium",
+      "labourDaysPerYear": 300
+    },
+    "export": { "potential": "none", "commodity": "farm_services" },
+    "schemes": ["smam", "agri_infra_fund", "kcc"],
+    "resources": [
+      { "label": { "en": "Farm Machinery portal – CHC subsidy", "hi": "कृषि यंत्र पोर्टल – सीएचसी अनुदान" }, "url": "https://agrimachinery.nic.in/" },
+      { "label": { "en": "CHC Farm Machinery app", "hi": "सीएचसी फ़ार्म मशीनरी ऐप" }, "url": "https://agrimachinery.nic.in/" }
+    ]
+  },
+  {
+    "code": "vermicompost_unit",
+    "kind": "service",
+    "label": { "en": "Vermicompost production unit", "hi": "वर्मी कम्पोस्ट उत्पादन इकाई" },
+    "summary": {
+      "en": "Cattle dung and crop waste you already have become a bagged product that sells all year to nurseries, orchards and organic growers. It needs shade and water rather than land, and it is the lowest-cost business on this list to start.",
+      "hi": "आपके पास पहले से मौजूद गोबर और फसल अवशेष एक थैलीबंद उत्पाद बन जाते हैं जो साल भर नर्सरी, बाग़ों और जैविक किसानों को बिकता है। इसके लिए ज़मीन से ज़्यादा छाया और पानी चाहिए, और शुरू करने में यह इस सूची का सबसे सस्ता व्यवसाय है।"
+    },
+    "fit": {
+      "soilTypes": [],
+      "regions": ["all_india"],
+      "waterNeed": "low",
+      "salinityTolerance": "high",
+      "requiresIrrigation": false,
+      "preferredIrrigation": [],
+      "landless": true,
+      "maxWaterDepthMetres": 400
+    },
+    "sizing": {
+      "mode": "unit",
+      "unitsFromLand": false,
+      "unitLabel": { "en": "10 permanent beds (approx. 60 tonnes a year)", "hi": "10 पक्के बेड (लगभग 60 टन प्रति वर्ष)" },
+      "landHaPerUnit": 0.04,
+      "minUnits": 1,
+      "maxUnits": 10
+    },
+    "economics": {
+      "capex": { "low": 150000, "high": 300000 },
+      "opexPerYear": { "low": 110000, "high": 180000 },
+      "revenuePerYear": { "low": 260000, "high": 420000 },
+      "gestationMonths": 4,
+      "fullYieldYear": 2,
+      "projectLifeYears": 10,
+      "riskLevel": "low",
+      "labourDaysPerYear": 200
+    },
+    "export": { "potential": "none", "commodity": "compost" },
+    "schemes": ["pkvy", "midh", "rkvy", "kcc"],
+    "resources": [
+      { "label": { "en": "National Centre for Organic and Natural Farming", "hi": "राष्ट्रीय जैविक एवं प्राकृतिक खेती केंद्र" }, "url": "https://ncof.dacnet.nic.in/" },
+      { "label": { "en": "PKVY – organic farming scheme", "hi": "पीकेवीवाई – जैविक खेती योजना" }, "url": "https://pgsindia-ncof.gov.in/" }
+    ]
+  },
+  {
+    "code": "grafted_sapling_nursery",
+    "kind": "service",
+    "label": { "en": "Grafted fruit sapling nursery", "hi": "कलमी फल पौध नर्सरी" },
+    "summary": {
+      "en": "Every orchard planted in your district starts with saplings bought from somewhere. A registered nursery raising grafted mango, guava, lime or pomegranate plants sells to those farmers and to government planting schemes.",
+      "hi": "आपके ज़िले में लगने वाला हर बाग़ कहीं न कहीं से खरीदे गए पौधों से शुरू होता है। कलमी आम, अमरूद, नींबू या अनार के पौधे तैयार करने वाली पंजीकृत नर्सरी उन्हीं किसानों को और सरकारी रोपण योजनाओं को बेचती है।"
+    },
+    "fit": {
+      "soilTypes": ["loamy", "alluvial", "red", "laterite", "black", "sandy"],
+      "avoidSoilTypes": ["peaty_marshy", "saline_alkaline"],
+      "regions": ["all_india"],
+      "waterNeed": "medium",
+      "salinityTolerance": "low",
+      "requiresIrrigation": true,
+      "preferredIrrigation": ["drip", "sprinkler"],
+      "maxWaterDepthMetres": 150
+    },
+    "sizing": {
+      "mode": "unit",
+      "unitsFromLand": true,
+      "unitLabel": { "en": "Nursery producing 50,000 grafts a year", "hi": "प्रति वर्ष 50,000 कलम तैयार करने वाली नर्सरी" },
+      "landHaPerUnit": 0.4,
+      "minUnits": 1,
+      "maxUnits": 4
+    },
+    "economics": {
+      "capex": { "low": 450000, "high": 850000 },
+      "opexPerYear": { "low": 380000, "high": 620000 },
+      "revenuePerYear": { "low": 700000, "high": 1200000 },
+      "gestationMonths": 12,
+      "fullYieldYear": 3,
+      "projectLifeYears": 12,
+      "riskLevel": "medium",
+      "labourDaysPerYear": 500
+    },
+    "export": { "potential": "none", "commodity": "planting_material" },
+    "schemes": ["midh", "agri_infra_fund", "kcc"],
+    "resources": [
+      { "label": { "en": "National Horticulture Board – nursery accreditation", "hi": "राष्ट्रीय बागवानी बोर्ड – नर्सरी मान्यता" }, "url": "https://nhb.gov.in/" },
+      { "label": { "en": "MIDH – nursery establishment support", "hi": "एमआईडीएच – नर्सरी स्थापना सहायता" }, "url": "https://midh.gov.in/" }
+    ]
+  },
+  {
+    "code": "drone_spraying_service",
+    "kind": "service",
+    "label": { "en": "Drone spraying service", "hi": "ड्रोन छिड़काव सेवा" },
+    "summary": {
+      "en": "A licensed agri-drone sprays an acre in about eight minutes and covers hundreds of acres in a season for farmers who currently spray by knapsack. It needs a pilot certificate and steady bookings, and subsidy support is unusually generous.",
+      "hi": "लाइसेंस वाला कृषि ड्रोन लगभग आठ मिनट में एक एकड़ छिड़क देता है और एक मौसम में सैकड़ों एकड़ कवर करता है — उन किसानों के लिए जो अभी पीठ वाले पंप से छिड़काव करते हैं। इसके लिए पायलट प्रमाणपत्र और लगातार बुकिंग चाहिए, और अनुदान असामान्य रूप से अच्छा मिलता है।"
+    },
+    "fit": {
+      "soilTypes": [],
+      "regions": ["all_india"],
+      "waterNeed": "low",
+      "salinityTolerance": "high",
+      "requiresIrrigation": false,
+      "preferredIrrigation": [],
+      "landless": true,
+      "maxWaterDepthMetres": 400
+    },
+    "sizing": {
+      "mode": "unit",
+      "unitsFromLand": false,
+      "unitLabel": { "en": "One agri-drone with batteries, generator and pilot training", "hi": "बैटरी, जनरेटर और पायलट प्रशिक्षण सहित एक कृषि ड्रोन" },
+      "landHaPerUnit": 0.01,
+      "minUnits": 1,
+      "maxUnits": 4
+    },
+    "economics": {
+      "capex": { "low": 800000, "high": 1300000 },
+      "opexPerYear": { "low": 180000, "high": 320000 },
+      "revenuePerYear": { "low": 450000, "high": 850000 },
+      "gestationMonths": 4,
+      "fullYieldYear": 2,
+      "projectLifeYears": 7,
+      "riskLevel": "medium",
+      "labourDaysPerYear": 220
+    },
+    "export": { "potential": "none", "commodity": "farm_services" },
+    "schemes": ["smam", "agri_infra_fund", "kcc"],
+    "resources": [
+      { "label": { "en": "SMAM – drone subsidy norms", "hi": "एसएमएएम – ड्रोन अनुदान मानक" }, "url": "https://agrimachinery.nic.in/" },
+      { "label": { "en": "DGCA Digital Sky – drone pilot licensing", "hi": "डीजीसीए डिजिटल स्काई – ड्रोन पायलट लाइसेंस" }, "url": "https://digitalsky.dgca.gov.in/" }
+    ]
+  }
+]

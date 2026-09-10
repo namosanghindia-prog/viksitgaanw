@@ -1,3 +1,5 @@
 -r requirements.txt
 pytest>=8.3.0
 httpx>=0.27.0
+# Unpacks the .7z archives that scripts/fetch_lgd.py downloads.
+py7zr>=0.22.0

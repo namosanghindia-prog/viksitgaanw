@@ -1,0 +1,8 @@
+{
+  "key": "depth_units",
+  "version": 1,
+  "items": [
+    { "code": "foot",  "metres": 0.3048, "label": { "en": "Feet",   "hi": "फुट" } },
+    { "code": "metre", "metres": 1.0,    "label": { "en": "Metres", "hi": "मीटर" } }
+  ]
+}

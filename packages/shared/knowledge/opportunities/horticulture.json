@@ -1,0 +1,330 @@
+[
+  {
+    "code": "pomegranate_orchard",
+    "kind": "horticulture",
+    "label": { "en": "Pomegranate orchard (Bhagwa)", "hi": "अनार का बाग (भगवा)" },
+    "summary": {
+      "en": "A high-density Bhagwa pomegranate orchard under drip. It suits light, well-drained land with limited but assured water, and earns several times what a cereal rotation does per acre. It also carries real disease risk, so it belongs with a farmer willing to spray on schedule.",
+      "hi": "ड्रिप पर भगवा अनार का सघन बाग। हल्की, अच्छे निकास वाली ज़मीन और सीमित पर निश्चित पानी के लिए उपयुक्त। अनाज की तुलना में प्रति एकड़ आमदनी कई गुना है, पर तेलिया रोग का जोखिम असली है — समय पर छिड़काव करने वाले किसान के लिए ही ठीक है।"
+    },
+    "fit": {
+      "soilTypes": ["red", "black", "loamy", "sandy", "laterite", "alluvial"],
+      "avoidSoilTypes": ["peaty_marshy", "saline_alkaline"],
+      "regions": ["deccan", "arid_west"],
+      "alsoStates": ["23", "9", "8"],
+      "waterNeed": "low",
+      "salinityTolerance": "medium",
+      "requiresIrrigation": true,
+      "preferredIrrigation": ["drip"],
+      "maxWaterDepthMetres": 200
+    },
+    "sizing": { "mode": "area", "minHa": 0.4, "maxHa": 20 },
+    "economics": {
+      "capex": { "low": 400000, "high": 620000 },
+      "opexPerYear": { "low": 150000, "high": 250000 },
+      "revenuePerYear": { "low": 600000, "high": 1400000 },
+      "gestationMonths": 30,
+      "fullYieldYear": 4,
+      "projectLifeYears": 15,
+      "riskLevel": "high",
+      "labourDaysPerYear": 260
+    },
+    "export": { "potential": "strong", "commodity": "pomegranate" },
+    "schemes": ["midh", "pmksy_pdmc", "agri_infra_fund"],
+    "resources": [
+      { "label": { "en": "ICAR-NRC on Pomegranate, Solapur", "hi": "आईसीएआर-राष्ट्रीय अनार अनुसंधान केंद्र, सोलापुर" }, "url": "https://nrcpomegranate.icar.gov.in/" },
+      { "label": { "en": "AGMARKNET – daily mandi prices", "hi": "एगमार्कनेट – रोज़ के मंडी भाव" }, "url": "https://agmarknet.gov.in/" }
+    ]
+  },
+  {
+    "code": "banana_tissue_culture",
+    "kind": "horticulture",
+    "label": { "en": "Tissue-culture banana (G9)", "hi": "टिश्यू कल्चर केला (जी-9)" },
+    "summary": {
+      "en": "Uniform G9 banana raised from tissue-culture plants under drip and fertigation. It needs deep soil and water you can count on all year, and it repays its cost inside the first crop cycle, which makes it one of the easier orchard loans to get sanctioned.",
+      "hi": "ड्रिप और फर्टिगेशन पर टिश्यू कल्चर से लगाया गया एक-समान जी-9 केला। गहरी मिट्टी और साल भर भरोसेमंद पानी चाहिए। पहली ही फसल में लागत निकल आती है, इसलिए बैंक से ऋण स्वीकृत कराना अपेक्षाकृत आसान रहता है।"
+    },
+    "fit": {
+      "soilTypes": ["alluvial", "loamy", "clayey", "red", "black"],
+      "avoidSoilTypes": ["sandy", "saline_alkaline"],
+      "regions": ["all_india"],
+      "excludeStates": ["37", "2", "1", "11"],
+      "waterNeed": "high",
+      "salinityTolerance": "low",
+      "requiresIrrigation": true,
+      "preferredIrrigation": ["drip"],
+      "maxWaterDepthMetres": 120
+    },
+    "sizing": { "mode": "area", "minHa": 0.4, "maxHa": 20 },
+    "economics": {
+      "capex": { "low": 250000, "high": 380000 },
+      "opexPerYear": { "low": 150000, "high": 220000 },
+      "revenuePerYear": { "low": 500000, "high": 1000000 },
+      "gestationMonths": 12,
+      "fullYieldYear": 2,
+      "projectLifeYears": 5,
+      "riskLevel": "medium",
+      "labourDaysPerYear": 240
+    },
+    "export": { "potential": "emerging", "commodity": "banana" },
+    "schemes": ["midh", "pmksy_pdmc", "kcc"],
+    "resources": [
+      { "label": { "en": "ICAR-NRC for Banana, Tiruchirappalli", "hi": "आईसीएआर-राष्ट्रीय केला अनुसंधान केंद्र, तिरुचिरापल्ली" }, "url": "https://nrcb.icar.gov.in/" },
+      { "label": { "en": "National Horticulture Board", "hi": "राष्ट्रीय बागवानी बोर्ड" }, "url": "https://nhb.gov.in/" }
+    ]
+  },
+  {
+    "code": "mango_orchard_hd",
+    "kind": "horticulture",
+    "label": { "en": "High-density mango orchard", "hi": "सघन आम का बाग" },
+    "summary": {
+      "en": "A high-density mango planting that starts bearing in the fourth year and then earns for thirty. It asks for patience rather than money: the yearly cost is small, but there is no income from the block until it comes into bearing, so it fits land that has other income beside it.",
+      "hi": "सघन आम का बाग जो चौथे साल फल देना शुरू करता है और फिर तीस साल तक आमदनी देता है। इसमें पैसे से ज़्यादा धैर्य चाहिए — सालाना खर्च कम है, पर फल आने तक इस खेत से आमदनी नहीं होगी, इसलिए यह उस ज़मीन के लिए ठीक है जिसके साथ कोई और आमदनी भी हो।"
+    },
+    "fit": {
+      "soilTypes": ["alluvial", "loamy", "red", "laterite", "black", "sandy"],
+      "avoidSoilTypes": ["peaty_marshy", "saline_alkaline"],
+      "regions": ["all_india"],
+      "excludeStates": ["37", "1"],
+      "waterNeed": "low",
+      "salinityTolerance": "medium",
+      "requiresIrrigation": false,
+      "preferredIrrigation": ["drip", "flood"],
+      "maxWaterDepthMetres": 250
+    },
+    "sizing": { "mode": "area", "minHa": 0.4, "maxHa": 40 },
+    "economics": {
+      "capex": { "low": 180000, "high": 300000 },
+      "opexPerYear": { "low": 60000, "high": 120000 },
+      "revenuePerYear": { "low": 300000, "high": 700000 },
+      "gestationMonths": 48,
+      "fullYieldYear": 8,
+      "projectLifeYears": 30,
+      "riskLevel": "low",
+      "labourDaysPerYear": 150
+    },
+    "export": { "potential": "strong", "commodity": "mango" },
+    "schemes": ["midh", "mgnrega_horticulture", "agri_infra_fund"],
+    "resources": [
+      { "label": { "en": "ICAR-Central Institute for Subtropical Horticulture", "hi": "आईसीएआर-केंद्रीय उपोष्ण बागवानी संस्थान" }, "url": "https://cish.icar.gov.in/" },
+      { "label": { "en": "APEDA – fresh fruit export", "hi": "एपीडा – ताज़ा फल निर्यात" }, "url": "https://apeda.gov.in/" }
+    ]
+  },
+  {
+    "code": "guava_meadow",
+    "kind": "horticulture",
+    "label": { "en": "Meadow-orchard guava", "hi": "सघन अमरूद का बाग" },
+    "summary": {
+      "en": "Guava planted very close together and kept short by pruning. It tolerates poor and even mildly salty land better than most fruit, starts paying in the second year, and needs no cold chain because the fruit sells locally.",
+      "hi": "बहुत पास-पास लगाया और छँटाई से छोटा रखा गया अमरूद। यह कमज़ोर और हल्की खारी ज़मीन को भी दूसरे फलों से बेहतर सह लेता है, दूसरे साल से आमदनी देने लगता है, और फल स्थानीय बाज़ार में बिक जाता है इसलिए कोल्ड चेन की ज़रूरत नहीं।"
+    },
+    "fit": {
+      "soilTypes": ["alluvial", "loamy", "red", "black", "laterite", "sandy", "clayey", "saline_alkaline"],
+      "avoidSoilTypes": ["peaty_marshy"],
+      "regions": ["all_india"],
+      "excludeStates": ["37", "1", "2", "11"],
+      "waterNeed": "low",
+      "salinityTolerance": "high",
+      "requiresIrrigation": false,
+      "preferredIrrigation": ["drip", "flood"],
+      "maxWaterDepthMetres": 250
+    },
+    "sizing": { "mode": "area", "minHa": 0.3, "maxHa": 20 },
+    "economics": {
+      "capex": { "low": 240000, "high": 360000 },
+      "opexPerYear": { "low": 100000, "high": 160000 },
+      "revenuePerYear": { "low": 400000, "high": 900000 },
+      "gestationMonths": 21,
+      "fullYieldYear": 4,
+      "projectLifeYears": 12,
+      "riskLevel": "low",
+      "labourDaysPerYear": 200
+    },
+    "export": { "potential": "emerging", "commodity": "guava" },
+    "schemes": ["midh", "pmksy_pdmc"],
+    "resources": [
+      { "label": { "en": "ICAR-Central Institute for Subtropical Horticulture", "hi": "आईसीएआर-केंद्रीय उपोष्ण बागवानी संस्थान" }, "url": "https://cish.icar.gov.in/" },
+      { "label": { "en": "AGMARKNET – daily mandi prices", "hi": "एगमार्कनेट – रोज़ के मंडी भाव" }, "url": "https://agmarknet.gov.in/" }
+    ]
+  },
+  {
+    "code": "papaya_hybrid",
+    "kind": "horticulture",
+    "label": { "en": "Hybrid papaya (Red Lady)", "hi": "हाइब्रिड पपीता (रेड लेडी)" },
+    "summary": {
+      "en": "Papaya gives fruit within a year and clears a large gross income in two, which makes it attractive when money is needed quickly. The catch is ring-spot virus: where it is already present in the area, plan on a two-year cycle and nothing longer.",
+      "hi": "पपीता एक साल के भीतर फल देता है और दो साल में अच्छी आमदनी दे जाता है, इसलिए जल्दी पैसा चाहिए तो यह ठीक बैठता है। दिक्कत रिंग-स्पॉट विषाणु की है — जहाँ यह पहले से मौजूद है वहाँ दो साल से लंबी योजना न बनाएँ।"
+    },
+    "fit": {
+      "soilTypes": ["loamy", "alluvial", "red", "sandy", "laterite"],
+      "avoidSoilTypes": ["clayey", "peaty_marshy", "saline_alkaline"],
+      "regions": ["all_india"],
+      "excludeStates": ["37", "1", "2", "11"],
+      "waterNeed": "medium",
+      "salinityTolerance": "low",
+      "requiresIrrigation": true,
+      "preferredIrrigation": ["drip"],
+      "maxWaterDepthMetres": 120
+    },
+    "sizing": { "mode": "area", "minHa": 0.2, "maxHa": 10 },
+    "economics": {
+      "capex": { "low": 240000, "high": 360000 },
+      "opexPerYear": { "low": 150000, "high": 220000 },
+      "revenuePerYear": { "low": 500000, "high": 1100000 },
+      "gestationMonths": 10,
+      "fullYieldYear": 2,
+      "projectLifeYears": 3,
+      "riskLevel": "high",
+      "labourDaysPerYear": 220
+    },
+    "export": { "potential": "none", "commodity": "papaya" },
+    "schemes": ["midh", "pmksy_pdmc", "kcc"],
+    "resources": [
+      { "label": { "en": "ICAR-Indian Institute of Horticultural Research", "hi": "आईसीएआर-भारतीय बागवानी अनुसंधान संस्थान" }, "url": "https://iihr.res.in/" }
+    ]
+  },
+  {
+    "code": "dragon_fruit",
+    "kind": "horticulture",
+    "label": { "en": "Dragon fruit (kamalam)", "hi": "ड्रैगन फ्रूट (कमलम)" },
+    "summary": {
+      "en": "A cactus fruit that thrives on thin, dry, stony land where little else pays, and sells at a high price in cities. The establishment cost is the highest on this list because of the concrete poles, and the market is still small — plant it only with a buyer in view.",
+      "hi": "यह कैक्टस फल पतली, सूखी, पथरीली ज़मीन पर भी हो जाता है जहाँ और कुछ नहीं चलता, और शहरों में ऊँचे भाव बिकता है। सीमेंट के खंभों के कारण इसकी शुरुआती लागत इस सूची में सबसे ज़्यादा है, और बाज़ार अभी छोटा है — खरीदार तय करके ही लगाएँ।"
+    },
+    "fit": {
+      "soilTypes": ["red", "sandy", "laterite", "loamy", "black"],
+      "avoidSoilTypes": ["peaty_marshy", "clayey"],
+      "regions": ["deccan", "arid_west", "central_east", "southern_humid"],
+      "alsoStates": ["9", "10", "19"],
+      "waterNeed": "low",
+      "salinityTolerance": "medium",
+      "requiresIrrigation": true,
+      "preferredIrrigation": ["drip"],
+      "maxWaterDepthMetres": 250
+    },
+    "sizing": { "mode": "area", "minHa": 0.2, "maxHa": 8 },
+    "economics": {
+      "capex": { "low": 1000000, "high": 1600000 },
+      "opexPerYear": { "low": 150000, "high": 250000 },
+      "revenuePerYear": { "low": 900000, "high": 2000000 },
+      "gestationMonths": 24,
+      "fullYieldYear": 4,
+      "projectLifeYears": 20,
+      "riskLevel": "high",
+      "labourDaysPerYear": 200
+    },
+    "export": { "potential": "emerging", "commodity": "dragon_fruit" },
+    "schemes": ["midh", "agri_infra_fund"],
+    "resources": [
+      { "label": { "en": "National Horticulture Board", "hi": "राष्ट्रीय बागवानी बोर्ड" }, "url": "https://nhb.gov.in/" },
+      { "label": { "en": "ICAR-Indian Institute of Horticultural Research", "hi": "आईसीएआर-भारतीय बागवानी अनुसंधान संस्थान" }, "url": "https://iihr.res.in/" }
+    ]
+  },
+  {
+    "code": "acid_lime",
+    "kind": "horticulture",
+    "label": { "en": "Acid lime orchard (kagzi)", "hi": "कागज़ी नींबू का बाग" },
+    "summary": {
+      "en": "Kagzi lime is about as forgiving as a fruit tree gets: it stands heat, poor soil and irregular water, sells all year round, and has a standing local market in every town. Returns are steady rather than spectacular.",
+      "hi": "कागज़ी नींबू सबसे सहनशील फल-वृक्षों में है — गर्मी, कमज़ोर मिट्टी और अनियमित पानी सह लेता है, साल भर बिकता है, और हर कस्बे में इसका बाज़ार बना हुआ है। आमदनी बहुत बड़ी नहीं, पर लगातार बनी रहती है।"
+    },
+    "fit": {
+      "soilTypes": ["red", "black", "loamy", "alluvial", "laterite", "sandy"],
+      "avoidSoilTypes": ["peaty_marshy"],
+      "regions": ["deccan", "arid_west", "central_east", "indo_gangetic", "southern_humid"],
+      "waterNeed": "low",
+      "salinityTolerance": "medium",
+      "requiresIrrigation": false,
+      "preferredIrrigation": ["drip", "flood"],
+      "maxWaterDepthMetres": 250
+    },
+    "sizing": { "mode": "area", "minHa": 0.3, "maxHa": 20 },
+    "economics": {
+      "capex": { "low": 150000, "high": 260000 },
+      "opexPerYear": { "low": 80000, "high": 130000 },
+      "revenuePerYear": { "low": 300000, "high": 800000 },
+      "gestationMonths": 36,
+      "fullYieldYear": 6,
+      "projectLifeYears": 20,
+      "riskLevel": "low",
+      "labourDaysPerYear": 140
+    },
+    "export": { "potential": "none", "commodity": "lime" },
+    "schemes": ["midh", "mgnrega_horticulture"],
+    "resources": [
+      { "label": { "en": "ICAR-Central Citrus Research Institute, Nagpur", "hi": "आईसीएआर-केंद्रीय नींबूवर्गीय फल अनुसंधान संस्थान, नागपुर" }, "url": "https://ccri.icar.gov.in/" }
+    ]
+  },
+  {
+    "code": "custard_apple_dryland",
+    "kind": "horticulture",
+    "label": { "en": "Custard apple on dry land", "hi": "सूखी ज़मीन पर सीताफल" },
+    "summary": {
+      "en": "Custard apple is the rare high-value fruit that will grow on shallow, stony, rainfed land with no well at all. Yearly costs are low, the tree asks little, and improved varieties fetch a good price in nearby cities.",
+      "hi": "सीताफल उन गिने-चुने कीमती फलों में है जो बिना कुएँ के, पतली और पथरीली बारानी ज़मीन पर भी हो जाता है। सालाना खर्च कम है, पेड़ को ज़्यादा देखभाल नहीं चाहिए, और सुधरी किस्में पास के शहरों में अच्छे भाव बिकती हैं।"
+    },
+    "fit": {
+      "soilTypes": ["red", "laterite", "black", "sandy", "loamy", "mountain_forest"],
+      "avoidSoilTypes": ["peaty_marshy", "clayey"],
+      "regions": ["deccan", "central_east", "arid_west"],
+      "alsoStates": ["9", "20"],
+      "waterNeed": "low",
+      "salinityTolerance": "medium",
+      "requiresIrrigation": false,
+      "preferredIrrigation": ["rainfed", "drip"],
+      "maxWaterDepthMetres": 300
+    },
+    "sizing": { "mode": "area", "minHa": 0.4, "maxHa": 20 },
+    "economics": {
+      "capex": { "low": 120000, "high": 210000 },
+      "opexPerYear": { "low": 45000, "high": 90000 },
+      "revenuePerYear": { "low": 250000, "high": 700000 },
+      "gestationMonths": 36,
+      "fullYieldYear": 6,
+      "projectLifeYears": 20,
+      "riskLevel": "low",
+      "labourDaysPerYear": 110
+    },
+    "export": { "potential": "none", "commodity": "custard_apple" },
+    "schemes": ["midh", "mgnrega_horticulture", "rkvy"],
+    "resources": [
+      { "label": { "en": "ICAR-Central Research Institute for Dryland Agriculture", "hi": "आईसीएआर-केंद्रीय बारानी कृषि अनुसंधान संस्थान" }, "url": "https://crida.icar.gov.in/" }
+    ]
+  },
+  {
+    "code": "coconut_garden",
+    "kind": "horticulture",
+    "label": { "en": "Coconut garden with inter-cropping", "hi": "नारियल का बाग (अंतरवर्ती फसल सहित)" },
+    "summary": {
+      "en": "Coconut is a long-lived, low-risk asset on the coast, and the gaps between palms carry a second crop — banana early on, then cocoa, pepper or fodder. Income is slow to start but then continues for decades with very little annual cost.",
+      "hi": "समुद्र तटीय क्षेत्रों में नारियल लंबे समय तक चलने वाली, कम जोखिम वाली संपत्ति है, और पेड़ों के बीच की जगह में दूसरी फसल भी ली जा सकती है — शुरू में केला, फिर कोको, काली मिर्च या चारा। आमदनी देर से शुरू होती है पर फिर दशकों तक बहुत कम सालाना खर्च पर चलती रहती है।"
+    },
+    "fit": {
+      "soilTypes": ["laterite", "sandy", "alluvial", "loamy", "red"],
+      "avoidSoilTypes": ["saline_alkaline", "peaty_marshy"],
+      "regions": ["southern_humid", "coastal"],
+      "waterNeed": "medium",
+      "salinityTolerance": "medium",
+      "requiresIrrigation": false,
+      "preferredIrrigation": ["drip", "flood", "rainfed"],
+      "maxWaterDepthMetres": 150
+    },
+    "sizing": { "mode": "area", "minHa": 0.4, "maxHa": 20 },
+    "economics": {
+      "capex": { "low": 130000, "high": 240000 },
+      "opexPerYear": { "low": 55000, "high": 100000 },
+      "revenuePerYear": { "low": 260000, "high": 550000 },
+      "gestationMonths": 60,
+      "fullYieldYear": 10,
+      "projectLifeYears": 40,
+      "riskLevel": "low",
+      "labourDaysPerYear": 120
+    },
+    "export": { "potential": "emerging", "commodity": "coconut" },
+    "schemes": ["midh", "mgnrega_horticulture"],
+    "resources": [
+      { "label": { "en": "Coconut Development Board", "hi": "नारियल विकास बोर्ड" }, "url": "https://coconutboard.gov.in/" },
+      { "label": { "en": "ICAR-Central Plantation Crops Research Institute", "hi": "आईसीएआर-केंद्रीय रोपण फसल अनुसंधान संस्थान" }, "url": "https://cpcri.icar.gov.in/" }
+    ]
+  }
+]

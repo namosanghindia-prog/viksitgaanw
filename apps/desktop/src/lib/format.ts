@@ -7,9 +7,15 @@ const LOCALES: Record<LanguageCode, string> = {
   hi: 'hi-IN',
 };
 
-export function formatNumber(value: number, lang: LanguageCode, maxFractionDigits = 2): string {
+export function formatNumber(
+  value: number,
+  lang: LanguageCode,
+  maxFractionDigits = 2,
+  minFractionDigits = 0,
+): string {
   return new Intl.NumberFormat(LOCALES[lang], {
     maximumFractionDigits: maxFractionDigits,
+    minimumFractionDigits: minFractionDigits,
     numberingSystem: 'latn',
   }).format(value);
 }
@@ -32,4 +38,26 @@ export function formatLocationPath(path: LocationPath | undefined): string {
     .filter((unit) => unit !== null && unit !== undefined)
     .map((unit) => unit!.name)
     .join(', ');
+}
+
+/**
+ * Money the way it is spoken in India: 4.25 lakh, 1.30 crore.
+ *
+ * A farmer reads "12,34,567" more slowly than "12.35 lakh", and every figure in
+ * the options list is an estimate anyway, so the precision would be false.
+ * Exact rupee amounts are still printed in the project report's tables.
+ */
+export function formatMoneyShort(
+  rupees: number,
+  lang: LanguageCode,
+  t: (key: 'plan.lakh' | 'plan.crore') => string,
+): string {
+  const amount = Math.abs(rupees);
+  if (amount >= 10_000_000) {
+    return `${formatNumber(rupees / 10_000_000, lang, 2)} ${t('plan.crore')}`;
+  }
+  if (amount >= 100_000) {
+    return `${formatNumber(rupees / 100_000, lang, 2)} ${t('plan.lakh')}`;
+  }
+  return formatNumber(rupees, lang, 0);
 }

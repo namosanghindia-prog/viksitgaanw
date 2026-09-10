@@ -7,7 +7,7 @@
  * Nothing here reaches the internet.
  */
 
-const { app, BrowserWindow, shell } = require('electron');
+const { app, BrowserWindow, session, shell } = require('electron');
 const { spawn } = require('node:child_process');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -84,16 +84,30 @@ function startBackend() {
       ? path.join(app.getPath('userData'), 'viksitgaanw.db')
       : path.join(API_DIR, 'data', 'viksitgaanw.db'));
 
+  // Generated project reports follow the same rule as the database: in a
+  // packaged build they belong in the user-data directory, so an upgrade never
+  // deletes a report a farmer has already taken to a bank.
+  const reportsPath =
+    process.env.VG_REPORTS_DIR ||
+    (app.isPackaged
+      ? path.join(app.getPath('userData'), 'reports')
+      : path.join(API_DIR, 'data', 'reports'));
+
   console.log(`[api] starting: ${command} ${args.join(' ')}`);
   console.log(`[api] database: ${dbPath}`);
+  console.log(`[api] reports:  ${reportsPath}`);
 
   apiProcess = spawn(command, args, {
     cwd,
     env: {
       ...process.env,
       VG_DB_PATH: dbPath,
+      VG_REPORTS_DIR: reportsPath,
       VG_REFERENCE_DIR:
         process.env.VG_REFERENCE_DIR || path.join(REPO_ROOT, 'packages', 'shared', 'reference'),
+      VG_KNOWLEDGE_DIR:
+        process.env.VG_KNOWLEDGE_DIR || path.join(REPO_ROOT, 'packages', 'shared', 'knowledge'),
+      VG_FONTS_DIR: process.env.VG_FONTS_DIR || path.join(REPO_ROOT, 'data', 'fonts'),
       PYTHONUNBUFFERED: '1',
       PYTHONIOENCODING: 'utf-8',
     },
@@ -141,6 +155,32 @@ async function waitForBackend(timeoutMs = 60_000) {
   }
   console.error('[api] did not become ready in time');
   return false;
+}
+
+/**
+ * Permissions.
+ *
+ * Geolocation is allowed because marking a plot is a core feature. Everything
+ * else -- camera, microphone, notifications, MIDI -- is denied: this app has
+ * no use for them, and a default-deny list means a future dependency cannot
+ * quietly start asking.
+ *
+ * Note for desktop: Chromium resolves geolocation through a network service
+ * that needs a Google API key, which this build does not carry, so the
+ * renderer's navigator.geolocation call fails on a laptop however this handler
+ * answers. Granting it still matters on a touch device running the same
+ * renderer, and the desktop path is covered by the backend's /geo/locate,
+ * which asks Windows directly and needs no key.
+ */
+const ALLOWED_PERMISSIONS = new Set(['geolocation']);
+
+function applyPermissionPolicy() {
+  session.defaultSession.setPermissionRequestHandler((_webContents, permission, callback) => {
+    callback(ALLOWED_PERMISSIONS.has(permission));
+  });
+  session.defaultSession.setPermissionCheckHandler((_webContents, permission) =>
+    ALLOWED_PERMISSIONS.has(permission),
+  );
 }
 
 function createWindow() {
@@ -202,6 +242,7 @@ if (!app.requestSingleInstanceLock()) {
   });
 
   app.whenReady().then(async () => {
+    applyPermissionPolicy();
     startBackend();
     await waitForBackend();
     createWindow();

@@ -6,6 +6,7 @@ import { api } from './lib/api';
 import { useAsync } from './lib/hooks';
 import { AddLandPage } from './pages/AddLandPage';
 import { MyLandPage } from './pages/MyLandPage';
+import { PlanPage } from './pages/PlanPage';
 
 const LANGUAGES: Array<{ code: LanguageCode; label: string }> = [
   { code: 'hi', label: 'हिन्दी' },
@@ -83,6 +84,7 @@ export function App() {
         <Routes>
           <Route path="/" element={<MyLandPage />} />
           <Route path="/land/new" element={<AddLandPage />} />
+          <Route path="/land/:parcelId/plan" element={<PlanPage />} />
           <Route path="*" element={<MyLandPage />} />
         </Routes>
       </main>

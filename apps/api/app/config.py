@@ -29,6 +29,26 @@ class Settings(BaseSettings):
     #: Bilingual reference lists shared with the frontend.
     reference_dir: Path = REPO_ROOT / "packages" / "shared" / "reference"
 
+    #: Curated farming/business knowledge base and the DPR translation
+    #: catalogues. Shared with the frontend the same way the reference lists
+    #: are, so a card in the UI and a line in the PDF cannot disagree.
+    knowledge_dir: Path = REPO_ROOT / "packages" / "shared" / "knowledge"
+
+    #: Fonts used to render project reports in Indian scripts. Populated by
+    #: scripts/fetch_fonts.py; on Windows the bundled Nirmala UI is used as a
+    #: fallback so a fresh install can still print Hindi without a download.
+    fonts_dir: Path = REPO_ROOT / "data" / "fonts"
+
+    #: Where generated project reports are written. Overridden by the Electron
+    #: shell to the OS user-data directory in a packaged build, for the same
+    #: reason the database is.
+    reports_dir: Path = REPO_ROOT / "apps" / "api" / "data" / "reports"
+
+    #: Optional offline map tile pack (MBTiles). When absent the map falls
+    #: back to online imagery, which is fine for a prototype but not for a
+    #: field device.
+    tiles_path: Path | None = REPO_ROOT / "data" / "tiles" / "india.mbtiles"
+
     host: str = "127.0.0.1"
     port: int = 8756
 
@@ -42,6 +62,17 @@ class Settings(BaseSettings):
     #: Cap on rows returned by list endpoints; villages alone number ~660k.
     max_page_size: int = 500
 
+    #: Whether the device may reach the internet for the few features that
+    #: genuinely cannot work offline: coarse position from the network, and
+    #: reverse geocoding a dropped pin into a place name. Everything else in
+    #: this app works with the radio switched off. Set VG_ALLOW_NETWORK=false
+    #: to forbid it outright.
+    allow_network: bool = True
+
+    #: Seconds to wait on any outbound call. Kept short: a villager pressing
+    #: "find me" on a dead connection must get an answer, not a spinner.
+    network_timeout_seconds: float = 6.0
+
     @property
     def database_url(self) -> str:
         return f"sqlite:///{self.db_path.as_posix()}"
@@ -51,4 +82,5 @@ class Settings(BaseSettings):
 def get_settings() -> Settings:
     settings = Settings()
     settings.db_path.parent.mkdir(parents=True, exist_ok=True)
+    settings.reports_dir.mkdir(parents=True, exist_ok=True)
     return settings

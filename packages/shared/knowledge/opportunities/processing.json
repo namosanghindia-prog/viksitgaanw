@@ -1,0 +1,218 @@
+[
+  {
+    "code": "spice_grinding_unit",
+    "kind": "processing",
+    "label": { "en": "Spice grinding and packing unit", "hi": "मसाला पिसाई एवं पैकिंग इकाई" },
+    "summary": {
+      "en": "Buying whole turmeric, chilli and coriander from your own village, grinding, packing and selling under one label is where the margin on spices actually sits. The machinery is simple; the licences and hygiene standards are the real work.",
+      "hi": "अपने ही गाँव से साबुत हल्दी, मिर्च और धनिया खरीदकर, पीसकर, पैक करके एक ब्रांड नाम से बेचना — मसाले का असली मुनाफ़ा यहीं है। मशीन सीधी-सादी है; असली काम लाइसेंस और साफ़-सफ़ाई के मानकों का है।"
+    },
+    "fit": {
+      "soilTypes": [],
+      "regions": ["all_india"],
+      "waterNeed": "low",
+      "salinityTolerance": "high",
+      "requiresIrrigation": false,
+      "preferredIrrigation": [],
+      "landless": true,
+      "maxWaterDepthMetres": 400
+    },
+    "sizing": {
+      "mode": "unit",
+      "unitsFromLand": false,
+      "unitLabel": { "en": "200 kg/day grinding and packing line", "hi": "200 किग्रा/दिन की पिसाई एवं पैकिंग लाइन" },
+      "landHaPerUnit": 0.05,
+      "minUnits": 1,
+      "maxUnits": 4
+    },
+    "economics": {
+      "capex": { "low": 850000, "high": 1500000 },
+      "opexPerYear": { "low": 1300000, "high": 2100000 },
+      "revenuePerYear": { "low": 1750000, "high": 2900000 },
+      "gestationMonths": 6,
+      "fullYieldYear": 2,
+      "projectLifeYears": 10,
+      "riskLevel": "medium",
+      "labourDaysPerYear": 600
+    },
+    "export": { "potential": "strong", "commodity": "spice_powder" },
+    "schemes": ["pmfme", "agri_infra_fund", "kcc"],
+    "resources": [
+      { "label": { "en": "PM-FME – 35% credit-linked subsidy", "hi": "पीएम-एफएमई – 35% ऋण-संबद्ध अनुदान" }, "url": "https://pmfme.mofpi.gov.in/" },
+      { "label": { "en": "FSSAI – food business licensing", "hi": "एफएसएसएआई – खाद्य व्यवसाय लाइसेंस" }, "url": "https://foscos.fssai.gov.in/" }
+    ]
+  },
+  {
+    "code": "mini_dal_mill",
+    "kind": "processing",
+    "label": { "en": "Mini dal mill", "hi": "मिनी दाल मिल" },
+    "summary": {
+      "en": "A village dal mill earns on volume, not on price: farmers bring tur, chana or moong for milling and pay a job charge, and you also buy and sell on your own account. Margins per quintal are small, so location on a busy road matters more than the machine.",
+      "hi": "गाँव की दाल मिल भाव से नहीं, मात्रा से कमाती है — किसान तुअर, चना या मूंग दराने लाते हैं और मज़दूरी देते हैं, और आप अपने खाते पर खरीद-बिक्री भी करते हैं। प्रति क्विंटल मुनाफ़ा कम है, इसलिए मशीन से ज़्यादा मायने रखता है कि दुकान चलती सड़क पर हो।"
+    },
+    "fit": {
+      "soilTypes": [],
+      "regions": ["central_east", "deccan", "indo_gangetic", "arid_west"],
+      "waterNeed": "low",
+      "salinityTolerance": "high",
+      "requiresIrrigation": false,
+      "preferredIrrigation": [],
+      "landless": true,
+      "maxWaterDepthMetres": 400
+    },
+    "sizing": {
+      "mode": "unit",
+      "unitsFromLand": false,
+      "unitLabel": { "en": "1 tonne/day mini dal mill", "hi": "1 टन/दिन की मिनी दाल मिल" },
+      "landHaPerUnit": 0.06,
+      "minUnits": 1,
+      "maxUnits": 3
+    },
+    "economics": {
+      "capex": { "low": 700000, "high": 1300000 },
+      "opexPerYear": { "low": 2600000, "high": 4000000 },
+      "revenuePerYear": { "low": 3100000, "high": 4700000 },
+      "gestationMonths": 6,
+      "fullYieldYear": 2,
+      "projectLifeYears": 12,
+      "riskLevel": "medium",
+      "labourDaysPerYear": 700
+    },
+    "export": { "potential": "none", "commodity": "pulses" },
+    "schemes": ["pmfme", "agri_infra_fund", "kcc"],
+    "resources": [
+      { "label": { "en": "PM-FME – micro food processing support", "hi": "पीएम-एफएमई – सूक्ष्म खाद्य प्रसंस्करण सहायता" }, "url": "https://pmfme.mofpi.gov.in/" },
+      { "label": { "en": "Agriculture Infrastructure Fund", "hi": "कृषि अवसंरचना कोष" }, "url": "https://agriinfra.dac.gov.in/" }
+    ]
+  },
+  {
+    "code": "oil_expeller_unit",
+    "kind": "processing",
+    "label": { "en": "Cold-press oil expeller (ghani)", "hi": "कोल्ड-प्रेस तेल घानी" },
+    "summary": {
+      "en": "Wood-press mustard, groundnut or sesame oil sells at a clear premium over refined oil because customers can watch it being pressed. The oil cake left over sells straight away as cattle feed, which is what makes the numbers work.",
+      "hi": "लकड़ी की घानी से निकाला सरसों, मूंगफली या तिल का तेल रिफ़ाइंड तेल से साफ़ ऊँचे भाव बिकता है, क्योंकि ग्राहक उसे अपनी आँखों के सामने निकलते देखता है। बची हुई खली तुरंत पशु आहार के रूप में बिक जाती है — हिसाब इसी से बैठता है।"
+    },
+    "fit": {
+      "soilTypes": [],
+      "regions": ["all_india"],
+      "waterNeed": "low",
+      "salinityTolerance": "high",
+      "requiresIrrigation": false,
+      "preferredIrrigation": [],
+      "landless": true,
+      "maxWaterDepthMetres": 400
+    },
+    "sizing": {
+      "mode": "unit",
+      "unitsFromLand": false,
+      "unitLabel": { "en": "500 kg/day expeller with filter press", "hi": "फ़िल्टर प्रेस सहित 500 किग्रा/दिन की घानी" },
+      "landHaPerUnit": 0.05,
+      "minUnits": 1,
+      "maxUnits": 4
+    },
+    "economics": {
+      "capex": { "low": 550000, "high": 1000000 },
+      "opexPerYear": { "low": 2100000, "high": 3300000 },
+      "revenuePerYear": { "low": 2550000, "high": 3950000 },
+      "gestationMonths": 5,
+      "fullYieldYear": 2,
+      "projectLifeYears": 12,
+      "riskLevel": "medium",
+      "labourDaysPerYear": 600
+    },
+    "export": { "potential": "none", "commodity": "edible_oil" },
+    "schemes": ["pmfme", "kcc", "agri_infra_fund"],
+    "resources": [
+      { "label": { "en": "PM-FME – micro food processing support", "hi": "पीएम-एफएमई – सूक्ष्म खाद्य प्रसंस्करण सहायता" }, "url": "https://pmfme.mofpi.gov.in/" },
+      { "label": { "en": "FSSAI – food business licensing", "hi": "एफएसएसएआई – खाद्य व्यवसाय लाइसेंस" }, "url": "https://foscos.fssai.gov.in/" }
+    ]
+  },
+  {
+    "code": "solar_dehydration_unit",
+    "kind": "processing",
+    "label": { "en": "Solar drying unit for fruit and vegetables", "hi": "फल-सब्ज़ी के लिए सौर सुखाई इकाई" },
+    "summary": {
+      "en": "A solar dryer costs little, uses no fuel, and turns the part of the crop that would have rotted — the small, split or surplus fruit — into a dried product that keeps for a year. It is the cheapest way to stop distress selling at harvest.",
+      "hi": "सौर ड्रायर सस्ता है, ईंधन नहीं लगता, और फसल का वह हिस्सा जो सड़ जाता — छोटा, फटा या अतिरिक्त फल — साल भर टिकने वाले सूखे उत्पाद में बदल देता है। तुड़ाई के समय मजबूरी में बेचने से बचने का यह सबसे सस्ता तरीक़ा है।"
+    },
+    "fit": {
+      "soilTypes": [],
+      "regions": ["all_india"],
+      "excludeStates": ["32", "17", "15"],
+      "waterNeed": "low",
+      "salinityTolerance": "high",
+      "requiresIrrigation": false,
+      "preferredIrrigation": [],
+      "landless": true,
+      "maxWaterDepthMetres": 400
+    },
+    "sizing": {
+      "mode": "unit",
+      "unitsFromLand": false,
+      "unitLabel": { "en": "100 kg/batch solar dryer with packing table", "hi": "पैकिंग टेबल सहित 100 किग्रा/बैच सौर ड्रायर" },
+      "landHaPerUnit": 0.03,
+      "minUnits": 1,
+      "maxUnits": 8
+    },
+    "economics": {
+      "capex": { "low": 250000, "high": 480000 },
+      "opexPerYear": { "low": 320000, "high": 520000 },
+      "revenuePerYear": { "low": 520000, "high": 850000 },
+      "gestationMonths": 4,
+      "fullYieldYear": 2,
+      "projectLifeYears": 10,
+      "riskLevel": "low",
+      "labourDaysPerYear": 300
+    },
+    "export": { "potential": "emerging", "commodity": "dried_produce" },
+    "schemes": ["pmfme", "midh", "kcc"],
+    "resources": [
+      { "label": { "en": "PM-FME – micro food processing support", "hi": "पीएम-एफएमई – सूक्ष्म खाद्य प्रसंस्करण सहायता" }, "url": "https://pmfme.mofpi.gov.in/" },
+      { "label": { "en": "ICAR-Central Institute of Post-Harvest Engineering and Technology", "hi": "आईसीएआर-केंद्रीय कटाई-उपरांत अभियांत्रिकी एवं प्रौद्योगिकी संस्थान" }, "url": "https://ciphet.icar.gov.in/" }
+    ]
+  },
+  {
+    "code": "modular_cold_room",
+    "kind": "processing",
+    "label": { "en": "Small modular cold room", "hi": "छोटा मॉड्यूलर कोल्ड रूम" },
+    "summary": {
+      "en": "A five-tonne cold room lets you hold fruit or vegetables back for the ten days when prices recover, and rent the spare space to neighbours the rest of the year. It only pays where there is reliable power or a solar backup.",
+      "hi": "पाँच टन का कोल्ड रूम आपको फल-सब्ज़ी उन दस दिनों तक रोक रखने देता है जब भाव सुधरते हैं, और बाक़ी समय बची जगह पड़ोसियों को किराए पर दी जा सकती है। यह वहीं फ़ायदेमंद है जहाँ भरोसेमंद बिजली या सौर बैकअप हो।"
+    },
+    "fit": {
+      "soilTypes": [],
+      "regions": ["all_india"],
+      "waterNeed": "low",
+      "salinityTolerance": "high",
+      "requiresIrrigation": false,
+      "preferredIrrigation": [],
+      "landless": true,
+      "maxWaterDepthMetres": 400
+    },
+    "sizing": {
+      "mode": "unit",
+      "unitsFromLand": false,
+      "unitLabel": { "en": "5 tonne modular cold room", "hi": "5 टन का मॉड्यूलर कोल्ड रूम" },
+      "landHaPerUnit": 0.03,
+      "minUnits": 1,
+      "maxUnits": 6
+    },
+    "economics": {
+      "capex": { "low": 850000, "high": 1600000 },
+      "opexPerYear": { "low": 180000, "high": 320000 },
+      "revenuePerYear": { "low": 450000, "high": 800000 },
+      "gestationMonths": 6,
+      "fullYieldYear": 2,
+      "projectLifeYears": 15,
+      "riskLevel": "medium",
+      "labourDaysPerYear": 240
+    },
+    "export": { "potential": "none", "commodity": "cold_storage" },
+    "schemes": ["agri_infra_fund", "midh", "pmfme"],
+    "resources": [
+      { "label": { "en": "Agriculture Infrastructure Fund", "hi": "कृषि अवसंरचना कोष" }, "url": "https://agriinfra.dac.gov.in/" },
+      { "label": { "en": "National Horticulture Board – cold chain subsidy", "hi": "राष्ट्रीय बागवानी बोर्ड – कोल्ड चेन अनुदान" }, "url": "https://nhb.gov.in/" }
+    ]
+  }
+]

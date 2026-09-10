@@ -95,7 +95,9 @@ COLUMN_ALIASES: dict[str, tuple[str, ...]] = {
     "village_code": ("villagecode", "villagelgdcode"),
     "village_name": ("villagenameinenglish", "villagenameenglish", "villagename"),
     "village_name_local": ("villagenameinlocal", "villagenamelocal"),
-    "village_census": ("villagecensus2011code", "villagecensuscode", "census2011code"),
+    # A bare "Census 2011 Code" is resolved by the level-aware fallback in
+    # map_columns rather than being claimed here by the village level.
+    "village_census": ("villagecensus2011code", "villagecensuscode"),
 }
 
 
@@ -107,6 +109,16 @@ def map_columns(fieldnames: list[str]) -> dict[str, str]:
         for alias in aliases:
             if alias in normalised:
                 mapping[field] = normalised[alias]
+                break
+
+    # Per-level files label the census column plainly as "Census 2011 Code"
+    # rather than "District Census 2011 Code". An unqualified census column
+    # belongs to whatever the deepest level in the file is.
+    level = detect_level(mapping)
+    if level and f"{level}_census" not in mapping:
+        for alias in ("census2011code", "census2011", "censuscode"):
+            if alias in normalised:
+                mapping[f"{level}_census"] = normalised[alias]
                 break
     return mapping
 
@@ -207,7 +219,12 @@ class Importer:
     def _queue(self, level: str, row: dict[str, Any]) -> None:
         self.pending[level].append(row)
         if len(self.pending[level]) >= BATCH_SIZE:
-            self.flush(level)
+            # Flush every level, parents first -- not just this one. A village
+            # batch can reference a sub-district that is still sitting in the
+            # pending list, which a foreign key would reject. Parent lists are
+            # deduplicated and therefore almost always empty here, so this
+            # costs nothing in the common case.
+            self.flush()
 
     def flush(self, level: str | None = None) -> None:
         # Parents before children, so foreign keys always resolve.
@@ -417,6 +434,11 @@ def main(argv: list[str] | None = None) -> int:
         action="store_true",
         help="Delete the existing hierarchy first (user data is untouched).",
     )
+    parser.add_argument(
+        "--no-optimise",
+        action="store_true",
+        help="Skip the VACUUM/ANALYZE pass that runs after the import.",
+    )
     parser.add_argument("--quiet", action="store_true")
     args = parser.parse_args(argv)
 
@@ -447,6 +469,15 @@ def main(argv: list[str] | None = None) -> int:
             _, rows = import_file(importer, path, verbose=verbose)
             total_rows += rows
         importer.flush()
+
+    # After a bulk load the file carries free pages from the --replace delete
+    # and the planner has no statistics for the new row counts. Both matter:
+    # this database ships on a low-end village laptop.
+    if not args.no_optimise:
+        print("  - compacting and analysing")
+        with engine.connect() as connection:
+            connection.exec_driver_sql("VACUUM")
+            connection.exec_driver_sql("ANALYZE")
 
     counts = summarise()
     record_provenance(
