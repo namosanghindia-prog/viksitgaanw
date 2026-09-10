@@ -3,3 +3,10 @@ uvicorn[standard]>=0.32.0
 sqlalchemy>=2.0.36
 pydantic>=2.10.0
 pydantic-settings>=2.6.0
+# Project report (DPR) rendering. fpdf2 embeds the font and draws the tables;
+# uharfbuzz shapes Indic scripts so matras and conjuncts land correctly;
+# fonttools reads a font's character map and unpacks the Windows-bundled
+# Nirmala UI collection into a face fpdf2 can embed.
+fpdf2>=2.8.1
+uharfbuzz>=0.39
+fonttools>=4.55

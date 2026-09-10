@@ -1,0 +1,272 @@
+[
+  {
+    "code": "polyhouse_vegetables",
+    "kind": "protected",
+    "label": { "en": "Polyhouse for coloured capsicum / cucumber", "hi": "रंगीन शिमला मिर्च / खीरे के लिए पॉलीहाउस" },
+    "summary": {
+      "en": "A naturally ventilated polyhouse turns a tenth of an acre into a year-round vegetable business at city prices. It needs clean water, steady electricity and daily attention, and it is the one option here where a 50% government subsidy usually decides whether the numbers work.",
+      "hi": "प्राकृतिक हवादार पॉलीहाउस एक-दसवें एकड़ को साल भर चलने वाले सब्ज़ी व्यवसाय में बदल देता है, वह भी शहर के भाव पर। इसके लिए साफ़ पानी, नियमित बिजली और रोज़ की देखभाल चाहिए। इस सूची में यही एक विकल्प है जहाँ 50% सरकारी अनुदान मिलना ही हिसाब बैठने या न बैठने का फ़ैसला करता है।"
+    },
+    "fit": {
+      "soilTypes": [],
+      "avoidSoilTypes": ["peaty_marshy"],
+      "regions": ["all_india"],
+      "waterNeed": "medium",
+      "salinityTolerance": "low",
+      "requiresIrrigation": true,
+      "preferredIrrigation": ["drip"],
+      "maxWaterDepthMetres": 150
+    },
+    "sizing": {
+      "mode": "unit",
+      "unitsFromLand": true,
+      "unitLabel": { "en": "1,000 sq m polyhouse", "hi": "1,000 वर्ग मीटर का पॉलीहाउस" },
+      "landHaPerUnit": 0.13,
+      "minUnits": 1,
+      "maxUnits": 8
+    },
+    "economics": {
+      "capex": { "low": 900000, "high": 1250000 },
+      "opexPerYear": { "low": 160000, "high": 260000 },
+      "revenuePerYear": { "low": 400000, "high": 750000 },
+      "gestationMonths": 8,
+      "fullYieldYear": 2,
+      "projectLifeYears": 10,
+      "riskLevel": "medium",
+      "labourDaysPerYear": 300
+    },
+    "export": { "potential": "none", "commodity": "capsicum" },
+    "schemes": ["midh", "pmksy_pdmc", "agri_infra_fund"],
+    "resources": [
+      { "label": { "en": "MIDH – protected cultivation cost norms", "hi": "एमआईडीएच – संरक्षित खेती लागत मानक" }, "url": "https://midh.gov.in/" },
+      { "label": { "en": "ICAR-Indian Institute of Horticultural Research", "hi": "आईसीएआर-भारतीय बागवानी अनुसंधान संस्थान" }, "url": "https://iihr.res.in/" }
+    ]
+  },
+  {
+    "code": "shadenet_vegetables",
+    "kind": "protected",
+    "label": { "en": "Shade-net house for vegetables and nursery", "hi": "सब्ज़ी और नर्सरी के लिए शेड-नेट हाउस" },
+    "summary": {
+      "en": "A shade-net house costs a third of a polyhouse and is far easier to run. It extends the season, cuts pest damage sharply, and doubles as a paid nursery raising seedlings for neighbouring farmers.",
+      "hi": "शेड-नेट हाउस की लागत पॉलीहाउस की एक-तिहाई है और इसे चलाना कहीं आसान है। यह फसल का मौसम बढ़ाता है, कीट का नुक़सान बहुत घटाता है, और साथ ही पड़ोसी किसानों के लिए पौध तैयार करने वाली किराए की नर्सरी भी बन जाता है।"
+    },
+    "fit": {
+      "soilTypes": [],
+      "avoidSoilTypes": ["peaty_marshy"],
+      "regions": ["all_india"],
+      "waterNeed": "medium",
+      "salinityTolerance": "low",
+      "requiresIrrigation": true,
+      "preferredIrrigation": ["drip", "sprinkler"],
+      "maxWaterDepthMetres": 180
+    },
+    "sizing": {
+      "mode": "unit",
+      "unitsFromLand": true,
+      "unitLabel": { "en": "1,000 sq m shade-net house", "hi": "1,000 वर्ग मीटर का शेड-नेट हाउस" },
+      "landHaPerUnit": 0.13,
+      "minUnits": 1,
+      "maxUnits": 10
+    },
+    "economics": {
+      "capex": { "low": 350000, "high": 520000 },
+      "opexPerYear": { "low": 100000, "high": 160000 },
+      "revenuePerYear": { "low": 250000, "high": 450000 },
+      "gestationMonths": 6,
+      "fullYieldYear": 2,
+      "projectLifeYears": 10,
+      "riskLevel": "low",
+      "labourDaysPerYear": 220
+    },
+    "export": { "potential": "none", "commodity": "vegetables" },
+    "schemes": ["midh", "pmksy_pdmc"],
+    "resources": [
+      { "label": { "en": "MIDH – protected cultivation cost norms", "hi": "एमआईडीएच – संरक्षित खेती लागत मानक" }, "url": "https://midh.gov.in/" }
+    ]
+  },
+  {
+    "code": "open_field_vegetables",
+    "kind": "vegetable",
+    "label": { "en": "Year-round vegetable rotation", "hi": "साल भर की सब्ज़ी चक्र खेती" },
+    "summary": {
+      "en": "Three vegetable crops a year on the same land — say okra, then cauliflower, then onion — with drip and mulch. It needs no big investment and starts earning in the first season, which makes it the safest way to move off wheat and paddy.",
+      "hi": "एक ही ज़मीन पर साल में तीन सब्ज़ी फसलें — जैसे भिंडी, फिर फूलगोभी, फिर प्याज़ — ड्रिप और मल्चिंग के साथ। बड़े निवेश की ज़रूरत नहीं और पहली ही फसल से आमदनी शुरू हो जाती है, इसलिए गेहूँ-धान से हटने का यह सबसे सुरक्षित रास्ता है।"
+    },
+    "fit": {
+      "soilTypes": ["alluvial", "loamy", "red", "black", "clayey", "sandy", "laterite"],
+      "avoidSoilTypes": ["peaty_marshy"],
+      "regions": ["all_india"],
+      "waterNeed": "medium",
+      "salinityTolerance": "low",
+      "requiresIrrigation": true,
+      "preferredIrrigation": ["drip", "sprinkler", "furrow", "flood"],
+      "maxWaterDepthMetres": 150
+    },
+    "sizing": { "mode": "area", "minHa": 0.1, "maxHa": 15 },
+    "economics": {
+      "capex": { "low": 45000, "high": 110000 },
+      "opexPerYear": { "low": 130000, "high": 210000 },
+      "revenuePerYear": { "low": 260000, "high": 520000 },
+      "gestationMonths": 3,
+      "fullYieldYear": 1,
+      "projectLifeYears": 7,
+      "riskLevel": "medium",
+      "labourDaysPerYear": 280
+    },
+    "export": { "potential": "none", "commodity": "vegetables" },
+    "schemes": ["midh", "pmksy_pdmc", "kcc"],
+    "resources": [
+      { "label": { "en": "ICAR-Indian Institute of Vegetable Research", "hi": "आईसीएआर-भारतीय सब्ज़ी अनुसंधान संस्थान" }, "url": "https://iivr.icar.gov.in/" },
+      { "label": { "en": "e-NAM – online mandi trading", "hi": "ई-नाम – ऑनलाइन मंडी व्यापार" }, "url": "https://enam.gov.in/" }
+    ]
+  },
+  {
+    "code": "mushroom_oyster",
+    "kind": "vegetable",
+    "label": { "en": "Oyster mushroom growing room", "hi": "ढींगरी (ऑयस्टर) मशरूम कक्ष" },
+    "summary": {
+      "en": "Mushrooms are grown on straw in a shaded room, not in a field, so this works for a family with almost no land. The first harvest comes in about six weeks, the work is light, and paddy or wheat straw is the main raw material.",
+      "hi": "मशरूम खेत में नहीं, छायादार कमरे में पुआल पर उगाया जाता है, इसलिए यह उस परिवार के लिए भी ठीक है जिसके पास ज़मीन न के बराबर है। पहली तुड़ाई लगभग छह हफ़्ते में आ जाती है, काम हल्का है, और मुख्य कच्चा माल धान या गेहूँ का पुआल ही है।"
+    },
+    "fit": {
+      "soilTypes": [],
+      "regions": ["all_india"],
+      "waterNeed": "low",
+      "salinityTolerance": "low",
+      "requiresIrrigation": false,
+      "preferredIrrigation": [],
+      "landless": true
+    },
+    "sizing": {
+      "mode": "unit",
+      "unitsFromLand": false,
+      "unitLabel": { "en": "500 sq ft growing room (approx. 300 bags per cycle)", "hi": "500 वर्ग फुट का उत्पादन कक्ष (प्रति चक्र लगभग 300 बैग)" },
+      "landHaPerUnit": 0.005,
+      "minUnits": 1,
+      "maxUnits": 12
+    },
+    "economics": {
+      "capex": { "low": 150000, "high": 300000 },
+      "opexPerYear": { "low": 120000, "high": 200000 },
+      "revenuePerYear": { "low": 250000, "high": 450000 },
+      "gestationMonths": 2,
+      "fullYieldYear": 1,
+      "projectLifeYears": 8,
+      "riskLevel": "medium",
+      "labourDaysPerYear": 300
+    },
+    "export": { "potential": "none", "commodity": "mushroom" },
+    "schemes": ["midh", "pmfme", "nlm"],
+    "resources": [
+      { "label": { "en": "ICAR-Directorate of Mushroom Research, Solan", "hi": "आईसीएआर-मशरूम अनुसंधान निदेशालय, सोलन" }, "url": "https://dmr.icar.gov.in/" },
+      { "label": { "en": "PM-FME – micro food processing support", "hi": "पीएम-एफएमई – सूक्ष्म खाद्य प्रसंस्करण सहायता" }, "url": "https://pmfme.mofpi.gov.in/" }
+    ]
+  },
+  {
+    "code": "gherkin_contract",
+    "kind": "vegetable",
+    "label": { "en": "Gherkin on export buy-back contract", "hi": "निर्यात अनुबंध पर खीरा (गेरकिन)" },
+    "summary": {
+      "en": "Gherkins are grown almost entirely for export, on a written contract where the company supplies seed and takes the whole crop at an agreed rate. That removes price risk, which is why banks treat it kindly, but you must have a processor operating in your district.",
+      "hi": "गेरकिन लगभग पूरी तरह निर्यात के लिए उगाया जाता है, लिखित अनुबंध पर, जिसमें कंपनी बीज देती है और तय भाव पर पूरी फसल ले लेती है। इससे भाव का जोखिम खत्म हो जाता है, इसीलिए बैंक इसे अच्छी नज़र से देखते हैं — पर आपके ज़िले में प्रसंस्करण इकाई होना ज़रूरी है।"
+    },
+    "fit": {
+      "soilTypes": ["red", "loamy", "black", "laterite", "alluvial"],
+      "avoidSoilTypes": ["saline_alkaline", "peaty_marshy"],
+      "regions": ["deccan"],
+      "alsoStates": ["33", "32"],
+      "waterNeed": "medium",
+      "salinityTolerance": "low",
+      "requiresIrrigation": true,
+      "preferredIrrigation": ["drip", "furrow"],
+      "maxWaterDepthMetres": 150
+    },
+    "sizing": { "mode": "area", "minHa": 0.2, "maxHa": 8 },
+    "economics": {
+      "capex": { "low": 20000, "high": 45000 },
+      "opexPerYear": { "low": 150000, "high": 230000 },
+      "revenuePerYear": { "low": 280000, "high": 480000 },
+      "gestationMonths": 3,
+      "fullYieldYear": 1,
+      "projectLifeYears": 5,
+      "riskLevel": "low",
+      "labourDaysPerYear": 250
+    },
+    "export": { "potential": "strong", "commodity": "gherkin" },
+    "schemes": ["kcc", "apeda_taf", "pmksy_pdmc"],
+    "resources": [
+      { "label": { "en": "APEDA – processed vegetable exporters directory", "hi": "एपीडा – प्रसंस्कृत सब्ज़ी निर्यातक निर्देशिका" }, "url": "https://apeda.gov.in/" },
+      { "label": { "en": "Indian Trade Portal – product and tariff search", "hi": "भारतीय व्यापार पोर्टल – उत्पाद एवं शुल्क खोज" }, "url": "https://www.indiantradeportal.in/" }
+    ]
+  },
+  {
+    "code": "baby_corn",
+    "kind": "vegetable",
+    "label": { "en": "Baby corn for hotels and processors", "hi": "होटल और प्रसंस्करण के लिए बेबी कॉर्न" },
+    "summary": {
+      "en": "Baby corn is picked young, gives three or four crops a year, and the green stalk left behind is excellent cattle fodder — so one field feeds both a vegetable buyer and your animals. It works best within reach of a city or a food processor.",
+      "hi": "बेबी कॉर्न कच्चा ही तोड़ा जाता है, साल में तीन-चार फसलें देता है, और बचा हुआ हरा डंठल बढ़िया पशु चारा है — यानी एक ही खेत से सब्ज़ी का खरीदार और आपके जानवर, दोनों सधते हैं। शहर या खाद्य प्रसंस्करण इकाई के पास सबसे अच्छा चलता है।"
+    },
+    "fit": {
+      "soilTypes": ["alluvial", "loamy", "red", "black", "clayey"],
+      "avoidSoilTypes": ["sandy", "peaty_marshy", "saline_alkaline"],
+      "regions": ["all_india"],
+      "waterNeed": "medium",
+      "salinityTolerance": "low",
+      "requiresIrrigation": true,
+      "preferredIrrigation": ["sprinkler", "furrow", "drip", "flood"],
+      "maxWaterDepthMetres": 150
+    },
+    "sizing": { "mode": "area", "minHa": 0.2, "maxHa": 10 },
+    "economics": {
+      "capex": { "low": 25000, "high": 60000 },
+      "opexPerYear": { "low": 110000, "high": 175000 },
+      "revenuePerYear": { "low": 220000, "high": 400000 },
+      "gestationMonths": 3,
+      "fullYieldYear": 1,
+      "projectLifeYears": 5,
+      "riskLevel": "medium",
+      "labourDaysPerYear": 240
+    },
+    "export": { "potential": "emerging", "commodity": "baby_corn" },
+    "schemes": ["kcc", "pmksy_pdmc", "rkvy"],
+    "resources": [
+      { "label": { "en": "ICAR-Indian Institute of Maize Research", "hi": "आईसीएआर-भारतीय मक्का अनुसंधान संस्थान" }, "url": "https://iimr.icar.gov.in/" }
+    ]
+  },
+  {
+    "code": "marigold_flowers",
+    "kind": "vegetable",
+    "label": { "en": "Marigold and loose flowers", "hi": "गेंदा और खुले फूल की खेती" },
+    "summary": {
+      "en": "Loose flowers sell every day of the year and peak at festivals and weddings, when prices multiply. Marigold needs little water, tolerates ordinary soil, and starts earning about two months after planting.",
+      "hi": "खुले फूल साल के हर दिन बिकते हैं और त्योहारों तथा शादियों में भाव कई गुना हो जाते हैं। गेंदे को कम पानी चाहिए, साधारण मिट्टी में भी हो जाता है, और रोपाई के लगभग दो महीने बाद आमदनी शुरू हो जाती है।"
+    },
+    "fit": {
+      "soilTypes": ["loamy", "alluvial", "red", "black", "sandy", "laterite"],
+      "avoidSoilTypes": ["peaty_marshy"],
+      "regions": ["all_india"],
+      "waterNeed": "low",
+      "salinityTolerance": "medium",
+      "requiresIrrigation": true,
+      "preferredIrrigation": ["drip", "sprinkler", "furrow", "flood"],
+      "maxWaterDepthMetres": 200
+    },
+    "sizing": { "mode": "area", "minHa": 0.1, "maxHa": 8 },
+    "economics": {
+      "capex": { "low": 35000, "high": 75000 },
+      "opexPerYear": { "low": 95000, "high": 155000 },
+      "revenuePerYear": { "low": 220000, "high": 480000 },
+      "gestationMonths": 3,
+      "fullYieldYear": 1,
+      "projectLifeYears": 6,
+      "riskLevel": "medium",
+      "labourDaysPerYear": 260
+    },
+    "export": { "potential": "none", "commodity": "flowers" },
+    "schemes": ["midh", "pmksy_pdmc", "kcc"],
+    "resources": [
+      { "label": { "en": "ICAR-Directorate of Floricultural Research", "hi": "आईसीएआर-पुष्प अनुसंधान निदेशालय" }, "url": "https://dfr.icar.gov.in/" }
+    ]
+  }
+]

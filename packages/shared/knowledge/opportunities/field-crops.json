@@ -1,0 +1,185 @@
+[
+  {
+    "code": "basmati_export_paddy",
+    "kind": "field_crop",
+    "label": { "en": "Export-grade basmati paddy", "hi": "निर्यात श्रेणी का बासमती धान" },
+    "summary": {
+      "en": "The same paddy season you already know, grown to a pesticide-residue standard that exporters will pay a premium for. Nothing about the field work changes much — what changes is the spray schedule, the record-keeping and who you sell to.",
+      "hi": "धान का वही मौसम जो आप पहले से जानते हैं, बस कीटनाशक अवशेष के उस स्तर पर उगाया गया जिस पर निर्यातक ऊँचा भाव देते हैं। खेत का काम लगभग वही रहता है — बदलता है छिड़काव का कार्यक्रम, रिकॉर्ड रखना, और किसे बेचना है।"
+    },
+    "fit": {
+      "soilTypes": ["alluvial", "clayey", "loamy"],
+      "avoidSoilTypes": ["sandy", "laterite", "peaty_marshy"],
+      "regions": ["indo_gangetic"],
+      "alsoStates": ["8"],
+      "waterNeed": "high",
+      "salinityTolerance": "low",
+      "requiresIrrigation": true,
+      "preferredIrrigation": ["flood", "furrow"],
+      "maxWaterDepthMetres": 100
+    },
+    "sizing": { "mode": "area", "minHa": 0.4, "maxHa": 40 },
+    "economics": {
+      "capex": { "low": 20000, "high": 50000 },
+      "opexPerYear": { "low": 62000, "high": 95000 },
+      "revenuePerYear": { "low": 140000, "high": 240000 },
+      "gestationMonths": 5,
+      "fullYieldYear": 1,
+      "projectLifeYears": 8,
+      "riskLevel": "low",
+      "labourDaysPerYear": 90
+    },
+    "export": { "potential": "strong", "commodity": "basmati_rice" },
+    "schemes": ["kcc", "apeda_taf", "rkvy"],
+    "resources": [
+      { "label": { "en": "APEDA – Basmati Export Development Foundation", "hi": "एपीडा – बासमती निर्यात विकास फ़ाउंडेशन" }, "url": "https://apeda.gov.in/" },
+      { "label": { "en": "ICAR-Indian Institute of Rice Research", "hi": "आईसीएआर-भारतीय चावल अनुसंधान संस्थान" }, "url": "https://icar-iirr.org/" }
+    ]
+  },
+  {
+    "code": "makhana_foxnut",
+    "kind": "field_crop",
+    "label": { "en": "Makhana (foxnut) in waterlogged land", "hi": "जलजमाव वाली ज़मीन में मखाना" },
+    "summary": {
+      "en": "Makhana turns the problem into the asset: it is grown in standing water, so a low field or pond that floods every year and grows nothing becomes the most valuable land you own. Popping the nut on the farm adds a second margin.",
+      "hi": "मखाना समस्या को ही संपत्ति बना देता है — यह खड़े पानी में उगता है, इसलिए हर साल डूबने वाला नीचा खेत या तालाब, जिसमें कुछ नहीं होता, आपकी सबसे कीमती ज़मीन बन जाता है। खेत पर ही लावा बनाने से दूसरा मुनाफ़ा भी जुड़ जाता है।"
+    },
+    "fit": {
+      "soilTypes": ["clayey", "alluvial", "peaty_marshy"],
+      "avoidSoilTypes": ["sandy", "red", "laterite"],
+      "regions": ["indo_gangetic", "northeast"],
+      "alsoStates": ["21", "23"],
+      "waterNeed": "high",
+      "salinityTolerance": "low",
+      "requiresIrrigation": false,
+      "preferredIrrigation": ["flood"],
+      "preferredWaterSources": ["pond_tank", "farm_pond", "canal", "river"],
+      "maxWaterDepthMetres": 60
+    },
+    "sizing": { "mode": "area", "minHa": 0.2, "maxHa": 10 },
+    "economics": {
+      "capex": { "low": 70000, "high": 140000 },
+      "opexPerYear": { "low": 125000, "high": 190000 },
+      "revenuePerYear": { "low": 300000, "high": 560000 },
+      "gestationMonths": 9,
+      "fullYieldYear": 1,
+      "projectLifeYears": 10,
+      "riskLevel": "medium",
+      "labourDaysPerYear": 200
+    },
+    "export": { "potential": "emerging", "commodity": "makhana" },
+    "schemes": ["midh", "pmfme", "rkvy", "agri_infra_fund"],
+    "resources": [
+      { "label": { "en": "ICAR-Research Complex for Eastern Region, Patna", "hi": "आईसीएआर-पूर्वी क्षेत्र अनुसंधान परिसर, पटना" }, "url": "https://icarrcer.icar.gov.in/" },
+      { "label": { "en": "PM-FME – micro food processing support", "hi": "पीएम-एफएमई – सूक्ष्म खाद्य प्रसंस्करण सहायता" }, "url": "https://pmfme.mofpi.gov.in/" }
+    ]
+  },
+  {
+    "code": "seed_production_contract",
+    "kind": "field_crop",
+    "label": { "en": "Certified seed production on contract", "hi": "अनुबंध पर प्रमाणित बीज उत्पादन" },
+    "summary": {
+      "en": "Grow the crop you already grow, but as certified seed for a seed company or the state seed corporation. The same field earns roughly half again as much, and the buyer is fixed in writing before you sow. The cost is discipline: isolation distance, rogueing and inspection.",
+      "hi": "जो फसल आप पहले से उगाते हैं, वही किसी बीज कंपनी या राज्य बीज निगम के लिए प्रमाणित बीज के रूप में उगाएँ। उसी खेत से लगभग डेढ़ गुना आमदनी होती है, और खरीदार बोने से पहले ही लिखित रूप में तय रहता है। कीमत है अनुशासन — पृथक्करण दूरी, अवांछित पौधे निकालना और निरीक्षण।"
+    },
+    "fit": {
+      "soilTypes": [],
+      "avoidSoilTypes": ["peaty_marshy"],
+      "regions": ["all_india"],
+      "waterNeed": "medium",
+      "salinityTolerance": "low",
+      "requiresIrrigation": true,
+      "preferredIrrigation": ["flood", "furrow", "sprinkler", "drip"],
+      "maxWaterDepthMetres": 200
+    },
+    "sizing": { "mode": "area", "minHa": 0.4, "maxHa": 40 },
+    "economics": {
+      "capex": { "low": 15000, "high": 45000 },
+      "opexPerYear": { "low": 70000, "high": 115000 },
+      "revenuePerYear": { "low": 150000, "high": 280000 },
+      "gestationMonths": 5,
+      "fullYieldYear": 1,
+      "projectLifeYears": 8,
+      "riskLevel": "low",
+      "labourDaysPerYear": 120
+    },
+    "export": { "potential": "none", "commodity": "seed" },
+    "schemes": ["kcc", "rkvy"],
+    "resources": [
+      { "label": { "en": "National Seeds Corporation", "hi": "राष्ट्रीय बीज निगम" }, "url": "https://www.indiaseeds.com/" },
+      { "label": { "en": "Seednet India – seed certification", "hi": "सीडनेट इंडिया – बीज प्रमाणन" }, "url": "https://seednet.gov.in/" }
+    ]
+  },
+  {
+    "code": "organic_conversion",
+    "kind": "field_crop",
+    "label": { "en": "Certified organic conversion", "hi": "प्रमाणित जैविक खेती में बदलाव" },
+    "summary": {
+      "en": "A three-year switch to certified organic under a farmer group. Yields dip in the first two years and the certificate only pays from the third, so this suits land that is already low-input, and a farmer who can hold on through the dip.",
+      "hi": "किसान समूह के साथ तीन साल में प्रमाणित जैविक खेती में बदलाव। पहले दो साल पैदावार घटती है और प्रमाणपत्र का लाभ तीसरे साल से मिलता है, इसलिए यह उस ज़मीन के लिए ठीक है जहाँ पहले से रासायनिक इस्तेमाल कम है, और उस किसान के लिए जो इन दो सालों को झेल सके।"
+    },
+    "fit": {
+      "soilTypes": [],
+      "avoidSoilTypes": [],
+      "regions": ["all_india"],
+      "waterNeed": "medium",
+      "salinityTolerance": "medium",
+      "requiresIrrigation": false,
+      "preferredIrrigation": [],
+      "maxWaterDepthMetres": 300
+    },
+    "sizing": { "mode": "area", "minHa": 0.4, "maxHa": 40 },
+    "economics": {
+      "capex": { "low": 25000, "high": 60000 },
+      "opexPerYear": { "low": 55000, "high": 95000 },
+      "revenuePerYear": { "low": 130000, "high": 260000 },
+      "gestationMonths": 36,
+      "fullYieldYear": 4,
+      "projectLifeYears": 10,
+      "riskLevel": "medium",
+      "labourDaysPerYear": 130
+    },
+    "export": { "potential": "strong", "commodity": "organic_produce" },
+    "schemes": ["pkvy", "apeda_taf", "rkvy"],
+    "resources": [
+      { "label": { "en": "APEDA – NPOP organic certification", "hi": "एपीडा – एनपीओपी जैविक प्रमाणन" }, "url": "https://apeda.gov.in/" },
+      { "label": { "en": "PGS-India – participatory organic certification", "hi": "पीजीएस-इंडिया – सहभागी जैविक प्रमाणन" }, "url": "https://pgsindia-ncof.gov.in/" }
+    ]
+  },
+  {
+    "code": "fodder_and_silage",
+    "kind": "field_crop",
+    "label": { "en": "Green fodder and silage for sale", "hi": "बिक्री के लिए हरा चारा और साइलेज" },
+    "summary": {
+      "en": "In a dairy belt, fodder is short every summer and dairies pay cash for silage. Napier or maize cut for silage gives many cuts a year off one planting, and it sells within a few kilometres, so there is no transport problem.",
+      "hi": "दुग्ध क्षेत्रों में हर गर्मी चारे की कमी रहती है और डेयरियाँ साइलेज के नकद पैसे देती हैं। साइलेज के लिए काटी गई नेपियर या मक्का एक बार लगाने पर साल में कई कटाई देती है, और बिक्री कुछ किलोमीटर के भीतर ही हो जाती है, इसलिए ढुलाई की दिक्कत नहीं।"
+    },
+    "fit": {
+      "soilTypes": ["alluvial", "loamy", "clayey", "black", "red"],
+      "avoidSoilTypes": ["peaty_marshy"],
+      "regions": ["all_india"],
+      "waterNeed": "medium",
+      "salinityTolerance": "medium",
+      "requiresIrrigation": true,
+      "preferredIrrigation": ["flood", "furrow", "sprinkler", "drip"],
+      "maxWaterDepthMetres": 200
+    },
+    "sizing": { "mode": "area", "minHa": 0.4, "maxHa": 25 },
+    "economics": {
+      "capex": { "low": 55000, "high": 130000 },
+      "opexPerYear": { "low": 70000, "high": 115000 },
+      "revenuePerYear": { "low": 165000, "high": 300000 },
+      "gestationMonths": 4,
+      "fullYieldYear": 2,
+      "projectLifeYears": 6,
+      "riskLevel": "low",
+      "labourDaysPerYear": 130
+    },
+    "export": { "potential": "none", "commodity": "fodder" },
+    "schemes": ["nlm", "rkvy", "kcc"],
+    "resources": [
+      { "label": { "en": "ICAR-Indian Grassland and Fodder Research Institute", "hi": "आईसीएआर-भारतीय चरागाह एवं चारा अनुसंधान संस्थान" }, "url": "https://igfri.icar.gov.in/" },
+      { "label": { "en": "National Livestock Mission", "hi": "राष्ट्रीय पशुधन मिशन" }, "url": "https://nlm.udyamimitra.in/" }
+    ]
+  }
+]

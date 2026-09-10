@@ -245,3 +245,214 @@ class TileStatusOut(ApiModel):
     #: [west, south, east, north]
     bounds: list[float] | None = None
     attribution: str | None = None
+
+
+# --------------------------------------------------------------------------- #
+# Position and place suggestions
+# --------------------------------------------------------------------------- #
+
+
+class GeoFixOut(ApiModel):
+    """Where the device believes it is, and how much to trust that."""
+
+    latitude: float
+    longitude: float
+    accuracy_metres: float | None = None
+    #: device_gps | os_location | network_ip | admin_centroid
+    source: str
+    label: str | None = None
+    attribution: str | None = None
+
+
+class PlaceSuggestionOut(ApiModel):
+    """A coordinate matched back onto the LGD hierarchy, to be confirmed."""
+
+    state_code: str | None = None
+    state_name: str | None = None
+    district_code: str | None = None
+    district_name: str | None = None
+    subdistrict_code: str | None = None
+    subdistrict_name: str | None = None
+    confidence: Literal["high", "medium", "low"] = "low"
+    display_name: str | None = None
+    source: str | None = None
+    attribution: str | None = None
+
+
+class GeoLocateOut(ApiModel):
+    fix: GeoFixOut
+    place: PlaceSuggestionOut | None = None
+    #: Providers that were tried and came back empty, for the UI to explain.
+    tried: list[str] = Field(default_factory=list)
+
+
+# --------------------------------------------------------------------------- #
+# Business and farming options
+# --------------------------------------------------------------------------- #
+
+
+class MoneyBandOut(ApiModel):
+    low: float
+    mid: float
+    high: float
+
+
+class SignalOut(ApiModel):
+    """One reason, already rendered in the requested language."""
+
+    code: str
+    text: str
+
+
+class SizingOut(ApiModel):
+    mode: Literal["area", "unit"]
+    hectares: float
+    units: float | None = None
+    unit_label: str | None = None
+    capped: bool = False
+
+
+class EconomicsOut(ApiModel):
+    capex: MoneyBandOut
+    opex_per_year: MoneyBandOut
+    revenue_per_year: MoneyBandOut
+    net_per_year: MoneyBandOut
+    working_capital: float
+    total_project_cost: float
+    gestation_months: int
+    full_yield_year: int
+    project_life_years: int
+    risk_level: str
+    risk_label: str
+    labour_days_per_year: float
+    payback_years: float | None = None
+
+
+class ExportSummaryOut(ApiModel):
+    potential: Literal["none", "emerging", "strong"]
+    commodity: str | None = None
+    label: str | None = None
+    world_trade_usd: MoneyBandOut | None = None
+    india_export_usd: MoneyBandOut | None = None
+    confidence: str | None = None
+    destinations: list[str] = Field(default_factory=list)
+    note: str | None = None
+
+
+class LinkOut(ApiModel):
+    label: str
+    url: str
+
+
+class OpportunityOut(ApiModel):
+    code: str
+    kind: str
+    kind_label: str
+    name: str
+    summary: str
+    score: int
+    verdict: Literal["recommended", "possible", "unsuitable"]
+    reasons: list[SignalOut] = Field(default_factory=list)
+    cautions: list[SignalOut] = Field(default_factory=list)
+    blockers: list[SignalOut] = Field(default_factory=list)
+    sizing: SizingOut
+    economics: EconomicsOut
+    export: ExportSummaryOut
+    schemes: list[LinkOut] = Field(default_factory=list)
+    resources: list[LinkOut] = Field(default_factory=list)
+
+
+class OpportunityListOut(ApiModel):
+    parcel_id: str
+    language: str
+    data_as_of: str
+    basis: str
+    counts: dict[str, int]
+    items: list[OpportunityOut]
+
+
+# --------------------------------------------------------------------------- #
+# Export market intelligence
+# --------------------------------------------------------------------------- #
+
+
+class TradeFigureOut(ApiModel):
+    low: float
+    high: float
+    confidence: str
+    source: str | None = None
+
+
+class ExportMarketOut(ApiModel):
+    commodity: str
+    label: str
+    india_export_usd: TradeFigureOut
+    world_trade_usd: TradeFigureOut
+    india_share_note: str
+    destinations: list[LinkOut] = Field(default_factory=list)
+    price_note: str
+    barriers: str
+    certifications: list[LinkOut] = Field(default_factory=list)
+    resources: list[LinkOut] = Field(default_factory=list)
+
+
+class ExportMarketListOut(ApiModel):
+    language: str
+    data_as_of: str
+    disclaimer: str
+    common_resources: list[LinkOut] = Field(default_factory=list)
+    items: list[ExportMarketOut]
+
+
+# --------------------------------------------------------------------------- #
+# Project reports (DPR)
+# --------------------------------------------------------------------------- #
+
+
+class ReportLanguageOut(ApiModel):
+    """A language the report can be written in, and whether it really can be."""
+
+    code: str
+    endonym: str
+    label: str
+    script: str
+    rtl: bool = False
+    #: Share of report strings translated into this language, 0 to 1.
+    coverage: float = 0.0
+    #: False when no font on this device can draw the script.
+    font_available: bool = True
+    #: Present when the font is missing: what to run to install it.
+    font_hint: str | None = None
+
+
+class DprRequest(ApiModel):
+    opportunity_code: str = Field(min_length=1, max_length=64)
+    language: str = Field(default="hi", min_length=2, max_length=8)
+    promoter_name: str | None = Field(default=None, max_length=160)
+    promoter_phone: str | None = Field(default=None, max_length=20)
+
+    #: Loan terms. Left unset the report uses ordinary agricultural term-loan
+    #: assumptions, which it states on its face.
+    margin: float | None = Field(default=None, ge=0.05, le=0.9)
+    interest_rate: float | None = Field(default=None, ge=0.01, le=0.36)
+    repayment_years: int | None = Field(default=None, ge=3, le=15)
+
+
+class ProjectReportOut(ApiModel):
+    id: str
+    parcel_id: str
+    opportunity_code: str
+    opportunity_name: str
+    language: str
+    language_label: str
+    translation_coverage: float
+    report_number: str
+    promoter_name: str
+    file_name: str
+    file_size: int
+    suitability_score: int
+    total_project_cost: float
+    term_loan: float
+    net_per_year: float
+    created_at: datetime
+    download_path: str

@@ -160,7 +160,9 @@ export function AddLandPage() {
 
     try {
       const created = await api.createParcel(payload);
-      navigate('/', { state: { savedParcelId: created.id } });
+      // Straight to the options: telling the farmer what the land could earn is
+      // the point of having collected all of this.
+      navigate(`/land/${created.id}/plan`, { state: { savedParcelId: created.id } });
     } catch (error) {
       setSaveError(
         t('error.saveFailed', { detail: error instanceof Error ? error.message : String(error) }),
@@ -204,6 +206,21 @@ export function AddLandPage() {
           <LocationMap
             value={form.coordinates}
             onChange={(coordinates) => patch({ coordinates })}
+            stateCode={form.location.stateCode}
+            onPlaceSuggestion={(place) =>
+              patch({
+                location: {
+                  stateCode: place.stateCode ?? form.location.stateCode,
+                  districtCode: place.districtCode ?? null,
+                  subdistrictCode: place.subdistrictCode ?? null,
+                  // A suggestion never reaches village level: the reverse
+                  // geocoder's idea of a village and the LGD's rarely agree,
+                  // and a wrong village would print a wrong address on a bank
+                  // document. The farmer picks that one themselves.
+                  villageCode: null,
+                },
+              })
+            }
           />
         </section>
       ) : null}

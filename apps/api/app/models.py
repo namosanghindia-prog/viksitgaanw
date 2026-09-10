@@ -261,3 +261,45 @@ class AppEvent(Base):
     occurred_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=_now, server_default=func.now(), index=True
     )
+
+
+class ProjectReport(Base):
+    """A generated DPR.
+
+    The file itself lives on disk; this row is the index. It exists as a real
+    table rather than a directory listing for two reasons: the monetisation
+    plan meters generated reports, so they have to be countable without
+    walking a filesystem, and a farmer needs to find the report they made last
+    month without knowing what it was called.
+    """
+
+    __tablename__ = "project_reports"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    parcel_id: Mapped[str] = mapped_column(
+        ForeignKey("land_parcels.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    farmer_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
+
+    #: Which option from the knowledge base this report is for.
+    opportunity_code: Mapped[str] = mapped_column(String(64), nullable=False, index=True)
+    #: The language the PDF was written in, not the farmer's UI language.
+    language: Mapped[str] = mapped_column(String(8), nullable=False)
+    #: Share of the report's strings that existed in that language, 0 to 1.
+    translation_coverage: Mapped[float] = mapped_column(Float, default=1.0)
+
+    #: Human-facing reference printed on the cover, e.g. VG-2026-0007.
+    report_number: Mapped[str] = mapped_column(String(32), nullable=False, unique=True)
+    promoter_name: Mapped[str] = mapped_column(String(160), nullable=False)
+
+    file_path: Mapped[str] = mapped_column(Text, nullable=False)
+    file_size: Mapped[int] = mapped_column(Integer, default=0)
+
+    #: Headline figures, kept here so a list of reports can be rendered without
+    #: re-running the whole engine or reopening the PDF.
+    suitability_score: Mapped[int] = mapped_column(Integer, default=0)
+    total_project_cost: Mapped[float] = mapped_column(Float, default=0.0)
+    term_loan: Mapped[float] = mapped_column(Float, default=0.0)
+    net_per_year: Mapped[float] = mapped_column(Float, default=0.0)
+
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)

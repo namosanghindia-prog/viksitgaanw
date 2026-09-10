@@ -1,0 +1,605 @@
+{
+  "key": "export_markets",
+  "version": 1,
+  "dataAsOf": "2026-09",
+  "currency": "USD",
+  "disclaimer": {
+    "en": "Trade values below are order-of-magnitude figures for planning, not audited statistics. Entries marked 'reported' are drawn from India's own official trade reporting (APEDA / Spices Board / DGCI&S) and are reliable to within about a year's revision. Entries marked 'estimate' come from private market-research summaries and should be treated as a rough scale only. Before any figure here is quoted in a loan application or an investor deck, re-check it against the live source named on the entry.",
+    "hi": "नीचे दिए गए व्यापार आँकड़े योजना बनाने के लिए मोटे अनुमान हैं, कोई अंकेक्षित सांख्यिकी नहीं। जिन प्रविष्टियों पर 'reported' लिखा है वे भारत की अपनी सरकारी व्यापार रिपोर्टिंग (एपीडा / मसाला बोर्ड / डीजीसीआईएंडएस) से हैं और लगभग एक वर्ष के संशोधन तक भरोसेमंद हैं। 'estimate' वाली प्रविष्टियाँ निजी बाज़ार-शोध सारांशों से हैं और इन्हें केवल मोटे पैमाने के रूप में लें। ऋण आवेदन या निवेशक प्रस्तुति में कोई भी आँकड़ा देने से पहले उसे प्रविष्टि पर दिए गए जीवंत स्रोत से दोबारा जाँच लें।"
+  },
+  "countries": {
+    "ae": { "en": "United Arab Emirates", "hi": "संयुक्त अरब अमीरात" },
+    "sa": { "en": "Saudi Arabia", "hi": "सऊदी अरब" },
+    "ir": { "en": "Iran", "hi": "ईरान" },
+    "iq": { "en": "Iraq", "hi": "इराक़" },
+    "ye": { "en": "Yemen", "hi": "यमन" },
+    "om": { "en": "Oman", "hi": "ओमान" },
+    "qa": { "en": "Qatar", "hi": "क़तर" },
+    "kw": { "en": "Kuwait", "hi": "कुवैत" },
+    "bh": { "en": "Bahrain", "hi": "बहरीन" },
+    "us": { "en": "United States", "hi": "संयुक्त राज्य अमेरिका" },
+    "gb": { "en": "United Kingdom", "hi": "यूनाइटेड किंगडम" },
+    "nl": { "en": "Netherlands", "hi": "नीदरलैंड" },
+    "de": { "en": "Germany", "hi": "जर्मनी" },
+    "fr": { "en": "France", "hi": "फ़्रांस" },
+    "es": { "en": "Spain", "hi": "स्पेन" },
+    "it": { "en": "Italy", "hi": "इटली" },
+    "be": { "en": "Belgium", "hi": "बेल्जियम" },
+    "ru": { "en": "Russia", "hi": "रूस" },
+    "cn": { "en": "China", "hi": "चीन" },
+    "jp": { "en": "Japan", "hi": "जापान" },
+    "kr": { "en": "South Korea", "hi": "दक्षिण कोरिया" },
+    "my": { "en": "Malaysia", "hi": "मलेशिया" },
+    "sg": { "en": "Singapore", "hi": "सिंगापुर" },
+    "th": { "en": "Thailand", "hi": "थाईलैंड" },
+    "vn": { "en": "Vietnam", "hi": "वियतनाम" },
+    "bd": { "en": "Bangladesh", "hi": "बांग्लादेश" },
+    "np": { "en": "Nepal", "hi": "नेपाल" },
+    "lk": { "en": "Sri Lanka", "hi": "श्रीलंका" },
+    "au": { "en": "Australia", "hi": "ऑस्ट्रेलिया" },
+    "ca": { "en": "Canada", "hi": "कनाडा" },
+    "za": { "en": "South Africa", "hi": "दक्षिण अफ़्रीका" },
+    "eg": { "en": "Egypt", "hi": "मिस्र" },
+    "tr": { "en": "Turkiye", "hi": "तुर्किए" },
+    "ma": { "en": "Morocco", "hi": "मोरक्को" }
+  },
+  "certifications": [
+    { "code": "iec", "label": { "en": "Importer-Exporter Code (IEC) from DGFT", "hi": "डीजीएफ़टी से आयातक-निर्यातक कोड (आईईसी)" }, "url": "https://www.dgft.gov.in/" },
+    { "code": "apeda_reg", "label": { "en": "APEDA registration-cum-membership", "hi": "एपीडा पंजीकरण-सह-सदस्यता" }, "url": "https://apeda.gov.in/" },
+    { "code": "spices_board_reg", "label": { "en": "Spices Board exporter registration", "hi": "मसाला बोर्ड निर्यातक पंजीकरण" }, "url": "https://www.indianspices.com/" },
+    { "code": "phyto", "label": { "en": "Phytosanitary certificate (plant quarantine)", "hi": "पादप स्वच्छता प्रमाणपत्र (पादप संगरोध)" }, "url": "https://ppqs.gov.in/" },
+    { "code": "packhouse", "label": { "en": "APEDA-registered packhouse", "hi": "एपीडा-पंजीकृत पैकहाउस" }, "url": "https://apeda.gov.in/" },
+    { "code": "globalgap", "label": { "en": "GLOBALG.A.P. farm certification", "hi": "ग्लोबलजी.ए.पी. फ़ार्म प्रमाणन" }, "url": "https://www.globalgap.org/" },
+    { "code": "npop", "label": { "en": "NPOP organic certification (India)", "hi": "एनपीओपी जैविक प्रमाणन (भारत)" }, "url": "https://apeda.gov.in/" },
+    { "code": "residue", "label": { "en": "Pesticide-residue test report (EU / US MRL)", "hi": "कीटनाशक अवशेष जाँच रिपोर्ट (ईयू / यूएस एमआरएल)" }, "url": "https://apeda.gov.in/" },
+    { "code": "fssai", "label": { "en": "FSSAI licence for processed food", "hi": "प्रसंस्कृत खाद्य के लिए एफएसएसएआई लाइसेंस" }, "url": "https://foscos.fssai.gov.in/" },
+    { "code": "halal", "label": { "en": "Halal certification (Gulf and Southeast Asia)", "hi": "हलाल प्रमाणन (खाड़ी एवं दक्षिण-पूर्व एशिया)" }, "url": "https://apeda.gov.in/" },
+    { "code": "gi_tag", "label": { "en": "Geographical Indication (GI) user registration", "hi": "भौगोलिक संकेत (जीआई) उपयोगकर्ता पंजीकरण" }, "url": "https://ipindia.gov.in/" },
+    { "code": "vhtf", "label": { "en": "Vapour heat / irradiation treatment for fresh fruit", "hi": "ताज़ा फल के लिए वाष्प ऊष्मा / विकिरण उपचार" }, "url": "https://apeda.gov.in/" }
+  ],
+  "commonResources": [
+    { "label": { "en": "APEDA AgriExchange – live export statistics by product", "hi": "एपीडा एग्रीएक्सचेंज – उत्पादवार जीवंत निर्यात आँकड़े" }, "url": "https://agriexchange.apeda.gov.in/" },
+    { "label": { "en": "ITC Trade Map – world import demand by country", "hi": "आईटीसी ट्रेड मैप – देशवार विश्व आयात माँग" }, "url": "https://www.trademap.org/" },
+    { "label": { "en": "Indian Trade Portal – tariffs and market access", "hi": "भारतीय व्यापार पोर्टल – शुल्क एवं बाज़ार पहुँच" }, "url": "https://www.indiantradeportal.in/" },
+    { "label": { "en": "DGFT – Importer-Exporter Code and export policy", "hi": "डीजीएफ़टी – आयातक-निर्यातक कोड एवं निर्यात नीति" }, "url": "https://www.dgft.gov.in/" },
+    { "label": { "en": "FAOSTAT – world production and trade data", "hi": "फ़ाओस्टैट – विश्व उत्पादन एवं व्यापार आँकड़े" }, "url": "https://www.fao.org/faostat/" },
+    { "label": { "en": "Spices Board India – exporter services", "hi": "भारतीय मसाला बोर्ड – निर्यातक सेवाएँ" }, "url": "https://www.indianspices.com/" }
+  ],
+  "items": [
+    {
+      "commodity": "basmati_rice",
+      "label": { "en": "Basmati rice", "hi": "बासमती चावल" },
+      "indiaExportUsd": { "low": 5000000000, "high": 5900000000, "confidence": "reported", "source": "APEDA AgriExchange" },
+      "worldTradeUsd": { "low": 5500000000, "high": 6500000000, "confidence": "estimate", "source": "ITC Trade Map, HS 1006.30 aromatic long grain" },
+      "indiaShareNote": {
+        "en": "India supplies roughly two-thirds of the world's traded basmati; Pakistan supplies most of the rest. This is one of the few crops where an Indian farmer is selling into a market India already dominates.",
+        "hi": "दुनिया के कारोबार वाले बासमती का लगभग दो-तिहाई भारत देता है; बाक़ी का अधिकांश पाकिस्तान से आता है। यह उन गिनी-चुनी फसलों में है जहाँ भारतीय किसान उस बाज़ार में बेच रहा है जिस पर भारत का पहले से दबदबा है।"
+      },
+      "destinations": ["ir", "sa", "iq", "ae", "us", "ye", "gb"],
+      "priceNote": {
+        "en": "Export-grade paddy typically fetches a premium over the local mandi rate, but only when the residue test passes. A single failed EU consignment can blacklist a whole exporter's supply chain, which is why buyers pay for compliance rather than for appearance.",
+        "hi": "निर्यात श्रेणी का धान आमतौर पर स्थानीय मंडी भाव से ऊँचा दाम पाता है, पर तभी जब अवशेष जाँच पास हो। यूरोप की एक भी खेप फेल होने से पूरे निर्यातक की आपूर्ति शृंखला काली सूची में जा सकती है, इसीलिए खरीदार दिखावट के नहीं, अनुपालन के पैसे देते हैं।"
+      },
+      "certifications": ["iec", "apeda_reg", "residue", "phyto", "gi_tag"],
+      "barriers": {
+        "en": "EU maximum residue limits on tricyclazole and buprofezin are the binding constraint. Grow to the exporter's spray calendar, not the shopkeeper's advice.",
+        "hi": "ट्राइसाइक्लाज़ोल और ब्यूप्रोफ़ेज़िन पर यूरोप की अधिकतम अवशेष सीमा ही असली बंधन है। दुकानदार की सलाह पर नहीं, निर्यातक के छिड़काव कैलेंडर पर खेती करें।"
+      },
+      "resources": [
+        { "label": { "en": "APEDA Basmati Export Development Foundation", "hi": "एपीडा बासमती निर्यात विकास फ़ाउंडेशन" }, "url": "https://apeda.gov.in/" }
+      ]
+    },
+    {
+      "commodity": "banana",
+      "label": { "en": "Banana (fresh)", "hi": "केला (ताज़ा)" },
+      "indiaExportUsd": { "low": 160000000, "high": 360000000, "confidence": "reported", "source": "APEDA AgriExchange" },
+      "worldTradeUsd": { "low": 13000000000, "high": 15500000000, "confidence": "estimate", "source": "ITC Trade Map / FAOSTAT, HS 0803" },
+      "indiaShareNote": {
+        "en": "India grows more banana than any other country and exports barely two per cent of the world trade. Ecuador and the Philippines take that market on packhouse discipline and cold chain, not on better fruit — which is exactly the gap an organised grower can enter.",
+        "hi": "केला भारत सबसे ज़्यादा उगाता है और विश्व व्यापार का मुश्किल से दो प्रतिशत निर्यात करता है। इक्वाडोर और फ़िलीपींस यह बाज़ार बेहतर फल से नहीं, पैकहाउस अनुशासन और कोल्ड चेन से लेते हैं — संगठित उत्पादक के लिए यही खाली जगह है।"
+      },
+      "destinations": ["ir", "iq", "ae", "sa", "om", "np", "qa"],
+      "priceNote": {
+        "en": "Export bunches must meet a strict finger length and grade. The premium over the domestic rate is real but modest; the gain comes from selling the whole crop at one rate instead of dumping the tail end.",
+        "hi": "निर्यात के घौद को अंगुली की लंबाई और श्रेणी के सख़्त मानक पूरे करने होते हैं। घरेलू भाव पर बढ़त असली है पर बहुत बड़ी नहीं; असली फ़ायदा यह है कि पूरी फसल एक ही भाव पर बिकती है, बचा हुआ हिस्सा औने-पौने नहीं फेंकना पड़ता।"
+      },
+      "certifications": ["iec", "apeda_reg", "packhouse", "globalgap", "phyto"],
+      "barriers": {
+        "en": "Sea freight in reefer containers and a registered packhouse within a day's drive are the practical gate. Without an FPO or an aggregator, a single grower rarely fills a container.",
+        "hi": "रीफ़र कंटेनर में समुद्री ढुलाई और एक दिन की दूरी पर पंजीकृत पैकहाउस — व्यावहारिक रूप से यही दरवाज़ा है। एफपीओ या समूहक के बिना अकेला किसान शायद ही पूरा कंटेनर भर पाता है।"
+      },
+      "resources": [
+        { "label": { "en": "APEDA – fresh fruit export procedures", "hi": "एपीडा – ताज़ा फल निर्यात प्रक्रिया" }, "url": "https://apeda.gov.in/" }
+      ]
+    },
+    {
+      "commodity": "pomegranate",
+      "label": { "en": "Pomegranate (fresh)", "hi": "अनार (ताज़ा)" },
+      "indiaExportUsd": { "low": 60000000, "high": 100000000, "confidence": "reported", "source": "APEDA AgriExchange" },
+      "worldTradeUsd": { "low": 900000000, "high": 1300000000, "confidence": "estimate", "source": "ITC Trade Map, HS 0810.90" },
+      "indiaShareNote": {
+        "en": "India is the largest producer but Peru, Turkiye, Spain and Egypt hold the high-value European counters. Indian Bhagwa has a genuine quality advantage; the constraint is residue compliance and the anar-fly quarantine, not the fruit.",
+        "hi": "उत्पादन में भारत सबसे आगे है, पर यूरोप के ऊँचे दाम वाले काउंटर पेरू, तुर्किए, स्पेन और मिस्र के पास हैं। भारतीय भगवा की गुणवत्ता सचमुच बेहतर है; अड़चन फल की नहीं, अवशेष अनुपालन और अनार मक्खी संगरोध की है।"
+      },
+      "destinations": ["ae", "nl", "gb", "sa", "bd", "de", "om"],
+      "priceNote": {
+        "en": "Export-grade fruit of 250 g and above with clean skin can earn well above the local rate. The lower grades still sell at home, so an export orchard is not an all-or-nothing bet.",
+        "hi": "250 ग्राम से ऊपर के साफ़ छिलके वाले निर्यात श्रेणी के फल स्थानीय भाव से काफ़ी ऊपर बिकते हैं। छोटी श्रेणियाँ घरेलू बाज़ार में बिक ही जाती हैं, इसलिए निर्यात वाला बाग़ सब-कुछ-या-कुछ-नहीं का दाँव नहीं है।"
+      },
+      "certifications": ["iec", "apeda_reg", "globalgap", "residue", "phyto", "packhouse"],
+      "barriers": {
+        "en": "Anar Net traceability registration is compulsory for EU consignments, and bacterial blight history in the block can disqualify a farm.",
+        "hi": "यूरोप की खेप के लिए अनार नेट ट्रेसेबिलिटी पंजीकरण अनिवार्य है, और खेत में तेलिया रोग का पुराना इतिहास फ़ार्म को अयोग्य कर सकता है।"
+      },
+      "resources": [
+        { "label": { "en": "APEDA AnarNet – traceability registration", "hi": "एपीडा अनारनेट – ट्रेसेबिलिटी पंजीकरण" }, "url": "https://apeda.gov.in/" }
+      ]
+    },
+    {
+      "commodity": "mango",
+      "label": { "en": "Mango (fresh and pulp)", "hi": "आम (ताज़ा एवं गूदा)" },
+      "indiaExportUsd": { "low": 130000000, "high": 200000000, "confidence": "reported", "source": "APEDA AgriExchange, fresh mango plus mango pulp" },
+      "worldTradeUsd": { "low": 3000000000, "high": 3800000000, "confidence": "estimate", "source": "ITC Trade Map, HS 0804.50" },
+      "indiaShareNote": {
+        "en": "Mexico, Thailand and Peru dominate world mango trade; India sells mostly to the Gulf and to the Indian diaspora. Pulp, not fresh fruit, is where Indian volume actually goes — and pulp does not need a cold chain from the farm.",
+        "hi": "विश्व आम व्यापार पर मेक्सिको, थाईलैंड और पेरू का दबदबा है; भारत मुख्यतः खाड़ी देशों और प्रवासी भारतीयों को बेचता है। भारतीय मात्रा असल में ताज़े फल में नहीं, गूदे में जाती है — और गूदे के लिए खेत से कोल्ड चेन ज़रूरी नहीं।"
+      },
+      "destinations": ["ae", "gb", "sa", "us", "qa", "om", "nl"],
+      "priceNote": {
+        "en": "Alphonso and Kesar for the Gulf earn a solid premium in a narrow six-week window. Totapuri and Alphonso for pulp earn less per kilo but the processor takes everything, every year.",
+        "hi": "खाड़ी के लिए अल्फ़ांसो और केसर छह हफ़्ते की छोटी खिड़की में अच्छा ऊँचा दाम देते हैं। गूदे के लिए तोतापुरी और अल्फ़ांसो प्रति किलो कम देते हैं, पर प्रसंस्करणकर्ता हर साल पूरा माल उठा लेता है।"
+      },
+      "certifications": ["iec", "apeda_reg", "vhtf", "phyto", "packhouse", "residue"],
+      "barriers": {
+        "en": "The United States, Japan, Australia and South Korea require irradiation or vapour-heat treatment at an approved facility, of which India has only a handful.",
+        "hi": "अमेरिका, जापान, ऑस्ट्रेलिया और दक्षिण कोरिया के लिए अनुमोदित सुविधा में विकिरण या वाष्प-ऊष्मा उपचार अनिवार्य है, और भारत में ऐसी सुविधाएँ गिनी-चुनी ही हैं।"
+      },
+      "resources": [
+        { "label": { "en": "APEDA – mango export protocols by country", "hi": "एपीडा – देशवार आम निर्यात प्रोटोकॉल" }, "url": "https://apeda.gov.in/" }
+      ]
+    },
+    {
+      "commodity": "guava",
+      "label": { "en": "Guava (fresh and pulp)", "hi": "अमरूद (ताज़ा एवं गूदा)" },
+      "indiaExportUsd": { "low": 8000000, "high": 20000000, "confidence": "estimate", "source": "APEDA AgriExchange, reported jointly with mango under HS 0804.50" },
+      "worldTradeUsd": { "low": 200000000, "high": 400000000, "confidence": "estimate", "source": "ITC Trade Map" },
+      "indiaShareNote": {
+        "en": "Fresh guava travels badly, so world trade is small and mostly regional. The realistic foreign market is pulp and dehydrated slices, not fresh fruit in a box.",
+        "hi": "ताज़ा अमरूद यात्रा अच्छी नहीं झेलता, इसलिए विश्व व्यापार छोटा और मुख्यतः क्षेत्रीय है। व्यावहारिक विदेशी बाज़ार डिब्बे में ताज़ा फल नहीं, गूदा और सुखाई गई फाँकें हैं।"
+      },
+      "destinations": ["ae", "sa", "np", "bd", "om"],
+      "priceNote": {
+        "en": "Treat any export income here as a bonus on top of a business that must stand on domestic sales.",
+        "hi": "यहाँ निर्यात से होने वाली आमदनी को उस व्यवसाय पर बोनस मानें जिसे घरेलू बिक्री के दम पर ही खड़ा होना है।"
+      },
+      "certifications": ["iec", "apeda_reg", "phyto"],
+      "barriers": {
+        "en": "Short shelf life restricts fresh export to nearby countries by air or road.",
+        "hi": "कम टिकाऊपन के कारण ताज़ा निर्यात केवल पड़ोसी देशों तक, हवाई या सड़क मार्ग से ही संभव है।"
+      },
+      "resources": []
+    },
+    {
+      "commodity": "gherkin",
+      "label": { "en": "Gherkin (pickled cucumber)", "hi": "गेरकिन (अचारी खीरा)" },
+      "indiaExportUsd": { "low": 200000000, "high": 280000000, "confidence": "reported", "source": "APEDA AgriExchange, processed cucumber and gherkin" },
+      "worldTradeUsd": { "low": 1200000000, "high": 1700000000, "confidence": "estimate", "source": "ITC Trade Map, HS 2001.10 and 0707" },
+      "indiaShareNote": {
+        "en": "India is the world's largest exporter of pickled gherkins, and almost the entire crop is grown on contract by smallholders in Karnataka, Tamil Nadu, Andhra Pradesh and Telangana. This is the clearest example in Indian farming of small farms serving a global market well.",
+        "hi": "अचारी गेरकिन का सबसे बड़ा निर्यातक भारत है, और लगभग पूरी फसल कर्नाटक, तमिलनाडु, आंध्र प्रदेश और तेलंगाना के छोटे किसान अनुबंध पर उगाते हैं। भारतीय खेती में यह सबसे साफ़ उदाहरण है कि छोटे खेत भी वैश्विक बाज़ार को अच्छी तरह सेवा दे सकते हैं।"
+      },
+      "destinations": ["us", "ru", "fr", "de", "es", "be", "au", "ca"],
+      "priceNote": {
+        "en": "The contract rate is fixed before sowing and graded by fruit size — the smallest grades pay the most per kilogram, so picking every second day is where the money is.",
+        "hi": "अनुबंध का भाव बुवाई से पहले तय होता है और फल के आकार से श्रेणी बनती है — सबसे छोटी श्रेणी प्रति किलो सबसे ज़्यादा देती है, इसलिए असली कमाई हर दूसरे दिन तुड़ाई करने में है।"
+      },
+      "certifications": ["iec", "apeda_reg", "fssai", "residue", "globalgap"],
+      "barriers": {
+        "en": "You cannot enter this without a processor operating in your district — the crop has no domestic market worth speaking of.",
+        "hi": "आपके ज़िले में प्रसंस्करण इकाई हुए बिना इसमें उतरा नहीं जा सकता — इस फसल का घरेलू बाज़ार कहने लायक़ है ही नहीं।"
+      },
+      "resources": [
+        { "label": { "en": "APEDA – processed vegetable exporter directory", "hi": "एपीडा – प्रसंस्कृत सब्ज़ी निर्यातक निर्देशिका" }, "url": "https://agriexchange.apeda.gov.in/" }
+      ]
+    },
+    {
+      "commodity": "chilli",
+      "label": { "en": "Dry chilli and chilli products", "hi": "सूखी मिर्च एवं मिर्च उत्पाद" },
+      "indiaExportUsd": { "low": 1200000000, "high": 1600000000, "confidence": "reported", "source": "Spices Board India" },
+      "worldTradeUsd": { "low": 3500000000, "high": 4500000000, "confidence": "estimate", "source": "ITC Trade Map, HS 0904" },
+      "indiaShareNote": {
+        "en": "Chilli is India's single largest spice export by value, and India is the world's largest producer, consumer and exporter at once. Guntur and Byadgi are traded as international reference varieties.",
+        "hi": "मूल्य के हिसाब से मिर्च भारत का सबसे बड़ा मसाला निर्यात है, और भारत एक साथ दुनिया का सबसे बड़ा उत्पादक, उपभोक्ता और निर्यातक है। गुंटूर और ब्याडगी अंतरराष्ट्रीय स्तर पर संदर्भ किस्मों के रूप में कारोबार होती हैं।"
+      },
+      "destinations": ["cn", "bd", "th", "vn", "us", "my", "lk", "ae"],
+      "priceNote": {
+        "en": "Colour value (ASTA) and capsaicin content decide the grade far more than size. Byadgi-type high-colour chilli goes to oleoresin extractors at a premium over table chilli.",
+        "hi": "श्रेणी आकार से कहीं ज़्यादा रंग मान (एएसटीए) और कैप्सेसिन मात्रा से तय होती है। ऊँचे रंग वाली ब्याडगी किस्म ओलियोरेज़िन निकालने वालों को खाने की मिर्च से ऊँचे भाव जाती है।"
+      },
+      "certifications": ["iec", "spices_board_reg", "residue", "phyto", "fssai"],
+      "barriers": {
+        "en": "Aflatoxin and pesticide residue rejections are common. Drying on a clean concrete floor or a tarpaulin, never on bare earth, is the single biggest quality lever.",
+        "hi": "एफ़्लाटॉक्सिन और कीटनाशक अवशेष के कारण खेप लौटना आम है। नंगी ज़मीन पर नहीं, साफ़ पक्के फ़र्श या तिरपाल पर सुखाना — गुणवत्ता का यही सबसे बड़ा एक क़दम है।"
+      },
+      "resources": [
+        { "label": { "en": "Spices Board India – exporter registration", "hi": "भारतीय मसाला बोर्ड – निर्यातक पंजीकरण" }, "url": "https://www.indianspices.com/" }
+      ]
+    },
+    {
+      "commodity": "cumin",
+      "label": { "en": "Cumin seed", "hi": "जीरा" },
+      "indiaExportUsd": { "low": 550000000, "high": 900000000, "confidence": "reported", "source": "Spices Board India" },
+      "worldTradeUsd": { "low": 1000000000, "high": 1500000000, "confidence": "estimate", "source": "ITC Trade Map, HS 0909.31" },
+      "indiaShareNote": {
+        "en": "India produces the majority of the world's cumin, with Syria and Turkiye the other suppliers. When their crops fail, Indian prices spike — and the reverse is equally true, so a high year is not a trend.",
+        "hi": "दुनिया का अधिकांश जीरा भारत पैदा करता है, बाक़ी आपूर्ति सीरिया और तुर्किए से आती है। उनकी फसल बिगड़ने पर भारतीय भाव उछलते हैं — और उल्टा भी उतना ही सच है, इसलिए एक ऊँचे साल को रुझान न मानें।"
+      },
+      "destinations": ["cn", "bd", "us", "ae", "vn", "gb", "ma"],
+      "priceNote": {
+        "en": "Machine-cleaned, single-origin cumin with low ash content commands a clear premium over mixed mandi lots.",
+        "hi": "कम राख मात्रा वाला, मशीन से साफ़ किया गया एक ही जगह का जीरा मिली-जुली मंडी खेप से साफ़ ऊँचा भाव पाता है।"
+      },
+      "certifications": ["iec", "spices_board_reg", "residue", "phyto"],
+      "barriers": {
+        "en": "Prices are among the most volatile of any Indian farm commodity. Do not build a repayment schedule on a peak-year price.",
+        "hi": "भारतीय कृषि जिंसों में इसके भाव सबसे ज़्यादा ऊपर-नीचे होते हैं। ऊँचे साल के भाव पर किश्त का हिसाब न बनाएँ।"
+      },
+      "resources": [
+        { "label": { "en": "Spices Board India", "hi": "भारतीय मसाला बोर्ड" }, "url": "https://www.indianspices.com/" }
+      ]
+    },
+    {
+      "commodity": "turmeric",
+      "label": { "en": "Turmeric", "hi": "हल्दी" },
+      "indiaExportUsd": { "low": 200000000, "high": 320000000, "confidence": "reported", "source": "Spices Board India" },
+      "worldTradeUsd": { "low": 500000000, "high": 800000000, "confidence": "estimate", "source": "ITC Trade Map, HS 0910.30" },
+      "indiaShareNote": {
+        "en": "India grows and exports the large majority of world turmeric. The growth is not in raw rhizome but in high-curcumin material for the nutraceutical trade, which is bought on a lab certificate rather than on appearance.",
+        "hi": "दुनिया की अधिकांश हल्दी भारत ही उगाता और निर्यात करता है। बढ़त कच्चे प्रकंद में नहीं, न्यूट्रास्युटिकल कारोबार के लिए ऊँची करक्यूमिन वाली सामग्री में है, जो दिखावट से नहीं, प्रयोगशाला प्रमाणपत्र से खरीदी जाती है।"
+      },
+      "destinations": ["bd", "us", "ae", "my", "gb", "ir", "lk"],
+      "priceNote": {
+        "en": "Curcumin above about 3 per cent, verified by a lab report, moves the price into a different bracket. Lakadong, Salem and Erode types test high; ask your KVK which variety suits your block before you plant.",
+        "hi": "प्रयोगशाला रिपोर्ट से पुष्ट लगभग 3 प्रतिशत से ऊपर करक्यूमिन भाव को अलग ही श्रेणी में ले जाता है। लकाडोंग, सेलम और इरोड किस्मों में यह ऊँचा मिलता है; लगाने से पहले अपने केवीके से पूछें कि आपके क्षेत्र के लिए कौन सी किस्म ठीक है।"
+      },
+      "certifications": ["iec", "spices_board_reg", "residue", "fssai", "npop", "gi_tag"],
+      "barriers": {
+        "en": "Lead chromate adulteration in the wider Indian supply chain has made buyers test hard. A clean lab report from your own lot is now a selling point, not a formality.",
+        "hi": "भारतीय आपूर्ति शृंखला में लेड क्रोमेट की मिलावट के कारण खरीदार अब कड़ी जाँच करते हैं। अपनी खेप की साफ़ प्रयोगशाला रिपोर्ट अब औपचारिकता नहीं, बिक्री का ज़रिया है।"
+      },
+      "resources": [
+        { "label": { "en": "Spices Board India", "hi": "भारतीय मसाला बोर्ड" }, "url": "https://www.indianspices.com/" },
+        { "label": { "en": "National Turmeric Board", "hi": "राष्ट्रीय हल्दी बोर्ड" }, "url": "https://www.indianspices.com/" }
+      ]
+    },
+    {
+      "commodity": "ginger",
+      "label": { "en": "Ginger (fresh and dry)", "hi": "अदरक (ताज़ा एवं सूखी)" },
+      "indiaExportUsd": { "low": 90000000, "high": 180000000, "confidence": "reported", "source": "Spices Board India" },
+      "worldTradeUsd": { "low": 1200000000, "high": 1800000000, "confidence": "estimate", "source": "ITC Trade Map, HS 0910.11" },
+      "indiaShareNote": {
+        "en": "India is the largest producer but China dominates the export trade with a graded, washed, uniformly packed product. The gap is post-harvest handling, not agronomy.",
+        "hi": "उत्पादन में भारत सबसे आगे है, पर निर्यात व्यापार पर चीन का दबदबा है — श्रेणीबद्ध, धुला हुआ, एक-समान पैक किया माल देकर। कमी खेती में नहीं, कटाई-उपरांत रख-रखाव में है।"
+      },
+      "destinations": ["bd", "us", "ae", "gb", "sa", "np", "nl"],
+      "priceNote": {
+        "en": "Dry ginger and ginger oleoresin travel far better than fresh rhizome and hold their value through a price slump.",
+        "hi": "सूखी अदरक और अदरक ओलियोरेज़िन ताज़े प्रकंद से कहीं बेहतर यात्रा करते हैं और भाव गिरने पर भी अपना मूल्य बनाए रखते हैं।"
+      },
+      "certifications": ["iec", "spices_board_reg", "residue", "phyto"],
+      "barriers": {
+        "en": "Soil-borne rot and heavy metal residue in washed produce are the two rejection reasons buyers cite most.",
+        "hi": "मिट्टीजनित सड़न और धुले माल में भारी धातु अवशेष — खरीदार खेप लौटाने के यही दो कारण सबसे ज़्यादा बताते हैं।"
+      },
+      "resources": []
+    },
+    {
+      "commodity": "black_pepper",
+      "label": { "en": "Black pepper", "hi": "काली मिर्च" },
+      "indiaExportUsd": { "low": 110000000, "high": 180000000, "confidence": "reported", "source": "Spices Board India" },
+      "worldTradeUsd": { "low": 2500000000, "high": 3500000000, "confidence": "estimate", "source": "ITC Trade Map, HS 0904.11" },
+      "indiaShareNote": {
+        "en": "Vietnam, Brazil and Indonesia now supply most of the world's pepper at prices below India's cost of production, and India imports pepper as well as exporting it. Indian pepper competes on piperine strength and on organic and GI credentials, not on price.",
+        "hi": "अब दुनिया की अधिकांश काली मिर्च वियतनाम, ब्राज़ील और इंडोनेशिया देते हैं, वह भी भारत की उत्पादन लागत से कम भाव पर, और भारत निर्यात के साथ आयात भी करता है। भारतीय काली मिर्च भाव पर नहीं, पिपेरीन की तीव्रता तथा जैविक और जीआई पहचान पर टिकती है।"
+      },
+      "destinations": ["us", "gb", "de", "ca", "sa", "it", "nl"],
+      "priceNote": {
+        "en": "Certified organic or GI-tagged pepper such as Malabar or Wayanad earns a premium that ordinary bulk pepper cannot.",
+        "hi": "मालाबार या वायनाड जैसी प्रमाणित जैविक या जीआई-टैग वाली काली मिर्च वह ऊँचा भाव पाती है जो साधारण थोक माल को नहीं मिलता।"
+      },
+      "certifications": ["iec", "spices_board_reg", "npop", "gi_tag", "residue"],
+      "barriers": {
+        "en": "Cheap imports through free-trade agreements set the domestic price ceiling. Plan on the organic or GI route rather than on bulk.",
+        "hi": "मुक्त व्यापार समझौतों से आने वाला सस्ता आयात घरेलू भाव की छत तय कर देता है। थोक के बजाय जैविक या जीआई का रास्ता चुनें।"
+      },
+      "resources": []
+    },
+    {
+      "commodity": "honey",
+      "label": { "en": "Natural honey", "hi": "प्राकृतिक शहद" },
+      "indiaExportUsd": { "low": 80000000, "high": 130000000, "confidence": "reported", "source": "APEDA AgriExchange" },
+      "worldTradeUsd": { "low": 2400000000, "high": 3000000000, "confidence": "estimate", "source": "ITC Trade Map, HS 0409" },
+      "indiaShareNote": {
+        "en": "The United States takes the bulk of India's honey exports. Buyers now test for added sugar syrup by isotope analysis, and a clean traceable supply from identified apiaries is worth a real premium.",
+        "hi": "भारत के शहद निर्यात का बड़ा हिस्सा अमेरिका लेता है। खरीदार अब आइसोटोप विश्लेषण से मिलाई गई चाशनी की जाँच करते हैं, और चिह्नित मधुवाटिकाओं से आने वाली साफ़, ट्रेस करने योग्य आपूर्ति का सचमुच ऊँचा भाव मिलता है।"
+      },
+      "destinations": ["us", "sa", "ae", "ca", "de", "gb", "bd"],
+      "priceNote": {
+        "en": "Single-source honey — mustard, litchi, eucalyptus, jamun — sells far above mixed honey, and Honey Mission registration puts your apiary on a traceable register.",
+        "hi": "एक ही स्रोत का शहद — सरसों, लीची, यूकेलिप्टस, जामुन — मिले-जुले शहद से कहीं ऊँचा बिकता है, और हनी मिशन पंजीकरण आपकी मधुवाटिका को ट्रेस करने योग्य रजिस्टर में दर्ज कर देता है।"
+      },
+      "certifications": ["iec", "apeda_reg", "fssai", "npop", "residue"],
+      "barriers": {
+        "en": "Adulteration scandals have made the United States and the European Union test every consignment. Sell through an exporter who runs an NMR test, not one who does not.",
+        "hi": "मिलावट के मामलों के बाद अमेरिका और यूरोपीय संघ हर खेप की जाँच करते हैं। ऐसे निर्यातक के ज़रिए बेचें जो एनएमआर जाँच कराता हो, वरना नहीं।"
+      },
+      "resources": [
+        { "label": { "en": "National Bee Board – Madhukranti traceability portal", "hi": "राष्ट्रीय मधुमक्खी बोर्ड – मधुक्रांति ट्रेसेबिलिटी पोर्टल" }, "url": "https://nbb.gov.in/" }
+      ]
+    },
+    {
+      "commodity": "moringa",
+      "label": { "en": "Moringa leaf powder, seed and oil", "hi": "सहजन पत्ती चूर्ण, बीज एवं तेल" },
+      "indiaExportUsd": { "low": 25000000, "high": 70000000, "confidence": "estimate", "source": "APEDA AgriExchange, reported within herbal and value-added categories" },
+      "worldTradeUsd": { "low": 500000000, "high": 1000000000, "confidence": "estimate", "source": "Private market-research summaries; treat as scale only" },
+      "indiaShareNote": {
+        "en": "India supplies most of the world's moringa and the demand sits in the nutraceutical and cosmetics trade rather than in food. Because the market figure comes from private research and not from customs data, treat it as a direction of travel, not a number to bank on.",
+        "hi": "दुनिया का अधिकांश सहजन भारत देता है और माँग खाद्य में नहीं, न्यूट्रास्युटिकल तथा प्रसाधन कारोबार में है। यह बाज़ार आँकड़ा सीमा शुल्क आँकड़ों से नहीं, निजी शोध से आया है, इसलिए इसे दिशा मानें, बैंक में रखने लायक़ संख्या नहीं।"
+      },
+      "destinations": ["us", "de", "gb", "ae", "jp", "kr", "fr"],
+      "priceNote": {
+        "en": "Shade-dried leaf powder that keeps its green colour and passes a microbial test earns several times the price of sun-dried, browned powder.",
+        "hi": "छाया में सुखाया गया पत्ती चूर्ण जो अपना हरा रंग बनाए रखे और सूक्ष्मजीव जाँच पास करे, धूप में सुखाए भूरे चूर्ण से कई गुना भाव पाता है।"
+      },
+      "certifications": ["iec", "apeda_reg", "npop", "fssai", "residue"],
+      "barriers": {
+        "en": "Microbial load after drying is the usual rejection reason. A solar dryer with a clean floor solves most of it.",
+        "hi": "सुखाने के बाद सूक्ष्मजीव मात्रा ही आमतौर पर खेप लौटने का कारण बनती है। साफ़ फ़र्श वाला सौर ड्रायर इसका अधिकांश हल कर देता है।"
+      },
+      "resources": []
+    },
+    {
+      "commodity": "ashwagandha",
+      "label": { "en": "Ashwagandha root and extract", "hi": "अश्वगंधा जड़ एवं सत्त" },
+      "indiaExportUsd": { "low": 30000000, "high": 90000000, "confidence": "estimate", "source": "Reported within herbal extract categories; no separate customs line" },
+      "worldTradeUsd": { "low": 600000000, "high": 1200000000, "confidence": "estimate", "source": "Private market-research summaries; treat as scale only" },
+      "indiaShareNote": {
+        "en": "Almost all commercial ashwagandha originates in India, and the buyers are extract manufacturers supplying the American and European supplement trade. The published market sizes come from private research houses, so treat them as an indication of direction only.",
+        "hi": "व्यावसायिक अश्वगंधा लगभग पूरा भारत से आता है, और खरीदार वे सत्त निर्माता हैं जो अमेरिकी और यूरोपीय सप्लीमेंट कारोबार को आपूर्ति करते हैं। प्रकाशित बाज़ार आकार निजी शोध संस्थानों से हैं, इसलिए इन्हें केवल दिशा का संकेत मानें।"
+      },
+      "destinations": ["us", "de", "gb", "jp", "ae", "au", "ca"],
+      "priceNote": {
+        "en": "Withanolide content decides the price. Nagori-type ashwagandha from the Neemuch and Mandsaur belt is the recognised trade standard.",
+        "hi": "भाव विदानोलाइड मात्रा से तय होता है। नीमच और मंदसौर क्षेत्र की नागौरी किस्म व्यापार में मान्य मानक है।"
+      },
+      "certifications": ["iec", "apeda_reg", "npop", "residue"],
+      "barriers": {
+        "en": "There is no mandi price to fall back on. Sign a buy-back agreement with an extract manufacturer before sowing, or you may have no buyer at harvest.",
+        "hi": "यहाँ लौटने के लिए कोई मंडी भाव नहीं होता। बोने से पहले किसी सत्त निर्माता से वापसी-खरीद अनुबंध करें, वरना कटाई पर खरीदार ही न मिले।"
+      },
+      "resources": [
+        { "label": { "en": "National Medicinal Plants Board – buyer and grower registry", "hi": "राष्ट्रीय औषधीय पादप बोर्ड – खरीदार एवं उत्पादक रजिस्ट्री" }, "url": "https://nmpb.nic.in/" }
+      ]
+    },
+    {
+      "commodity": "essential_oil",
+      "label": { "en": "Essential oils (lemongrass, mint, citronella)", "hi": "सुगंधित तेल (लेमनग्रास, पुदीना, सिट्रोनेला)" },
+      "indiaExportUsd": { "low": 500000000, "high": 800000000, "confidence": "reported", "source": "DGCI&S essential oil lines; India is the leading mint-oil exporter" },
+      "worldTradeUsd": { "low": 6000000000, "high": 9000000000, "confidence": "estimate", "source": "ITC Trade Map, HS 3301" },
+      "indiaShareNote": {
+        "en": "India dominates world mint oil and is a significant supplier of lemongrass and citronella oil. Oil is light, non-perishable and priced by weight, so a remote village is at no disadvantage — which is unusual in farming.",
+        "hi": "विश्व पुदीना तेल पर भारत का दबदबा है और लेमनग्रास तथा सिट्रोनेला तेल का भी यह बड़ा आपूर्तिकर्ता है। तेल हल्का है, ख़राब नहीं होता और वज़न से बिकता है, इसलिए दूर-दराज़ के गाँव को कोई नुक़सान नहीं — खेती में यह असामान्य बात है।"
+      },
+      "destinations": ["us", "de", "fr", "gb", "cn", "jp", "sg"],
+      "priceNote": {
+        "en": "Citral content decides the rate for lemongrass oil. A gas-chromatography report from a recognised lab is what a buyer actually pays for.",
+        "hi": "लेमनग्रास तेल का भाव सिट्रल मात्रा से तय होता है। खरीदार असल में मान्यता प्राप्त प्रयोगशाला की गैस क्रोमैटोग्राफ़ी रिपोर्ट के ही पैसे देता है।"
+      },
+      "certifications": ["iec", "apeda_reg", "npop", "residue"],
+      "barriers": {
+        "en": "You need a distillation unit within reach — either your own or one shared through a farmer producer organisation. Grass cannot travel far before it loses oil.",
+        "hi": "पास में आसवन इकाई चाहिए — या तो अपनी, या किसान उत्पादक संगठन से साझा। घास दूर तक नहीं जा सकती, तेल घट जाता है।"
+      },
+      "resources": [
+        { "label": { "en": "CSIR-CIMAP Aroma Mission – distillation and buyer linkage", "hi": "सीएसआईआर-सीमैप सुगंध मिशन – आसवन एवं खरीदार संपर्क" }, "url": "https://www.cimap.res.in/" }
+      ]
+    },
+    {
+      "commodity": "makhana",
+      "label": { "en": "Makhana (foxnut)", "hi": "मखाना" },
+      "indiaExportUsd": { "low": 15000000, "high": 40000000, "confidence": "estimate", "source": "APEDA AgriExchange; reported within miscellaneous processed items" },
+      "worldTradeUsd": { "low": 50000000, "high": 150000000, "confidence": "estimate", "source": "No dedicated customs line; scale inferred from reported shipments" },
+      "indiaShareNote": {
+        "en": "India, and within it north Bihar, grows almost all the world's makhana, so this is a market India could define rather than compete in. Demand is growing in the healthy-snack trade in the Gulf and North America.",
+        "hi": "दुनिया का लगभग पूरा मखाना भारत, और उसमें भी उत्तरी बिहार उगाता है, इसलिए यह वह बाज़ार है जिसमें भारत को प्रतिस्पर्धा नहीं, परिभाषा तय करनी है। खाड़ी और उत्तरी अमेरिका के हेल्दी-स्नैक कारोबार में माँग बढ़ रही है।"
+      },
+      "destinations": ["us", "ae", "gb", "ca", "au", "sa"],
+      "priceNote": {
+        "en": "Graded, popped and vacuum-packed makhana earns several times the price of raw seed sold at the pond bank, and the Mithila Makhana GI tag adds to that.",
+        "hi": "श्रेणीबद्ध, फुलाया और वैक्यूम-पैक किया मखाना तालाब किनारे बिकने वाले कच्चे बीज से कई गुना भाव पाता है, और मिथिला मखाना जीआई टैग इसमें और जोड़ता है।"
+      },
+      "certifications": ["iec", "apeda_reg", "fssai", "gi_tag"],
+      "barriers": {
+        "en": "Popping is still hand work and grading is inconsistent, which is what keeps buyers cautious about large orders.",
+        "hi": "लावा बनाना अब भी हाथ का काम है और श्रेणीकरण एक-सा नहीं रहता — बड़े ऑर्डर पर खरीदारों की झिझक का यही कारण है।"
+      },
+      "resources": [
+        { "label": { "en": "Makhana Board / APEDA AgriExchange", "hi": "मखाना बोर्ड / एपीडा एग्रीएक्सचेंज" }, "url": "https://agriexchange.apeda.gov.in/" }
+      ]
+    },
+    {
+      "commodity": "organic_produce",
+      "label": { "en": "Certified organic produce", "hi": "प्रमाणित जैविक उपज" },
+      "indiaExportUsd": { "low": 450000000, "high": 750000000, "confidence": "reported", "source": "APEDA organic export statistics" },
+      "worldTradeUsd": { "low": 20000000000, "high": 30000000000, "confidence": "estimate", "source": "Cross-border organic trade; retail organic markets are far larger but mostly domestically supplied" },
+      "indiaShareNote": {
+        "en": "India has more certified organic farmers than any other country, and exports mainly oilseed cake, soybean, rice, tea, spices and medicinal plants. The certificate, not the farming practice, is what the premium is paid for.",
+        "hi": "प्रमाणित जैविक किसान भारत में किसी भी अन्य देश से ज़्यादा हैं, और निर्यात मुख्यतः तिलहन खली, सोयाबीन, चावल, चाय, मसालों और औषधीय पौधों का होता है। ऊँचा भाव खेती की पद्धति का नहीं, प्रमाणपत्र का मिलता है।"
+      },
+      "destinations": ["us", "de", "gb", "ca", "nl", "it", "au"],
+      "priceNote": {
+        "en": "The premium typically appears only from the third year, when the conversion period ends and the certificate is issued. Budget for two lean years before it.",
+        "hi": "ऊँचा भाव आमतौर पर तीसरे साल से ही मिलता है, जब परिवर्तन अवधि पूरी होती है और प्रमाणपत्र जारी होता है। उससे पहले के दो कमज़ोर सालों का हिसाब पहले से रखें।"
+      },
+      "certifications": ["iec", "apeda_reg", "npop", "residue"],
+      "barriers": {
+        "en": "Certification cost is only viable in a group. Join or form a farmer producer organisation and certify as a grower group under NPOP.",
+        "hi": "प्रमाणन का खर्च समूह में ही सधता है। किसान उत्पादक संगठन बनाएँ या उसमें जुड़ें और एनपीओपी के तहत उत्पादक समूह के रूप में प्रमाणन कराएँ।"
+      },
+      "resources": [
+        { "label": { "en": "APEDA – NPOP organic certification and TraceNet", "hi": "एपीडा – एनपीओपी जैविक प्रमाणन एवं ट्रेसनेट" }, "url": "https://apeda.gov.in/" }
+      ]
+    },
+    {
+      "commodity": "dried_produce",
+      "label": { "en": "Dehydrated fruit and vegetables", "hi": "निर्जलित फल एवं सब्ज़ियाँ" },
+      "indiaExportUsd": { "low": 120000000, "high": 250000000, "confidence": "reported", "source": "APEDA AgriExchange, dehydrated onion and other dried vegetables" },
+      "worldTradeUsd": { "low": 3000000000, "high": 4500000000, "confidence": "estimate", "source": "ITC Trade Map, HS 0712 and 0813" },
+      "indiaShareNote": {
+        "en": "India is a leading exporter of dehydrated onion and garlic, almost all of it from Gujarat. The same equipment dries mango, banana, tomato, ginger and chilli, so a dryer built for one crop is rarely idle.",
+        "hi": "निर्जलित प्याज़ और लहसुन का भारत बड़ा निर्यातक है, और लगभग पूरा माल गुजरात से आता है। वही मशीन आम, केला, टमाटर, अदरक और मिर्च भी सुखाती है, इसलिए एक फसल के लिए बना ड्रायर शायद ही खाली रहता है।"
+      },
+      "destinations": ["us", "ru", "de", "gb", "nl", "vn", "my"],
+      "priceNote": {
+        "en": "Colour retention and moisture below the buyer's specification decide the grade. Solar drying with a shade net beats open-sun drying on both counts.",
+        "hi": "श्रेणी रंग बचे रहने और खरीदार की तय सीमा से कम नमी पर तय होती है। शेड नेट के साथ सौर सुखाई दोनों मामलों में खुली धूप से बेहतर है।"
+      },
+      "certifications": ["iec", "apeda_reg", "fssai", "residue"],
+      "barriers": {
+        "en": "Microbial and moisture specifications are strict. Start by supplying an Indian processor before attempting to export directly.",
+        "hi": "सूक्ष्मजीव और नमी के मानक सख़्त हैं। सीधे निर्यात से पहले किसी भारतीय प्रसंस्करणकर्ता को आपूर्ति से शुरुआत करें।"
+      },
+      "resources": []
+    },
+    {
+      "commodity": "spice_powder",
+      "label": { "en": "Ground spices and blends", "hi": "पिसे मसाले एवं मिश्रण" },
+      "indiaExportUsd": { "low": 400000000, "high": 700000000, "confidence": "reported", "source": "Spices Board India, value-added spice categories" },
+      "worldTradeUsd": { "low": 4000000000, "high": 6000000000, "confidence": "estimate", "source": "ITC Trade Map, HS 0910.91 and 2103" },
+      "indiaShareNote": {
+        "en": "Value-added spice exports grow faster than whole-spice exports, and the buyer is often an Indian grocery chain abroad rather than a commodity trader. That makes it reachable for a small, well-branded unit.",
+        "hi": "मूल्यवर्धित मसाला निर्यात साबुत मसाले के निर्यात से तेज़ी से बढ़ता है, और खरीदार अक्सर कोई जिंस व्यापारी नहीं, विदेश की कोई भारतीय किराना शृंखला होती है। इससे यह एक छोटी, अच्छी ब्रांडिंग वाली इकाई की पहुँच में आ जाता है।"
+      },
+      "destinations": ["us", "gb", "ae", "ca", "au", "sa", "my"],
+      "priceNote": {
+        "en": "A retail pack sells for several times the bulk rate of the same spice, and the difference is packaging, labelling and a food-safety certificate.",
+        "hi": "उसी मसाले का खुदरा पैक थोक भाव से कई गुना बिकता है, और यह अंतर पैकेजिंग, लेबलिंग और खाद्य सुरक्षा प्रमाणपत्र का है।"
+      },
+      "certifications": ["iec", "spices_board_reg", "fssai", "halal", "residue"],
+      "barriers": {
+        "en": "Destination-country labelling rules — allergen declaration, nutrition panel, country of origin — are where first-time exporters usually fail.",
+        "hi": "गंतव्य देश के लेबलिंग नियम — एलर्जन घोषणा, पोषण पैनल, मूल देश — यहीं पहली बार निर्यात करने वाले आमतौर पर चूक जाते हैं।"
+      },
+      "resources": []
+    },
+    {
+      "commodity": "goat_meat",
+      "label": { "en": "Sheep and goat meat", "hi": "भेड़ एवं बकरी का मांस" },
+      "indiaExportUsd": { "low": 50000000, "high": 90000000, "confidence": "reported", "source": "APEDA AgriExchange" },
+      "worldTradeUsd": { "low": 6000000000, "high": 8000000000, "confidence": "estimate", "source": "ITC Trade Map, HS 0204" },
+      "indiaShareNote": {
+        "en": "India's share is small and goes almost entirely to the Gulf. For a farmer the practical route is supplying a registered abattoir, not exporting directly.",
+        "hi": "भारत का हिस्सा छोटा है और लगभग पूरा खाड़ी देशों को जाता है। किसान के लिए व्यावहारिक रास्ता सीधा निर्यात नहीं, किसी पंजीकृत बूचड़खाने को आपूर्ति करना है।"
+      },
+      "destinations": ["ae", "sa", "qa", "om", "kw", "bh"],
+      "priceNote": {
+        "en": "Live weight at nine to twelve months, and a clean deworming record, are what the abattoir pays for.",
+        "hi": "नौ से बारह महीने पर जीवित वज़न और कृमिनाशक का साफ़ रिकॉर्ड — बूचड़खाना इन्हीं के पैसे देता है।"
+      },
+      "certifications": ["iec", "apeda_reg", "halal", "fssai"],
+      "barriers": {
+        "en": "Export requires an APEDA-approved integrated abattoir. Treat the Gulf market as the reason prices stay firm, not as somewhere you will ship to yourself.",
+        "hi": "निर्यात के लिए एपीडा-अनुमोदित एकीकृत बूचड़खाना चाहिए। खाड़ी बाज़ार को उस कारण के रूप में देखें जिससे भाव मज़बूत रहते हैं, न कि उस जगह के रूप में जहाँ आप खुद माल भेजेंगे।"
+      },
+      "resources": []
+    },
+    {
+      "commodity": "fish",
+      "label": { "en": "Freshwater fish", "hi": "मीठे पानी की मछली" },
+      "indiaExportUsd": { "low": 200000000, "high": 400000000, "confidence": "estimate", "source": "MPEDA; India's large seafood export is mainly marine shrimp, not inland carp" },
+      "worldTradeUsd": { "low": 15000000000, "high": 20000000000, "confidence": "estimate", "source": "ITC Trade Map, freshwater fish lines" },
+      "indiaShareNote": {
+        "en": "Be clear-eyed here: India's big seafood export earnings come from marine shrimp, not from pond carp. Carp from an inland pond sells domestically, and the domestic market for it is strong and growing.",
+        "hi": "यहाँ साफ़ रहें: भारत की बड़ी समुद्री खाद्य निर्यात कमाई समुद्री झींगे से आती है, तालाब की कार्प से नहीं। अंतर्देशीय तालाब की कार्प घरेलू बाज़ार में बिकती है, और उसका घरेलू बाज़ार मज़बूत तथा बढ़ता हुआ है।"
+      },
+      "destinations": ["bd", "np", "ae", "us"],
+      "priceNote": {
+        "en": "Pangasius and tilapia have some processed-export potential; Indian major carp is a domestic product and should be planned as one.",
+        "hi": "पंगेसियस और तिलापिया में प्रसंस्कृत निर्यात की कुछ संभावना है; भारतीय प्रमुख कार्प घरेलू उत्पाद है और उसकी योजना उसी रूप में बनानी चाहिए।"
+      },
+      "certifications": ["iec", "fssai"],
+      "barriers": {
+        "en": "Cold chain and a processing plant are needed for any export. Build the business on local sales.",
+        "hi": "किसी भी निर्यात के लिए कोल्ड चेन और प्रसंस्करण संयंत्र चाहिए। व्यवसाय स्थानीय बिक्री पर ही खड़ा करें।"
+      },
+      "resources": [
+        { "label": { "en": "MPEDA – Marine Products Export Development Authority", "hi": "एमपीईडीए – समुद्री उत्पाद निर्यात विकास प्राधिकरण" }, "url": "https://mpeda.gov.in/" }
+      ]
+    },
+    {
+      "commodity": "dragon_fruit",
+      "label": { "en": "Dragon fruit", "hi": "ड्रैगन फ्रूट" },
+      "indiaExportUsd": { "low": 0, "high": 5000000, "confidence": "estimate", "source": "Negligible; India is currently a net importer" },
+      "worldTradeUsd": { "low": 600000000, "high": 1000000000, "confidence": "estimate", "source": "ITC Trade Map; Vietnam is the dominant supplier" },
+      "indiaShareNote": {
+        "en": "India imports dragon fruit today, mostly from Vietnam and Thailand. The opportunity is import substitution for Indian cities, not export — planting it in the hope of an export price would be a mistake.",
+        "hi": "आज भारत ड्रैगन फ्रूट आयात करता है, मुख्यतः वियतनाम और थाईलैंड से। अवसर निर्यात का नहीं, भारतीय शहरों के लिए आयात प्रतिस्थापन का है — निर्यात भाव की उम्मीद में इसे लगाना ग़लती होगी।"
+      },
+      "destinations": ["ae", "np", "bd"],
+      "priceNote": {
+        "en": "Domestic metro prices are already well above what the crop costs to grow. That is the real case for planting it.",
+        "hi": "घरेलू महानगरों के भाव पहले से ही इसकी उत्पादन लागत से काफ़ी ऊपर हैं। इसे लगाने का असली कारण यही है।"
+      },
+      "certifications": ["fssai"],
+      "barriers": {
+        "en": "No established export channel exists from India yet.",
+        "hi": "भारत से अभी कोई स्थापित निर्यात मार्ग है ही नहीं।"
+      },
+      "resources": []
+    },
+    {
+      "commodity": "coconut",
+      "label": { "en": "Coconut and coconut products", "hi": "नारियल एवं नारियल उत्पाद" },
+      "indiaExportUsd": { "low": 300000000, "high": 500000000, "confidence": "reported", "source": "Coconut Development Board and APEDA" },
+      "worldTradeUsd": { "low": 4000000000, "high": 6000000000, "confidence": "estimate", "source": "ITC Trade Map, HS 0801 and 1513" },
+      "indiaShareNote": {
+        "en": "The Philippines and Indonesia lead world coconut trade. India's export growth is in value-added lines — virgin coconut oil, desiccated coconut, coconut water, activated carbon — rather than in whole nuts.",
+        "hi": "विश्व नारियल व्यापार में फ़िलीपींस और इंडोनेशिया आगे हैं। भारत की निर्यात वृद्धि साबुत नारियल में नहीं, मूल्यवर्धित लाइनों में है — वर्जिन नारियल तेल, सूखा नारियल बुरादा, नारियल पानी, सक्रिय कार्बन।"
+      },
+      "destinations": ["us", "ae", "de", "gb", "my", "nl"],
+      "priceNote": {
+        "en": "A grower earns most by selling to a value-added processor rather than by selling copra at the board price.",
+        "hi": "उत्पादक की सबसे अच्छी कमाई बोर्ड भाव पर खोपरा बेचने से नहीं, किसी मूल्यवर्धन प्रसंस्करणकर्ता को बेचने से होती है।"
+      },
+      "certifications": ["iec", "apeda_reg", "fssai", "npop"],
+      "barriers": {
+        "en": "Whole nuts are a low-value bulk item. Anything worth exporting has been processed first.",
+        "hi": "साबुत नारियल कम मूल्य का थोक माल है। निर्यात लायक़ जो भी है, वह पहले प्रसंस्कृत हो चुका होता है।"
+      },
+      "resources": [
+        { "label": { "en": "Coconut Development Board", "hi": "नारियल विकास बोर्ड" }, "url": "https://coconutboard.gov.in/" }
+      ]
+    },
+    {
+      "commodity": "baby_corn",
+      "label": { "en": "Baby corn", "hi": "बेबी कॉर्न" },
+      "indiaExportUsd": { "low": 5000000, "high": 20000000, "confidence": "estimate", "source": "Reported within processed vegetable categories" },
+      "worldTradeUsd": { "low": 300000000, "high": 600000000, "confidence": "estimate", "source": "ITC Trade Map; Thailand is the dominant supplier" },
+      "indiaShareNote": {
+        "en": "Thailand supplies most of the world's canned baby corn. India's realistic market is domestic hotels, quick-service restaurants and organised retail, with export only through a canning unit.",
+        "hi": "दुनिया का अधिकांश डिब्बाबंद बेबी कॉर्न थाईलैंड देता है। भारत का व्यावहारिक बाज़ार घरेलू होटल, फ़ास्ट फ़ूड शृंखलाएँ और संगठित खुदरा है, और निर्यात केवल किसी कैनिंग इकाई के ज़रिए।"
+      },
+      "destinations": ["ae", "gb", "us", "sg"],
+      "priceNote": {
+        "en": "Picked within two days of silk emergence, graded to length, and delivered the same morning — that is what a hotel buyer pays a premium for.",
+        "hi": "रेशा निकलने के दो दिन के भीतर तुड़ाई, लंबाई से श्रेणीकरण, और उसी सुबह आपूर्ति — होटल का खरीदार इसी के ऊँचे पैसे देता है।"
+      },
+      "certifications": ["fssai", "iec"],
+      "barriers": {
+        "en": "Without a canning unit nearby, treat this as a domestic fresh-supply business.",
+        "hi": "पास में कैनिंग इकाई न हो तो इसे घरेलू ताज़ा आपूर्ति का व्यवसाय ही मानें।"
+      },
+      "resources": []
+    }
+  ]
+}

@@ -116,6 +116,12 @@ export function MyLandPage() {
             </div>
 
             <div className="parcel__side">
+              <Link
+                className="button button--primary button--small"
+                to={`/land/${parcel.id}/plan`}
+              >
+                {t('plan.seeOptions')}
+              </Link>
               <span className="badge" title={t('review.savedHelp')}>
                 {parcel.syncState === 'synced' ? '☁' : '💾'} {t('review.saved')}
               </span>

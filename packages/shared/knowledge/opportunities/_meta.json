@@ -1,0 +1,108 @@
+{
+  "key": "opportunities_meta",
+  "version": 1,
+  "currency": "INR",
+  "dataAsOf": "2026-09",
+  "basis": {
+    "en": "Cost and income figures are indicative planning ranges at 2026 price levels, assembled from NABARD model bankable project templates, state horticulture and animal-husbandry mission norms, and the usual district package of practices. They are a starting point for a conversation with a bank, not a quotation. Replace every figure with a local quotation and the local mandi price before filing a loan application.",
+    "hi": "यहाँ दी गई लागत और आमदनी 2026 के भावों पर अनुमानित सीमाएँ हैं, जो नाबार्ड की मॉडल परियोजनाओं, राज्य बागवानी तथा पशुपालन मिशन के मानकों और ज़िले की सामान्य कृषि पद्धति से जोड़ी गई हैं। ये बैंक से बातचीत शुरू करने के लिए हैं, कोई पक्का कोटेशन नहीं। ऋण आवेदन से पहले हर आँकड़ा स्थानीय कोटेशन और स्थानीय मंडी भाव से बदल लें।"
+  },
+  "regions": {
+    "indo_gangetic": ["3", "6", "9", "10", "19", "7", "4", "5"],
+    "arid_west": ["8", "24"],
+    "deccan": ["27", "29", "28", "36"],
+    "southern_humid": ["32", "33", "34", "30", "31", "35"],
+    "central_east": ["23", "22", "20", "21"],
+    "himalayan": ["1", "2", "5", "11", "37"],
+    "northeast": ["12", "13", "14", "15", "16", "17", "18"],
+    "coastal": ["24", "27", "30", "29", "32", "33", "28", "21", "19", "34", "38", "35", "31"],
+    "all_india": []
+  },
+  "kinds": [
+    { "code": "horticulture", "label": { "en": "Orchard / horticulture", "hi": "बागवानी" } },
+    { "code": "protected", "label": { "en": "Protected cultivation", "hi": "संरक्षित खेती" } },
+    { "code": "vegetable", "label": { "en": "Vegetables", "hi": "सब्ज़ी की खेती" } },
+    { "code": "spice", "label": { "en": "Spices / medicinal", "hi": "मसाले / औषधीय" } },
+    { "code": "field_crop", "label": { "en": "Field crop", "hi": "खेत की फसल" } },
+    { "code": "livestock", "label": { "en": "Livestock / allied", "hi": "पशुपालन / सहायक" } },
+    { "code": "processing", "label": { "en": "Processing unit", "hi": "प्रसंस्करण इकाई" } },
+    { "code": "service", "label": { "en": "Farm service business", "hi": "कृषि सेवा व्यवसाय" } }
+  ],
+  "riskLevels": [
+    { "code": "low", "label": { "en": "Low risk", "hi": "कम जोखिम" } },
+    { "code": "medium", "label": { "en": "Medium risk", "hi": "मध्यम जोखिम" } },
+    { "code": "high", "label": { "en": "High risk", "hi": "अधिक जोखिम" } }
+  ],
+  "schemes": [
+    {
+      "code": "midh",
+      "label": { "en": "MIDH – Mission for Integrated Development of Horticulture", "hi": "एमआईडीएच – एकीकृत बागवानी विकास मिशन" },
+      "url": "https://midh.gov.in/"
+    },
+    {
+      "code": "pmksy_pdmc",
+      "label": { "en": "PMKSY – Per Drop More Crop (micro-irrigation)", "hi": "पीएमकेएसवाई – प्रति बूँद अधिक फसल (सूक्ष्म सिंचाई)" },
+      "url": "https://pmksy.gov.in/"
+    },
+    {
+      "code": "agri_infra_fund",
+      "label": { "en": "Agriculture Infrastructure Fund (interest subvention)", "hi": "कृषि अवसंरचना कोष (ब्याज सहायता)" },
+      "url": "https://agriinfra.dac.gov.in/"
+    },
+    {
+      "code": "kcc",
+      "label": { "en": "Kisan Credit Card (working capital)", "hi": "किसान क्रेडिट कार्ड (कार्यशील पूँजी)" },
+      "url": "https://www.myscheme.gov.in/schemes/kcc"
+    },
+    {
+      "code": "rkvy",
+      "label": { "en": "RKVY – Rashtriya Krishi Vikas Yojana", "hi": "आरकेवीवाई – राष्ट्रीय कृषि विकास योजना" },
+      "url": "https://rkvy.da.gov.in/"
+    },
+    {
+      "code": "mgnrega_horticulture",
+      "label": { "en": "MGNREGA – orchard establishment on own land", "hi": "मनरेगा – अपनी ज़मीन पर बाग लगाना" },
+      "url": "https://nrega.nic.in/"
+    },
+    {
+      "code": "nlm",
+      "label": { "en": "National Livestock Mission – entrepreneurship subsidy", "hi": "राष्ट्रीय पशुधन मिशन – उद्यमिता अनुदान" },
+      "url": "https://nlm.udyamimitra.in/"
+    },
+    {
+      "code": "ahidf",
+      "label": { "en": "Animal Husbandry Infrastructure Development Fund", "hi": "पशुपालन अवसंरचना विकास कोष" },
+      "url": "https://ahidf.udyamimitra.in/"
+    },
+    {
+      "code": "pmmsy",
+      "label": { "en": "PMMSY – Pradhan Mantri Matsya Sampada Yojana", "hi": "पीएमएमएसवाई – प्रधानमंत्री मत्स्य संपदा योजना" },
+      "url": "https://pmmsy.dof.gov.in/"
+    },
+    {
+      "code": "pmfme",
+      "label": { "en": "PM-FME – micro food processing enterprises", "hi": "पीएम-एफएमई – सूक्ष्म खाद्य प्रसंस्करण उद्यम" },
+      "url": "https://pmfme.mofpi.gov.in/"
+    },
+    {
+      "code": "smam",
+      "label": { "en": "SMAM – farm mechanisation / custom hiring centre", "hi": "एसएमएएम – कृषि यंत्रीकरण / कस्टम हायरिंग केंद्र" },
+      "url": "https://agrimachinery.nic.in/"
+    },
+    {
+      "code": "pkvy",
+      "label": { "en": "PKVY – Paramparagat Krishi Vikas Yojana (organic)", "hi": "पीकेवीवाई – परंपरागत कृषि विकास योजना (जैविक)" },
+      "url": "https://pgsindia-ncof.gov.in/"
+    },
+    {
+      "code": "nbhm",
+      "label": { "en": "National Beekeeping and Honey Mission", "hi": "राष्ट्रीय मधुमक्खी पालन एवं शहद मिशन" },
+      "url": "https://nbb.gov.in/"
+    },
+    {
+      "code": "apeda_taf",
+      "label": { "en": "APEDA – transport and market development assistance", "hi": "एपीडा – परिवहन एवं बाज़ार विकास सहायता" },
+      "url": "https://apeda.gov.in/"
+    }
+  ]
+}

@@ -29,3 +29,11 @@ data/lgd/dump/
 # os
 Thumbs.db
 .DS_Store
+
+# Fonts fetched by scripts/fetch_fonts.py, and the faces extracted from the
+# Windows-bundled Nirmala UI collection. Both are reproducible on any machine
+# and neither belongs in the repository.
+/data/fonts/
+
+# Generated project reports are a farmer's own records, not source.
+/apps/api/data/reports/

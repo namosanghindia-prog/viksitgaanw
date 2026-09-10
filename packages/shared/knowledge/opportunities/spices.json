@@ -1,0 +1,297 @@
+[
+  {
+    "code": "turmeric_improved",
+    "kind": "spice",
+    "label": { "en": "Turmeric with on-farm boiling and polishing", "hi": "हल्दी – खेत पर उबालने और पॉलिश सहित" },
+    "summary": {
+      "en": "Turmeric already grows across most of India; the money is in not selling it raw. Boiling, drying and polishing on the farm roughly doubles what the same crop fetches, and dry turmeric keeps for a year, so you can wait for a better price.",
+      "hi": "हल्दी वैसे तो देश के अधिकांश हिस्सों में होती है; असली कमाई इसे कच्चा न बेचने में है। खेत पर ही उबालने, सुखाने और पॉलिश करने से उसी फसल का दाम लगभग दोगुना हो जाता है, और सूखी हल्दी साल भर रखी जा सकती है, इसलिए बेहतर भाव का इंतज़ार भी किया जा सकता है।"
+    },
+    "fit": {
+      "soilTypes": ["loamy", "alluvial", "red", "black", "laterite", "clayey"],
+      "avoidSoilTypes": ["sandy", "saline_alkaline", "peaty_marshy"],
+      "regions": ["all_india"],
+      "excludeStates": ["37", "8"],
+      "waterNeed": "medium",
+      "salinityTolerance": "low",
+      "requiresIrrigation": true,
+      "preferredIrrigation": ["drip", "furrow", "flood", "sprinkler"],
+      "maxWaterDepthMetres": 150
+    },
+    "sizing": { "mode": "area", "minHa": 0.2, "maxHa": 10 },
+    "economics": {
+      "capex": { "low": 60000, "high": 140000 },
+      "opexPerYear": { "low": 165000, "high": 250000 },
+      "revenuePerYear": { "low": 320000, "high": 620000 },
+      "gestationMonths": 9,
+      "fullYieldYear": 1,
+      "projectLifeYears": 8,
+      "riskLevel": "medium",
+      "labourDaysPerYear": 230
+    },
+    "export": { "potential": "strong", "commodity": "turmeric" },
+    "schemes": ["midh", "pmfme", "pmksy_pdmc", "kcc"],
+    "resources": [
+      { "label": { "en": "Spices Board India", "hi": "भारतीय मसाला बोर्ड" }, "url": "https://www.indianspices.com/" },
+      { "label": { "en": "ICAR-Indian Institute of Spices Research", "hi": "आईसीएआर-भारतीय मसाला अनुसंधान संस्थान" }, "url": "https://spices.icar.gov.in/" }
+    ]
+  },
+  {
+    "code": "ginger_upland",
+    "kind": "spice",
+    "label": { "en": "Ginger on upland / sloping land", "hi": "ऊँची और ढलान वाली ज़मीन पर अदरक" },
+    "summary": {
+      "en": "Ginger pays very well in a good year and can lose money in a bad one — seed rhizome alone is the largest single cost of any crop here. It suits well-drained upland with shade, and rhizome rot is the risk to plan against.",
+      "hi": "अच्छे साल में अदरक बहुत मुनाफ़ा देता है और बुरे साल में नुक़सान भी करा सकता है — अकेला बीज-प्रकंद ही यहाँ की सभी फसलों में सबसे बड़ा खर्च है। अच्छे निकास वाली, कुछ छाया वाली ऊँची ज़मीन इसके लिए ठीक है, और प्रकंद सड़न से बचाव की तैयारी ज़रूरी है।"
+    },
+    "fit": {
+      "soilTypes": ["loamy", "laterite", "red", "mountain_forest", "alluvial"],
+      "avoidSoilTypes": ["clayey", "saline_alkaline", "peaty_marshy", "sandy"],
+      "regions": ["southern_humid", "northeast", "himalayan", "central_east"],
+      "alsoStates": ["29", "27"],
+      "waterNeed": "medium",
+      "salinityTolerance": "low",
+      "requiresIrrigation": false,
+      "preferredIrrigation": ["sprinkler", "drip", "rainfed"],
+      "maxWaterDepthMetres": 150
+    },
+    "sizing": { "mode": "area", "minHa": 0.1, "maxHa": 6 },
+    "economics": {
+      "capex": { "low": 40000, "high": 90000 },
+      "opexPerYear": { "low": 260000, "high": 380000 },
+      "revenuePerYear": { "low": 450000, "high": 900000 },
+      "gestationMonths": 8,
+      "fullYieldYear": 1,
+      "projectLifeYears": 6,
+      "riskLevel": "high",
+      "labourDaysPerYear": 260
+    },
+    "export": { "potential": "strong", "commodity": "ginger" },
+    "schemes": ["midh", "pmfme", "kcc"],
+    "resources": [
+      { "label": { "en": "ICAR-Indian Institute of Spices Research", "hi": "आईसीएआर-भारतीय मसाला अनुसंधान संस्थान" }, "url": "https://spices.icar.gov.in/" },
+      { "label": { "en": "Spices Board India", "hi": "भारतीय मसाला बोर्ड" }, "url": "https://www.indianspices.com/" }
+    ]
+  },
+  {
+    "code": "chilli_hybrid",
+    "kind": "spice",
+    "label": { "en": "Hybrid chilli for dry-chilli sale", "hi": "सूखी मिर्च के लिए हाइब्रिड मिर्च" },
+    "summary": {
+      "en": "Chilli dried on the farm stores for months and travels well, so you are not forced to sell on harvest day. Prices swing hard from year to year, so treat one good season as a reason to build a store, not to expand the area.",
+      "hi": "खेत पर सुखाई गई मिर्च महीनों टिकती है और दूर तक भेजी जा सकती है, इसलिए तुड़ाई के दिन ही बेचने की मजबूरी नहीं रहती। भाव साल-दर-साल बहुत ऊपर-नीचे होते हैं, इसलिए एक अच्छे साल को रकबा बढ़ाने का नहीं, भंडार बनाने का कारण मानें।"
+    },
+    "fit": {
+      "soilTypes": ["black", "red", "loamy", "alluvial", "laterite"],
+      "avoidSoilTypes": ["peaty_marshy", "saline_alkaline"],
+      "regions": ["deccan", "central_east", "indo_gangetic", "southern_humid"],
+      "waterNeed": "medium",
+      "salinityTolerance": "low",
+      "requiresIrrigation": true,
+      "preferredIrrigation": ["drip", "furrow", "flood"],
+      "maxWaterDepthMetres": 180
+    },
+    "sizing": { "mode": "area", "minHa": 0.2, "maxHa": 12 },
+    "economics": {
+      "capex": { "low": 35000, "high": 80000 },
+      "opexPerYear": { "low": 145000, "high": 230000 },
+      "revenuePerYear": { "low": 280000, "high": 620000 },
+      "gestationMonths": 6,
+      "fullYieldYear": 1,
+      "projectLifeYears": 6,
+      "riskLevel": "high",
+      "labourDaysPerYear": 250
+    },
+    "export": { "potential": "strong", "commodity": "chilli" },
+    "schemes": ["midh", "pmksy_pdmc", "kcc", "pmfme"],
+    "resources": [
+      { "label": { "en": "Spices Board India", "hi": "भारतीय मसाला बोर्ड" }, "url": "https://www.indianspices.com/" },
+      { "label": { "en": "AGMARKNET – daily mandi prices", "hi": "एगमार्कनेट – रोज़ के मंडी भाव" }, "url": "https://agmarknet.gov.in/" }
+    ]
+  },
+  {
+    "code": "cumin_arid",
+    "kind": "spice",
+    "label": { "en": "Cumin in the dry rabi season", "hi": "सूखे रबी मौसम में जीरा" },
+    "summary": {
+      "en": "Cumin is a short, low-cost rabi crop for dry western India that needs only two or three irrigations and finishes in about 110 days. It is very sensitive to cloud and dew at flowering, so keep the area modest and do not borrow heavily against it.",
+      "hi": "जीरा पश्चिमी भारत के सूखे इलाक़ों की छोटी, कम लागत वाली रबी फसल है — केवल दो-तीन सिंचाई चाहिए और लगभग 110 दिन में तैयार हो जाती है। फूल आते समय बादल और ओस से यह बहुत जल्दी बिगड़ती है, इसलिए रकबा सीमित रखें और इस पर भारी कर्ज़ न लें।"
+    },
+    "fit": {
+      "soilTypes": ["sandy", "loamy", "alluvial"],
+      "avoidSoilTypes": ["clayey", "peaty_marshy", "laterite"],
+      "regions": ["arid_west"],
+      "waterNeed": "low",
+      "salinityTolerance": "medium",
+      "requiresIrrigation": true,
+      "preferredIrrigation": ["sprinkler", "flood", "furrow"],
+      "maxWaterDepthMetres": 250
+    },
+    "sizing": { "mode": "area", "minHa": 0.4, "maxHa": 20 },
+    "economics": {
+      "capex": { "low": 15000, "high": 40000 },
+      "opexPerYear": { "low": 48000, "high": 80000 },
+      "revenuePerYear": { "low": 110000, "high": 280000 },
+      "gestationMonths": 4,
+      "fullYieldYear": 1,
+      "projectLifeYears": 6,
+      "riskLevel": "high",
+      "labourDaysPerYear": 90
+    },
+    "export": { "potential": "strong", "commodity": "cumin" },
+    "schemes": ["kcc", "pmksy_pdmc", "rkvy"],
+    "resources": [
+      { "label": { "en": "ICAR-National Research Centre on Seed Spices", "hi": "आईसीएआर-राष्ट्रीय बीज मसाला अनुसंधान केंद्र" }, "url": "https://nrcss.icar.gov.in/" },
+      { "label": { "en": "Spices Board India", "hi": "भारतीय मसाला बोर्ड" }, "url": "https://www.indianspices.com/" }
+    ]
+  },
+  {
+    "code": "ashwagandha",
+    "kind": "spice",
+    "label": { "en": "Ashwagandha (medicinal root)", "hi": "अश्वगंधा (औषधीय जड़)" },
+    "summary": {
+      "en": "Ashwagandha is a hardy rainfed crop for dry, light land that finishes in about 160 days and sells to ayurvedic and nutraceutical buyers rather than to the mandi. Fix your buyer before you sow — that, not the growing, is the hard part.",
+      "hi": "अश्वगंधा सूखी, हल्की ज़मीन की मज़बूत बारानी फसल है, लगभग 160 दिन में तैयार होती है, और मंडी के बजाय आयुर्वेदिक तथा न्यूट्रास्युटिकल खरीदारों को बिकती है। बोने से पहले खरीदार तय कर लें — कठिन काम उगाना नहीं, यही है।"
+    },
+    "fit": {
+      "soilTypes": ["sandy", "red", "loamy", "black", "laterite"],
+      "avoidSoilTypes": ["clayey", "peaty_marshy"],
+      "regions": ["arid_west", "central_east", "deccan"],
+      "alsoStates": ["9"],
+      "waterNeed": "low",
+      "salinityTolerance": "medium",
+      "requiresIrrigation": false,
+      "preferredIrrigation": ["rainfed", "sprinkler"],
+      "maxWaterDepthMetres": 300
+    },
+    "sizing": { "mode": "area", "minHa": 0.2, "maxHa": 15 },
+    "economics": {
+      "capex": { "low": 12000, "high": 35000 },
+      "opexPerYear": { "low": 45000, "high": 75000 },
+      "revenuePerYear": { "low": 120000, "high": 240000 },
+      "gestationMonths": 6,
+      "fullYieldYear": 1,
+      "projectLifeYears": 6,
+      "riskLevel": "medium",
+      "labourDaysPerYear": 100
+    },
+    "export": { "potential": "strong", "commodity": "ashwagandha" },
+    "schemes": ["pkvy", "rkvy", "kcc"],
+    "resources": [
+      { "label": { "en": "National Medicinal Plants Board", "hi": "राष्ट्रीय औषधीय पादप बोर्ड" }, "url": "https://nmpb.nic.in/" },
+      { "label": { "en": "ICAR-Directorate of Medicinal and Aromatic Plants Research", "hi": "आईसीएआर-औषधीय एवं सुगंधित पादप अनुसंधान निदेशालय" }, "url": "https://dmapr.icar.gov.in/" }
+    ]
+  },
+  {
+    "code": "lemongrass_oil",
+    "kind": "spice",
+    "label": { "en": "Lemongrass with an oil still", "hi": "लेमनग्रास और तेल आसवन इकाई" },
+    "summary": {
+      "en": "Lemongrass grows on land nobody else wants — salty, sloping, stony, barely irrigated — and is cut four times a year for five years from one planting. Distilled on the spot, the oil is light, keeps well and sells by weight, so distance to market stops mattering.",
+      "hi": "लेमनग्रास उस ज़मीन पर भी हो जाती है जिसे कोई नहीं लेता — खारी, ढलान वाली, पथरीली, बहुत कम सिंचाई वाली — और एक बार लगाने पर पाँच साल तक साल में चार कटाई देती है। वहीं आसवन करने पर तेल हल्का होता है, लंबे समय तक टिकता है और वज़न से बिकता है, इसलिए मंडी की दूरी मायने नहीं रखती।"
+    },
+    "fit": {
+      "soilTypes": ["red", "laterite", "sandy", "loamy", "saline_alkaline", "mountain_forest", "black"],
+      "avoidSoilTypes": ["peaty_marshy"],
+      "regions": ["all_india"],
+      "excludeStates": ["37"],
+      "waterNeed": "low",
+      "salinityTolerance": "high",
+      "requiresIrrigation": false,
+      "preferredIrrigation": ["rainfed", "sprinkler", "flood"],
+      "maxWaterDepthMetres": 300
+    },
+    "sizing": { "mode": "area", "minHa": 0.4, "maxHa": 20 },
+    "economics": {
+      "capex": { "low": 160000, "high": 300000 },
+      "opexPerYear": { "low": 70000, "high": 120000 },
+      "revenuePerYear": { "low": 180000, "high": 340000 },
+      "gestationMonths": 6,
+      "fullYieldYear": 2,
+      "projectLifeYears": 6,
+      "riskLevel": "medium",
+      "labourDaysPerYear": 140
+    },
+    "export": { "potential": "strong", "commodity": "essential_oil" },
+    "schemes": ["pmfme", "rkvy", "agri_infra_fund", "pkvy"],
+    "resources": [
+      { "label": { "en": "CSIR-CIMAP Aroma Mission", "hi": "सीएसआईआर-सीमैप सुगंध मिशन" }, "url": "https://www.cimap.res.in/" },
+      { "label": { "en": "National Medicinal Plants Board", "hi": "राष्ट्रीय औषधीय पादप बोर्ड" }, "url": "https://nmpb.nic.in/" }
+    ]
+  },
+  {
+    "code": "moringa_drumstick",
+    "kind": "spice",
+    "label": { "en": "Moringa for pods and leaf powder", "hi": "सहजन – फली और पत्ती चूर्ण के लिए" },
+    "summary": {
+      "en": "Moringa survives drought, starts giving pods within a year, and has a second market in dried leaf powder that exporters buy by the tonne. It is one of the few crops that suits genuinely poor, dry land and still reaches a foreign buyer.",
+      "hi": "सहजन सूखा सह लेता है, एक साल के भीतर फली देने लगता है, और सूखी पत्ती के चूर्ण का दूसरा बाज़ार भी है जिसे निर्यातक टन के हिसाब से खरीदते हैं। यह उन गिनी-चुनी फसलों में है जो सचमुच कमज़ोर, सूखी ज़मीन पर भी चलती है और विदेशी खरीदार तक भी पहुँचती है।"
+    },
+    "fit": {
+      "soilTypes": ["red", "sandy", "loamy", "laterite", "black", "alluvial"],
+      "avoidSoilTypes": ["peaty_marshy", "clayey"],
+      "regions": ["deccan", "southern_humid", "arid_west", "central_east"],
+      "alsoStates": ["9", "23"],
+      "waterNeed": "low",
+      "salinityTolerance": "high",
+      "requiresIrrigation": false,
+      "preferredIrrigation": ["drip", "rainfed", "flood"],
+      "maxWaterDepthMetres": 300
+    },
+    "sizing": { "mode": "area", "minHa": 0.2, "maxHa": 15 },
+    "economics": {
+      "capex": { "low": 80000, "high": 150000 },
+      "opexPerYear": { "low": 60000, "high": 105000 },
+      "revenuePerYear": { "low": 250000, "high": 500000 },
+      "gestationMonths": 10,
+      "fullYieldYear": 2,
+      "projectLifeYears": 8,
+      "riskLevel": "low",
+      "labourDaysPerYear": 150
+    },
+    "export": { "potential": "strong", "commodity": "moringa" },
+    "schemes": ["midh", "pkvy", "pmfme", "rkvy"],
+    "resources": [
+      { "label": { "en": "APEDA – organic and value-added exports", "hi": "एपीडा – जैविक एवं मूल्यवर्धित निर्यात" }, "url": "https://apeda.gov.in/" },
+      { "label": { "en": "ICAR-Indian Institute of Horticultural Research", "hi": "आईसीएआर-भारतीय बागवानी अनुसंधान संस्थान" }, "url": "https://iihr.res.in/" }
+    ]
+  },
+  {
+    "code": "black_pepper_intercrop",
+    "kind": "spice",
+    "label": { "en": "Black pepper trained on existing trees", "hi": "मौजूदा पेड़ों पर काली मिर्च" },
+    "summary": {
+      "en": "Pepper vines climb the coconut, arecanut or silver-oak trees you already have, so they cost you no extra land and almost no extra water. It is close to free income on a garden that is already standing.",
+      "hi": "काली मिर्च की बेल आपके पहले से लगे नारियल, सुपारी या सिल्वर ओक के पेड़ों पर चढ़ जाती है, इसलिए न अतिरिक्त ज़मीन लगती है और न लगभग कोई अतिरिक्त पानी। पहले से खड़े बाग पर यह लगभग मुफ़्त की आमदनी है।"
+    },
+    "fit": {
+      "soilTypes": ["laterite", "loamy", "red", "mountain_forest"],
+      "avoidSoilTypes": ["sandy", "saline_alkaline", "peaty_marshy", "clayey"],
+      "regions": ["southern_humid", "northeast"],
+      "alsoStates": ["29"],
+      "waterNeed": "medium",
+      "salinityTolerance": "low",
+      "requiresIrrigation": false,
+      "preferredIrrigation": ["drip", "rainfed"],
+      "maxWaterDepthMetres": 150,
+      "requiresExistingCrops": ["coconut", "arecanut"]
+    },
+    "sizing": { "mode": "area", "minHa": 0.2, "maxHa": 10 },
+    "economics": {
+      "capex": { "low": 110000, "high": 200000 },
+      "opexPerYear": { "low": 50000, "high": 90000 },
+      "revenuePerYear": { "low": 250000, "high": 600000 },
+      "gestationMonths": 36,
+      "fullYieldYear": 6,
+      "projectLifeYears": 20,
+      "riskLevel": "medium",
+      "labourDaysPerYear": 120
+    },
+    "export": { "potential": "strong", "commodity": "black_pepper" },
+    "schemes": ["midh", "pkvy", "rkvy"],
+    "resources": [
+      { "label": { "en": "ICAR-Indian Institute of Spices Research", "hi": "आईसीएआर-भारतीय मसाला अनुसंधान संस्थान" }, "url": "https://spices.icar.gov.in/" },
+      { "label": { "en": "Spices Board India", "hi": "भारतीय मसाला बोर्ड" }, "url": "https://www.indianspices.com/" }
+    ]
+  }
+]

@@ -1,0 +1,30 @@
+{
+  "key": "languages",
+  "version": 1,
+  "note": "The 22 languages of the Eighth Schedule of the Constitution, plus English. 'script' is the ISO 15924 code used to pick a PDF font. 'endonym' is the language's own name, which is what a farmer will recognise in a picker.",
+  "items": [
+    { "code": "en", "script": "Latn", "rtl": false, "endonym": "English",   "label": { "en": "English",   "hi": "अंग्रेज़ी" } },
+    { "code": "hi", "script": "Deva", "rtl": false, "endonym": "हिन्दी",     "label": { "en": "Hindi",     "hi": "हिन्दी" } },
+    { "code": "bn", "script": "Beng", "rtl": false, "endonym": "বাংলা",      "label": { "en": "Bengali",   "hi": "बांग्ला" } },
+    { "code": "mr", "script": "Deva", "rtl": false, "endonym": "मराठी",      "label": { "en": "Marathi",   "hi": "मराठी" } },
+    { "code": "te", "script": "Telu", "rtl": false, "endonym": "తెలుగు",     "label": { "en": "Telugu",    "hi": "तेलुगु" } },
+    { "code": "ta", "script": "Taml", "rtl": false, "endonym": "தமிழ்",      "label": { "en": "Tamil",     "hi": "तमिल" } },
+    { "code": "gu", "script": "Gujr", "rtl": false, "endonym": "ગુજરાતી",    "label": { "en": "Gujarati",  "hi": "गुजराती" } },
+    { "code": "kn", "script": "Knda", "rtl": false, "endonym": "ಕನ್ನಡ",      "label": { "en": "Kannada",   "hi": "कन्नड़" } },
+    { "code": "ml", "script": "Mlym", "rtl": false, "endonym": "മലയാളം",     "label": { "en": "Malayalam", "hi": "मलयालम" } },
+    { "code": "pa", "script": "Guru", "rtl": false, "endonym": "ਪੰਜਾਬੀ",     "label": { "en": "Punjabi",   "hi": "पंजाबी" } },
+    { "code": "or", "script": "Orya", "rtl": false, "endonym": "ଓଡ଼ିଆ",      "label": { "en": "Odia",      "hi": "ओड़िया" } },
+    { "code": "as", "script": "Beng", "rtl": false, "endonym": "অসমীয়া",    "label": { "en": "Assamese",  "hi": "असमिया" } },
+    { "code": "ur", "script": "Arab", "rtl": true,  "endonym": "اردو",       "label": { "en": "Urdu",      "hi": "उर्दू" } },
+    { "code": "ks", "script": "Arab", "rtl": true,  "endonym": "کٲشُر",      "label": { "en": "Kashmiri",  "hi": "कश्मीरी" } },
+    { "code": "sd", "script": "Arab", "rtl": true,  "endonym": "سنڌي",       "label": { "en": "Sindhi",    "hi": "सिंधी" } },
+    { "code": "ne", "script": "Deva", "rtl": false, "endonym": "नेपाली",     "label": { "en": "Nepali",    "hi": "नेपाली" } },
+    { "code": "kok","script": "Deva", "rtl": false, "endonym": "कोंकणी",     "label": { "en": "Konkani",   "hi": "कोंकणी" } },
+    { "code": "mai","script": "Deva", "rtl": false, "endonym": "मैथिली",     "label": { "en": "Maithili",  "hi": "मैथिली" } },
+    { "code": "doi","script": "Deva", "rtl": false, "endonym": "डोगरी",      "label": { "en": "Dogri",     "hi": "डोगरी" } },
+    { "code": "sa", "script": "Deva", "rtl": false, "endonym": "संस्कृतम्",  "label": { "en": "Sanskrit",  "hi": "संस्कृत" } },
+    { "code": "brx","script": "Deva", "rtl": false, "endonym": "बर’",        "label": { "en": "Bodo",      "hi": "बोड़ो" } },
+    { "code": "sat","script": "Olck", "rtl": false, "endonym": "ᱥᱟᱱᱛᱟᱲᱤ",    "label": { "en": "Santali",   "hi": "संताली" } },
+    { "code": "mni","script": "Beng", "rtl": false, "endonym": "মৈতৈলোন্",   "label": { "en": "Manipuri",  "hi": "मणिपुरी" } }
+  ]
+}
