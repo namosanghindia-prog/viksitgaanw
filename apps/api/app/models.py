@@ -1341,3 +1341,32 @@ class ProjectInvite(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
     responded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, onupdate=_now)
+
+
+class SubscriptionPayment(Base):
+    """A payment the owner started for a subscription: their receipt.
+
+    The sync server is the record of what was paid -- it alone talks to the
+    payment provider, and a device cannot mark itself paid. This copy is so the
+    owner can see their payments offline, and so each one that goes through is
+    an ``app_events`` entry. It never leaves the device.
+    """
+
+    __tablename__ = "subscription_payments"
+
+    #: The server's payment id (also the provider's reference id).
+    id: Mapped[str] = mapped_column(String(40), primary_key=True)
+    plan: Mapped[str] = mapped_column(String(32), nullable=False)
+    plan_name: Mapped[str] = mapped_column(String(120), nullable=False)
+    amount_paise: Mapped[int] = mapped_column(Integer, nullable=False)
+    months: Mapped[int] = mapped_column(Integer, nullable=False)
+    #: The payment page, to open again while the payment is still open.
+    url: Mapped[str | None] = mapped_column(Text)
+    #: created | paid | expired | cancelled
+    status: Mapped[str] = mapped_column(String(16), default="created", nullable=False, index=True)
+    #: The subscription's last day once this payment counted.
+    until: Mapped[date | None] = mapped_column(Date)
+    expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    paid_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, onupdate=_now)

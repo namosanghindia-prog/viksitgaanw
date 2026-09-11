@@ -78,6 +78,10 @@ class EventType:
     #: A subscriber's direct upload: the unit paid video hosting is metered by.
     VIDEO_UPLOAD_STARTED = "video.upload_started"
     VIDEO_UPLOADED = "video.uploaded"
+    #: The owner opened a payment page for a subscription plan.
+    SUBSCRIPTION_CHECKOUT = "subscription.checkout_started"
+    #: A subscription payment went through: revenue, with the amount in paise.
+    SUBSCRIPTION_PAID = "subscription.paid"
     #: A farmer put a project in front of an investor they found.
     INVITE_SENT = "project_invite.sent"
     INVITE_DECLINED = "project_invite.declined"

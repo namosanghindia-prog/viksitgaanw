@@ -55,6 +55,7 @@ from ..models import (
     ProjectReport,
     Rating,
     SchemeApplication,
+    SubscriptionPayment,
     VideoUpload,
 )
 from ..schemas import BackupOut
@@ -275,6 +276,7 @@ def export(session: Session, owner: Profile) -> dict[str, Any]:
             ProjectInvite, ProjectInvite.farmer_profile_id == owner.id, ProjectInvite.investor_profile_id == owner.id
         ),
         "video_uploads": rows(VideoUpload, VideoUpload.id.isnot(None)),
+        "subscription_payments": rows(SubscriptionPayment, SubscriptionPayment.id.isnot(None)),
     }
     record_event(session, EventType.DATA_EXPORTED, entity_type="profile", entity_id=owner.id)
     return data
@@ -321,6 +323,9 @@ def erase(session: Session, owner: Profile, confirm: str) -> dict[str, int]:
     for upload in session.scalars(select(VideoUpload)):
         videos.upload_path(upload).unlink(missing_ok=True)
         session.delete(upload)
+    # The receipts go; the sync server keeps its own record of what was paid.
+    for receipt in session.scalars(select(SubscriptionPayment)):
+        session.delete(receipt)
     if parcel_ids:
         for report in session.scalars(select(ProjectReport).where(ProjectReport.parcel_id.in_(parcel_ids))):
             try:

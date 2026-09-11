@@ -27,6 +27,7 @@ import { InsightsPage } from './pages/InsightsPage';
 import { MessagesPage, ThreadPage } from './pages/MessagesPage';
 import { PricesPage } from './pages/PricesPage';
 import { SchemesPage } from './pages/SchemesPage';
+import { SubscriptionPage } from './pages/SubscriptionPage';
 import { MachineFormPage } from './pages/MachineFormPage';
 import { MachinesPage } from './pages/MachinesPage';
 import { MyMachinesPage } from './pages/MyMachinesPage';
@@ -99,6 +100,7 @@ function moreFor(profile: Profile): MenuEntry[] {
   entries.push({ to: '/prices', label: 'nav.prices', icon: '📈' });
   if (seesSchemes(profile)) entries.push({ to: '/schemes', label: 'nav.schemes', icon: '🏛️' });
   entries.push({ to: '/insights', label: 'nav.insights', icon: '📊' });
+  entries.push({ to: '/subscription', label: 'nav.subscription', icon: '⭐' });
   entries.push({ to: '/settings', label: 'nav.myData', icon: '💾' });
   return entries;
 }
@@ -217,6 +219,7 @@ export function App() {
             <Route path="/prices" element={<PricesPage />} />
             <Route path="/insights" element={<InsightsPage />} />
             <Route path="/settings" element={<DataPage />} />
+            <Route path="/subscription" element={<SubscriptionPage />} />
             {seesSchemes(profile) ? <Route path="/schemes" element={<SchemesPage />} /> : null}
             {makesDeals(profile) ? (
               <>

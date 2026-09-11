@@ -2881,6 +2881,81 @@ code {
 }
 
 /* ------------------------------------------------------------------ *
+ * Subscription
+ * ------------------------------------------------------------------ */
+
+.sub-status {
+  gap: 6px;
+}
+
+.sub-status p {
+  margin: 0;
+}
+
+.sub-status__line {
+  font-size: 1.15rem;
+  font-weight: 600;
+}
+
+.sub-waiting {
+  border: 2px solid var(--leaf);
+  background: var(--leaf-light);
+}
+
+.plan-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+  margin: 14px 0 8px;
+}
+
+.plan-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 18px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow);
+}
+
+.plan-card__name {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.plan-card__price {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--leaf-dark);
+}
+
+.plan-card .button {
+  margin-top: auto;
+}
+
+.receipts {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.receipts__row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.receipts__row:last-child {
+  border-bottom: none;
+}
+
+/* ------------------------------------------------------------------ *
  * Phone width
  * ------------------------------------------------------------------ */
 

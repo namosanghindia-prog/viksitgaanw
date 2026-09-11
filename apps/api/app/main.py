@@ -34,6 +34,7 @@ from .routers import (
     profiles,
     reports,
     social,
+    subscription,
     sync,
     tiles,
     trust,
@@ -93,6 +94,7 @@ def create_app() -> FastAPI:
     app.include_router(social.router, prefix=API_PREFIX)
     app.include_router(videos.router, prefix=API_PREFIX)
     app.include_router(directory.router, prefix=API_PREFIX)
+    app.include_router(subscription.router, prefix=API_PREFIX)
 
     @app.get("/", include_in_schema=False)
     def root() -> dict[str, str]:

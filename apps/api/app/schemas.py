@@ -2394,6 +2394,54 @@ class VideoPlanOut(ApiModel):
 
 
 # --------------------------------------------------------------------------- #
+# Paying for a subscription
+# --------------------------------------------------------------------------- #
+
+
+class PlanOut(ApiModel):
+    """A plan on sale, as the sync server's operator priced it."""
+
+    code: str
+    name: str
+    #: In paise, so no rupee amount is ever a float.
+    amount_paise: int
+    months: int
+
+
+class PaymentOut(ApiModel):
+    id: str
+    plan: str
+    plan_name: str
+    amount_paise: int
+    months: int
+    #: The payment page. Only while the payment can still be made.
+    url: str | None = None
+    status: Literal["created", "paid", "expired", "cancelled"]
+    #: The subscription's last day once this payment counted.
+    until: date | None = None
+    expires_at: datetime | None = None
+    created_at: datetime
+    paid_at: datetime | None = None
+
+
+class SubscriptionOut(ApiModel):
+    """The owner's subscription, what they can buy, and what they paid."""
+
+    status: VideoPlanOut
+    #: Whether the server takes payments at all.
+    payments_available: bool = False
+    plans: list[PlanOut] = Field(default_factory=list)
+    payments: list[PaymentOut] = Field(default_factory=list)
+    #: Why nothing can be bought right now: sync_off | offline | no_profile |
+    #: payments_off | no_plans | no_end | None.
+    reason: str | None = None
+
+
+class CheckoutInput(ApiModel):
+    plan: str = Field(min_length=1, max_length=32)
+
+
+# --------------------------------------------------------------------------- #
 # Finding investors and farmers
 # --------------------------------------------------------------------------- #
 

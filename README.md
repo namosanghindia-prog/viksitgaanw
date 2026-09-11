@@ -68,7 +68,7 @@ The download is ~10 MB and the import takes about a minute, producing a
 ```bash
 npm run api          # local FastAPI backend on 127.0.0.1:8756 (docs at /docs)
 npm run dev:web      # Vite dev server on 127.0.0.1:5273, in a normal browser
-cd apps/api && python -m pytest    # API test suite (470 tests)
+cd apps/api && python -m pytest    # API test suite (488 tests)
 npm run typecheck    # TypeScript
 npm run build        # production frontend build
 python scripts/check_translations.py   # report translation coverage
@@ -209,6 +209,12 @@ python scripts/import_mandi_prices.py --fetch --api-key <key>   # data.gov.in
   who shared their profile, with their video biodata and the projects open to
   the viewer. Contact details stay hidden until the farmer accepts or the two
   connect.
+- **Subscriptions** — a prepaid subscription (More → Subscription) unlocks
+  direct video uploads; everything else stays free. Paying opens a Razorpay
+  payment page in the browser — UPI, card or netbanking — and the app checks by
+  itself until the payment has gone through. It never renews by itself;
+  paying early adds the months after the current last day. Plans and prices
+  are set by whoever runs the sync server. See [Payments](#payments).
 - **Opt-in sync** — see [Sync](#sync).
 
 ---
@@ -588,8 +594,9 @@ nothing until someone presses play).
    MUX_TOKEN_SECRET=...
    ```
 
-2. There are no payments yet, so subscriptions are set by hand where the
-   server runs. A device appears once it has synced:
+2. People buy a subscription in the app — see [Payments](#payments). One can
+   also be granted by hand where the server runs (a trial, a partner); a
+   device appears once it has synced:
 
    ```bash
    python apps/sync/admin.py list
@@ -607,6 +614,55 @@ nothing until someone presses play).
 
 Uploads and video changes are recorded in `app_events`
 (`video.upload_started`, `video.uploaded`), ready for metering paid hosting.
+
+### Payments
+
+A subscription is prepaid for a number of months through a
+[Razorpay Payment Link](https://razorpay.com/docs/payments/payment-links/). The
+link opens in the browser, so the app embeds no checkout script and holds no
+key: paying works with UPI, cards and netbanking, and from another phone if
+the page's link is sent there.
+
+1. The Razorpay keys live on the sync server only. From the Razorpay dashboard
+   (test mode first), put them in the environment or `apps/sync/.env`:
+
+   ```
+   RAZORPAY_KEY_ID=rzp_test_...
+   RAZORPAY_KEY_SECRET=...
+   RAZORPAY_WEBHOOK_SECRET=...   # optional; see step 3
+   ```
+
+2. Nothing is on sale until the operator prices a plan. Prices are in rupees
+   and are copied onto each payment link when it is made, so changing a price
+   never alters a link already sent:
+
+   ```bash
+   python apps/sync/admin.py set-plan video-month --name "Video uploads, 1 month" --price 99 --months 1
+   python apps/sync/admin.py set-plan video-year --name "Video uploads, 1 year" --price 999 --months 12
+   python apps/sync/admin.py plans
+   python apps/sync/admin.py retire-plan video-year
+   python apps/sync/admin.py payments
+   ```
+
+3. The server learns a payment went through in one of two ways, and counts it
+   exactly once whichever comes first:
+   - **Asking.** While the payment page is open, the app asks every few
+     seconds, and every sync asks about any payment still open; the server
+     then asks Razorpay about the link. This is all a laptop or LAN server
+     can do, and it is enough.
+   - **Razorpay's webhook**, once the server has a public address: point a
+     webhook at `https://<server>/v1/webhooks/razorpay` with the
+     `payment_link.paid`, `payment_link.expired` and `payment_link.cancelled`
+     events, and set its secret as `RAZORPAY_WEBHOOK_SECRET`. The signature
+     (HMAC-SHA256 of the raw body) is checked, repeated event ids are ignored,
+     and a payment short of the full amount does not count.
+
+Paying before a subscription ends adds the months after its last day; after
+it has lapsed, from today. A link stays open for two days, and pressing Pay
+again hands back the link already open rather than a second one. The device
+keeps a receipt of each payment (`subscription_payments`, never synced) and
+records `subscription.checkout_started` and `subscription.paid` — the second
+with the amount in paise — in `app_events`: the revenue line for metering.
 
 ---
 
@@ -638,13 +694,14 @@ interests, match scoring, insurance on plots, profiles and projects, offline-
 until-shared visibility with a common timeline, the equipment marketplace with
 seller partner networks, notifications and messages, deals with milestone
 release, disputes, ratings for deals, machine hires and sales and
-partnerships, farmer groups with pooled requests, mandi
-prices, the farm diary, weather advice, backups and the sync protocol with a
-development server, introduction and biodata videos with Mux uploads for
-subscribers, and farmers and investors finding each other. Phase 2, next:
-payments for subscriptions, KYC through an authorised provider, a
-production sync service (PostgreSQL, authentication beyond device tokens,
-abuse controls), and legal review of the deal and dispute terms.
+partnerships, farmer groups with pooled requests, mandi prices, the farm
+diary, weather advice, backups and the sync protocol with a development
+server, introduction and biodata videos with Mux uploads for subscribers,
+farmers and investors finding each other, and prepaid subscriptions paid
+through Razorpay (switched off until keys and prices are set). Phase 2, next:
+KYC through an authorised provider, a production sync service (PostgreSQL,
+authentication beyond device tokens, abuse controls), and legal review of the
+deal and dispute terms.
 
 Phase 3: self-hosted map and geocoding infrastructure, scheme application
 assistance beyond tracking, partnership-based verification tier, voice input,
@@ -731,4 +788,7 @@ Every setting takes a `VG_`-prefixed environment variable.
 | `VG_SYNC_DB`        | `apps/sync/data/sync.db`           | Development sync server's DB   |
 | `MUX_TOKEN_ID`      | none (sync server only)            | Mux token for video uploads    |
 | `MUX_TOKEN_SECRET`  | none (sync server only)            | Its secret; or `apps/sync/.env`|
+| `RAZORPAY_KEY_ID`   | none (sync server only)            | Razorpay key for payments      |
+| `RAZORPAY_KEY_SECRET` | none (sync server only)          | Its secret; or `apps/sync/.env`|
+| `RAZORPAY_WEBHOOK_SECRET` | none (sync server only)      | Verifies Razorpay's webhook    |
 | `VG_ALLOW_NETWORK`  | `true`                             | Permit the two online lookups  |

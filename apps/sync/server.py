@@ -30,8 +30,17 @@ file instead of linking one on YouTube; the file itself goes straight from the
 device to Mux, but only this server holds the Mux keys (``MUX_TOKEN_ID`` and
 ``MUX_TOKEN_SECRET``, from the environment or ``apps/sync/.env``). It checks
 the subscription, asks Mux for a one-off upload address, and later tells the
-device the playback id. Subscriptions are set by hand for now, with
-``python apps/sync/admin.py`` -- there are no payments yet.
+device the playback id.
+
+And it is where **subscriptions are paid for**. A subscription is prepaid for
+a number of months, through a Razorpay Payment Link that opens in the
+browser: UPI, cards or netbanking, and nothing to install. The Razorpay keys
+(``RAZORPAY_KEY_ID``, ``RAZORPAY_KEY_SECRET`` and, for its webhook,
+``RAZORPAY_WEBHOOK_SECRET``) live here too. A payment counts once Razorpay
+says so -- by its signed webhook, or when the device asks and this server
+checks the link -- and it counts exactly once, whichever comes first. Plans
+and their prices are set by whoever runs the server, with
+``python apps/sync/admin.py``, which can also grant a subscription by hand.
 
 > [!WARNING]
 > Development server. It is meant to run on a laptop or a LAN while the
@@ -41,12 +50,15 @@ device the playback id. Subscriptions are set by hand for now, with
 
 from __future__ import annotations
 
+import calendar
 import hashlib
+import hmac
 import json
 import os
 import secrets
 import sqlite3
 import threading
+import time
 import urllib.error
 import urllib.request
 from base64 import b64encode
@@ -185,6 +197,34 @@ def init() -> None:
                 created_at TEXT NOT NULL,
                 updated_at TEXT NOT NULL
             );
+            CREATE TABLE IF NOT EXISTS plans (
+                code TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                amount_paise INTEGER NOT NULL,
+                months INTEGER NOT NULL,
+                active INTEGER NOT NULL DEFAULT 1,
+                created_at TEXT NOT NULL
+            );
+            -- Amount and months are copied from the plan when the link is
+            -- made, so a later price change never alters a link already out.
+            CREATE TABLE IF NOT EXISTS payments (
+                id TEXT PRIMARY KEY,
+                profile_id TEXT NOT NULL,
+                plan TEXT NOT NULL,
+                plan_name TEXT NOT NULL,
+                amount_paise INTEGER NOT NULL,
+                months INTEGER NOT NULL,
+                link_id TEXT UNIQUE,
+                url TEXT,
+                status TEXT NOT NULL,
+                provider_payment_id TEXT,
+                until_after TEXT,
+                expires_at TEXT NOT NULL,
+                created_at TEXT NOT NULL,
+                paid_at TEXT
+            );
+            CREATE INDEX IF NOT EXISTS ix_payments_profile ON payments (profile_id);
+            CREATE TABLE IF NOT EXISTS webhook_events (id TEXT PRIMARY KEY, received_at TEXT NOT NULL);
             INSERT OR IGNORE INTO counters VALUES ('rev', 0);
             """
         )
@@ -613,6 +653,25 @@ UPLOAD_TIMEOUT_SECONDS = 7 * 24 * 60 * 60
 VIDEO_TARGETS = {"biodata", "listing", "land", "request", "machine", "group"}
 
 
+def _api_call(service: str, url: str, user: str, password: str, method: str, body: dict | None) -> dict:
+    """One JSON call to a provider's API with HTTP Basic auth; its errors as HTTP errors."""
+    auth = b64encode(f"{user}:{password}".encode()).decode()
+    request = urllib.request.Request(
+        url,
+        data=json.dumps(body).encode() if body is not None else None,
+        headers={"Authorization": f"Basic {auth}", "Content-Type": "application/json"},
+        method=method,
+    )
+    try:
+        with urllib.request.urlopen(request, timeout=20) as response:
+            return json.loads(response.read())
+    except urllib.error.HTTPError as exc:
+        detail = exc.read().decode("utf-8", "replace")[:300]
+        raise HTTPException(status_code=502, detail=f"{service} said {exc.code}: {detail}") from exc
+    except (urllib.error.URLError, TimeoutError, OSError) as exc:
+        raise HTTPException(status_code=503, detail=f"{service} not reachable: {exc}") from exc
+
+
 class MuxClient:
     """The few Mux Video API calls direct uploads need.
 
@@ -630,21 +689,7 @@ class MuxClient:
         return bool(self.token_id and self.token_secret)
 
     def _call(self, method: str, path: str, body: dict | None = None) -> dict:
-        auth = b64encode(f"{self.token_id}:{self.token_secret}".encode()).decode()
-        request = urllib.request.Request(
-            self.base + path,
-            data=json.dumps(body).encode() if body is not None else None,
-            headers={"Authorization": f"Basic {auth}", "Content-Type": "application/json"},
-            method=method,
-        )
-        try:
-            with urllib.request.urlopen(request, timeout=20) as response:
-                return json.loads(response.read())["data"]
-        except urllib.error.HTTPError as exc:
-            detail = exc.read().decode("utf-8", "replace")[:300]
-            raise HTTPException(status_code=502, detail=f"Mux said {exc.code}: {detail}") from exc
-        except (urllib.error.URLError, TimeoutError, OSError) as exc:
-            raise HTTPException(status_code=503, detail=f"Mux not reachable: {exc}") from exc
+        return _api_call("Mux", self.base + path, self.token_id, self.token_secret, method, body)["data"]
 
     def create_upload(self, passthrough: str) -> dict:
         return self._call("POST", "/video/v1/uploads", {
@@ -757,6 +802,253 @@ def video_upload_status(upload_id: str, me: Device = Depends(device)) -> dict[st
             (asset_id, playback_id, status, error, _now(), upload_id),
         )
     return {"status": status, "playbackId": playback_id, "error": error}
+
+
+# --------------------------------------------------------------------------- #
+# Paying for a subscription
+# --------------------------------------------------------------------------- #
+
+#: How long a payment link stays open. Razorpay wants at least 15 minutes; two
+#: days lets someone borrow a phone with UPI tomorrow.
+LINK_LIFETIME_SECONDS = 2 * 24 * 60 * 60
+
+
+class RazorpayClient:
+    """Razorpay Payment Links: the few calls a prepaid subscription needs.
+
+    https://razorpay.com/docs/api/payments/payment-links/
+    """
+
+    base = "https://api.razorpay.com"
+
+    def __init__(self) -> None:
+        self.key_id = os.environ.get("RAZORPAY_KEY_ID", "")
+        self.key_secret = os.environ.get("RAZORPAY_KEY_SECRET", "")
+        self.webhook_secret = os.environ.get("RAZORPAY_WEBHOOK_SECRET", "")
+
+    @property
+    def configured(self) -> bool:
+        return bool(self.key_id and self.key_secret)
+
+    def _call(self, method: str, path: str, body: dict | None = None) -> dict:
+        return _api_call("Razorpay", self.base + path, self.key_id, self.key_secret, method, body)
+
+    def create_link(self, *, amount_paise: int, reference_id: str, description: str, expire_by: int,
+                    notes: dict[str, str]) -> dict:
+        return self._call("POST", "/v1/payment_links", {
+            "amount": amount_paise,
+            "currency": "INR",
+            "accept_partial": False,
+            "reference_id": reference_id,
+            "description": description[:2048],
+            "expire_by": expire_by,
+            "notes": notes,
+            "reminder_enable": False,
+        })
+
+    def get_link(self, link_id: str) -> dict:
+        return self._call("GET", f"/v1/payment_links/{link_id}")
+
+    def signature_ok(self, body: bytes, signature: str) -> bool:
+        """Whether a webhook really came from Razorpay: HMAC-SHA256 of the raw body."""
+        if not self.webhook_secret or not signature:
+            return False
+        expected = hmac.new(self.webhook_secret.encode(), body, hashlib.sha256).hexdigest()
+        return hmac.compare_digest(expected, signature)
+
+
+#: Replaced in tests.
+razorpay = RazorpayClient()
+
+
+def _add_months(day: date, months: int) -> date:
+    """The same day ``months`` later, or the month's last day if it has none (31 Jan + 1 = 28 Feb)."""
+    index = day.month - 1 + months
+    year, month = day.year + index // 12, index % 12 + 1
+    return date(year, month, min(day.day, calendar.monthrange(year, month)[1]))
+
+
+def _credit(con: sqlite3.Connection, payment: sqlite3.Row, provider_payment_id: str | None) -> bool:
+    """Count a paid payment towards its owner's subscription -- once.
+
+    The webhook and a device asking can both see the same payment; whichever
+    comes second finds it already paid and changes nothing. (Both run under
+    ``db()``'s lock, so they cannot interleave.) Months are added after the
+    current subscription's last day when it is still running, so paying early
+    loses nothing.
+    """
+    if payment["status"] == "paid":
+        return False
+    current = con.execute("SELECT until FROM subscriptions WHERE profile_id = ?", (payment["profile_id"],)).fetchone()
+    today = date.today()
+    if current is not None and current["until"] is None:
+        until = None  # granted with no end date; a payment cannot improve on it
+    else:
+        start = today
+        if current is not None and date.fromisoformat(current["until"]) >= today:
+            start = date.fromisoformat(current["until"])
+        until = _add_months(start, payment["months"]).isoformat()
+    con.execute(
+        "INSERT INTO subscriptions (profile_id, plan, until, created_at) VALUES (?, ?, ?, ?) "
+        "ON CONFLICT (profile_id) DO UPDATE SET plan = excluded.plan, until = excluded.until",
+        (payment["profile_id"], payment["plan"], until, _now()),
+    )
+    con.execute(
+        "UPDATE payments SET status = 'paid', paid_at = ?, provider_payment_id = ?, until_after = ? WHERE id = ?",
+        (_now(), provider_payment_id, until, payment["id"]),
+    )
+    return True
+
+
+def _link_paid(con: sqlite3.Connection, payment: sqlite3.Row, link: dict, provider_payment_id: str | None) -> None:
+    """Razorpay says a link is paid: credit it if the full amount arrived."""
+    if int(link.get("amount_paid") or 0) >= payment["amount_paise"]:
+        _credit(con, payment, provider_payment_id)
+
+
+def _payment_out(row: sqlite3.Row) -> dict[str, Any]:
+    return {
+        "id": row["id"],
+        "plan": row["plan"],
+        "planName": row["plan_name"],
+        "amountPaise": row["amount_paise"],
+        "months": row["months"],
+        "url": row["url"],
+        "status": row["status"],
+        "until": row["until_after"],
+        "expiresAt": row["expires_at"],
+        "createdAt": row["created_at"],
+        "paidAt": row["paid_at"],
+    }
+
+
+def _plan_out(row: sqlite3.Row) -> dict[str, Any]:
+    return {"code": row["code"], "name": row["name"], "amountPaise": row["amount_paise"], "months": row["months"]}
+
+
+@app.get("/v1/plans")
+def list_plans(me: Device = Depends(device)) -> dict[str, Any]:
+    """What is on sale, whether payments are switched on, and the owner's subscription."""
+    with db() as con:
+        rows = con.execute("SELECT * FROM plans WHERE active = 1 ORDER BY months, amount_paise").fetchall()
+        return {
+            "paymentsAvailable": razorpay.configured,
+            "plans": [_plan_out(row) for row in rows],
+            "subscription": subscription(con, me.profile_id),
+        }
+
+
+class CheckoutIn(BaseModel):
+    plan: str = Field(min_length=1, max_length=32)
+
+
+@app.post("/v1/payments")
+def create_payment(body: CheckoutIn, me: Device = Depends(device)) -> dict[str, Any]:
+    """A payment link for one plan, to open in the browser."""
+    if not razorpay.configured:
+        raise HTTPException(status_code=503, detail="Payments are not switched on on this server.")
+    with db() as con:
+        plan = con.execute("SELECT * FROM plans WHERE code = ? AND active = 1", (body.plan,)).fetchone()
+        if plan is None:
+            raise HTTPException(status_code=404, detail="That plan is not on sale.")
+        current = con.execute("SELECT until FROM subscriptions WHERE profile_id = ?", (me.profile_id,)).fetchone()
+        if current is not None and current["until"] is None:
+            raise HTTPException(status_code=409, detail="Your subscription has no end date: there is nothing to pay.")
+        # Pressing Pay twice hands back the link already open, not a second
+        # one that could be paid as well.
+        still_open = con.execute(
+            "SELECT * FROM payments WHERE profile_id = ? AND plan = ? AND amount_paise = ? AND status = 'created' "
+            "AND expires_at > ? ORDER BY created_at DESC LIMIT 1",
+            (me.profile_id, plan["code"], plan["amount_paise"], _now()),
+        ).fetchone()
+        if still_open is not None:
+            return _payment_out(still_open)
+
+    payment_id = f"vg_{secrets.token_hex(10)}"  # also Razorpay's reference_id: 40 characters at most
+    expire_by = int(time.time()) + LINK_LIFETIME_SECONDS
+    link = razorpay.create_link(
+        amount_paise=plan["amount_paise"],
+        reference_id=payment_id,
+        description=f"ViksitGaanw: {plan['name']}",
+        expire_by=expire_by,
+        notes={"profile_id": me.profile_id, "plan": plan["code"]},
+    )
+    with db() as con:
+        con.execute(
+            "INSERT INTO payments (id, profile_id, plan, plan_name, amount_paise, months, link_id, url, status, "
+            "expires_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'created', ?, ?)",
+            (payment_id, me.profile_id, plan["code"], plan["name"], plan["amount_paise"], plan["months"],
+             link["id"], link["short_url"], datetime.fromtimestamp(expire_by, timezone.utc).isoformat(), _now()),
+        )
+        return _payment_out(con.execute("SELECT * FROM payments WHERE id = ?", (payment_id,)).fetchone())
+
+
+@app.get("/v1/payments")
+def list_payments(me: Device = Depends(device)) -> dict[str, Any]:
+    with db() as con:
+        rows = con.execute(
+            "SELECT * FROM payments WHERE profile_id = ? ORDER BY created_at DESC LIMIT 20", (me.profile_id,)
+        ).fetchall()
+        return {"payments": [_payment_out(row) for row in rows]}
+
+
+@app.get("/v1/payments/{payment_id}")
+def payment_status(payment_id: str, me: Device = Depends(device)) -> dict[str, Any]:
+    """Where a payment has got to, asking Razorpay while it is still open.
+
+    Asking matters: a server on a laptop or a LAN cannot receive Razorpay's
+    webhook, and this is then the only way a payment is ever seen.
+    """
+    with db() as con:
+        row = con.execute("SELECT * FROM payments WHERE id = ? AND profile_id = ?", (payment_id, me.profile_id)).fetchone()
+    if row is None:
+        raise HTTPException(status_code=404, detail="Payment not found.")
+    if row["status"] == "created" and razorpay.configured:
+        link = razorpay.get_link(row["link_id"])
+        with db() as con:
+            row = con.execute("SELECT * FROM payments WHERE id = ?", (payment_id,)).fetchone()
+            state = link.get("status")
+            if state == "paid":
+                captured = next((p for p in link.get("payments") or [] if p.get("status") == "captured"), {})
+                _link_paid(con, row, link, captured.get("payment_id"))
+            elif state in ("expired", "cancelled"):
+                con.execute("UPDATE payments SET status = ? WHERE id = ? AND status = 'created'", (state, payment_id))
+    with db() as con:
+        row = con.execute("SELECT * FROM payments WHERE id = ?", (payment_id,)).fetchone()
+        return {**_payment_out(row), "subscription": subscription(con, me.profile_id)}
+
+
+@app.post("/v1/webhooks/razorpay")
+async def razorpay_webhook(request: Request) -> dict[str, str]:
+    """Razorpay telling us a payment link was paid, expired or cancelled.
+
+    Point a Razorpay webhook at this address, with the payment_link events,
+    once the server has a public address. Only the signature is trusted.
+    """
+    body = await request.body()
+    if not razorpay.signature_ok(body, request.headers.get("x-razorpay-signature", "")):
+        raise HTTPException(status_code=400, detail="Bad signature.")
+    event = json.loads(body)
+    event_id = request.headers.get("x-razorpay-event-id")
+    with db() as con:
+        if event_id:
+            if con.execute("SELECT 1 FROM webhook_events WHERE id = ?", (event_id,)).fetchone():
+                return {"status": "duplicate"}
+            con.execute("INSERT INTO webhook_events (id, received_at) VALUES (?, ?)", (event_id, _now()))
+        payload = event.get("payload") or {}
+        link = (payload.get("payment_link") or {}).get("entity") or {}
+        row = con.execute("SELECT * FROM payments WHERE link_id = ?", (link.get("id"),)).fetchone() if link else None
+        if row is None:
+            return {"status": "ignored"}
+        kind = event.get("event")
+        if kind == "payment_link.paid":
+            payment = (payload.get("payment") or {}).get("entity") or {}
+            _link_paid(con, row, link, payment.get("id"))
+        elif kind in ("payment_link.expired", "payment_link.cancelled"):
+            con.execute(
+                "UPDATE payments SET status = ? WHERE id = ? AND status = 'created'", (kind.split(".")[1], row["id"])
+            )
+    return {"status": "ok"}
 
 
 @app.get("/v1/health")

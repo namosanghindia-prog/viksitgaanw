@@ -1363,6 +1363,47 @@ export interface VideoPlan {
 }
 
 /* ------------------------------------------------------------------ *
+ * Paying for a subscription
+ * ------------------------------------------------------------------ */
+
+/** A plan on sale, as the sync server's operator priced it. */
+export interface SubscriptionPlan {
+  code: string;
+  name: string;
+  /** In paise: ₹99 is 9900. */
+  amountPaise: number;
+  months: number;
+}
+
+export type PaymentStatus = 'created' | 'paid' | 'expired' | 'cancelled';
+
+/** A payment the owner started: their receipt. */
+export interface SubscriptionPayment {
+  id: string;
+  plan: string;
+  planName: string;
+  amountPaise: number;
+  months: number;
+  /** The payment page, while the payment can still be made. */
+  url: string | null;
+  status: PaymentStatus;
+  /** The subscription's last day once this payment counted. */
+  until: string | null;
+  expiresAt: string | null;
+  createdAt: string;
+  paidAt: string | null;
+}
+
+export interface Subscription {
+  status: VideoPlan;
+  paymentsAvailable: boolean;
+  plans: SubscriptionPlan[];
+  payments: SubscriptionPayment[];
+  /** sync_off | offline | payments_off | no_plans | no_end, or null. */
+  reason: string | null;
+}
+
+/* ------------------------------------------------------------------ *
  * Finding investors and farmers
  * ------------------------------------------------------------------ */
 

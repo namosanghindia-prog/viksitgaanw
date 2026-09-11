@@ -59,6 +59,7 @@ from app.models import (  # noqa: E402
     Profile,
     ProjectInvite,
     ProjectReport,
+    SubscriptionPayment,
     SyncQueueEntry,
     VideoUpload,
 )
@@ -82,6 +83,7 @@ def clean_user_data() -> None:
         session.execute(delete(AppEvent))
         # Newer platform tables first: they point at everything else.
         for model in (
+            SubscriptionPayment,
             ProjectInvite,
             VideoUpload,
             Connection,

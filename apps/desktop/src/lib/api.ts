@@ -15,6 +15,8 @@ import type {
   InvestorListing,
   LandShare,
   ProjectInvite,
+  Subscription,
+  SubscriptionPayment,
   Video,
   VideoPlan,
   VideoTarget,
@@ -582,6 +584,13 @@ export const api = {
     upload<VideoUpload>(`/videos/${target}/${entityId}/upload`, withVideoType(file), 'POST'),
   videoUploads: (signal?: AbortSignal) => request<VideoUpload[]>('/videos/uploads', { signal }),
   cancelVideoUpload: (id: string) => request<void>(`/videos/uploads/${id}`, { method: 'DELETE' }),
+
+  /* Paying for a subscription */
+  subscription: (signal?: AbortSignal) => request<Subscription>('/subscription', { signal }),
+  checkout: (plan: string) =>
+    request<SubscriptionPayment>('/subscription/checkout', { method: 'POST', body: { plan } }),
+  checkPayment: (id: string) =>
+    request<SubscriptionPayment>(`/subscription/payments/${id}/check`, { method: 'POST' }),
 
   /* Finding investors and farmers */
   findInvestors: (stateCode?: string | null, signal?: AbortSignal) =>

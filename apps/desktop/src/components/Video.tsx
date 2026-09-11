@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { FormEvent } from 'react';
+import { Link } from 'react-router-dom';
 import type { Video, VideoPlan, VideoTarget, VideoUpload } from '@viksitgaanw/shared';
 
 import { useI18n } from '../i18n';
@@ -143,6 +144,11 @@ export function VideoButton({ video, label }: { video: Video; label: string }) {
  * ------------------------------------------------------------------ */
 
 let planPromise: Promise<VideoPlan> | null = null;
+
+/** Forget the remembered answer -- after a payment, uploads are open at once. */
+export function forgetVideoPlan() {
+  planPromise = null;
+}
 
 /** Whether the owner may upload video files, asked of the sync server once per session. */
 export function useVideoPlan(): VideoPlan | null {
@@ -364,7 +370,10 @@ export function VideoField({
               <span className="muted small"> {t('video.uploadHelp')}</span>
             </span>
           ) : plan ? (
-            <p className="muted small">⭐ {t(REASON[plan.reason ?? 'not_subscribed'] ?? 'video.reason.notSubscribed')}</p>
+            <p className="muted small">
+              ⭐ {t(REASON[plan.reason ?? 'not_subscribed'] ?? 'video.reason.notSubscribed')}{' '}
+              {plan.reason === 'not_subscribed' ? <Link to="/subscription">{t('video.subscribe')} →</Link> : null}
+            </p>
           ) : null}
         </div>
       ) : null}
