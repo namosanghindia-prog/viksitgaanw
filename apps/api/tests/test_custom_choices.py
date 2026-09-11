@@ -22,11 +22,11 @@ from .test_sharing_equipment import machine
 OPEN = {
     "certifications", "crops", "diary_activities", "dispute_reasons", "equipment_conditions",
     "equipment_types", "farmer_needs", "group_kinds", "insurance_types", "investment_modes",
-    "investor_types", "irrigation_types", "organisation_types", "ownership_types", "partner_roles",
+    "investor_types", "irrigation_types", "loan_documents", "organisation_types", "ownership_types", "partner_roles",
     "partnership_types", "soil_types", "water_sources", "water_types",
 }
 FIXED = {
-    "area_units", "countries", "depth_units", "government_levels", "insurance_schemes",
+    "area_units", "countries", "depth_units", "government_levels", "insurance_schemes", "loan_purposes",
     "quantity_units", "rent_units", "risk_appetites", "user_segments",
 }
 

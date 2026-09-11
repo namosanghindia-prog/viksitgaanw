@@ -16,6 +16,8 @@ import insuranceTypes from '../reference/insurance-types.json';
 import investmentModes from '../reference/investment-modes.json';
 import investorTypes from '../reference/investor-types.json';
 import irrigationTypes from '../reference/irrigation-types.json';
+import loanDocuments from '../reference/loan-documents.json';
+import loanPurposes from '../reference/loan-purposes.json';
 import organisationTypes from '../reference/organisation-types.json';
 import ownershipTypes from '../reference/ownership-types.json';
 import partnerRoles from '../reference/partner-roles.json';
@@ -86,6 +88,8 @@ const BASE = {
   investment_modes: investmentModes as ReferenceList,
   investor_types: investorTypes as ReferenceList,
   irrigation_types: irrigationTypes as ReferenceList,
+  loan_documents: loanDocuments as ReferenceList,
+  loan_purposes: loanPurposes as ReferenceList,
   organisation_types: organisationTypes as ReferenceList,
   ownership_types: ownershipTypes as ReferenceList,
   partner_roles: partnerRoles as ReferenceList,

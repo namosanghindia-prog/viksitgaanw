@@ -23,16 +23,17 @@ from datetime import datetime, timezone
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from ..models import EquipmentListing, FarmerGroup, InvestmentRequest, Profile
+from ..models import EquipmentListing, FarmerGroup, InvestmentRequest, LoanProduct, Profile
 from .events import EventType, enqueue_sync, record_event
 
 ENTITY_NAMES = {
     InvestmentRequest: "investment_request",
     EquipmentListing: "equipment_listing",
     FarmerGroup: "farmer_group",
+    LoanProduct: "loan_product",
 }
 
-Shareable = InvestmentRequest | EquipmentListing | FarmerGroup
+Shareable = InvestmentRequest | EquipmentListing | FarmerGroup | LoanProduct
 
 
 def _owner_id(item: Shareable) -> str:
@@ -82,7 +83,7 @@ def unshare_item(session: Session, owner: Profile, item: Shareable) -> None:
 
 def unshare_all_items(session: Session, owner: Profile) -> int:
     count = 0
-    for model in (InvestmentRequest, EquipmentListing, FarmerGroup):
+    for model in (InvestmentRequest, EquipmentListing, FarmerGroup, LoanProduct):
         column = model.owner_profile_id if model is FarmerGroup else model.profile_id
         for item in session.scalars(
             select(model).where(column == owner.id, model.visibility == "online")

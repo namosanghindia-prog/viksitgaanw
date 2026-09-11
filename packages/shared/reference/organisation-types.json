@@ -24,6 +24,8 @@
     { "code": "bank", "segments": ["partner_national"], "label": { "en": "Bank / microfinance", "hi": "बैंक / माइक्रोफाइनेंस" } },
     { "code": "kvk", "segments": ["partner_national"], "label": { "en": "Krishi Vigyan Kendra / agri university", "hi": "कृषि विज्ञान केंद्र / कृषि विश्वविद्यालय" } },
     { "code": "certification_body", "segments": ["partner_national", "partner_international"], "label": { "en": "Certification body", "hi": "प्रमाणन संस्था" } },
-    { "code": "logistics", "segments": ["partner_national", "partner_international"], "label": { "en": "Logistics / shipping company", "hi": "लॉजिस्टिक्स / शिपिंग कंपनी" } }
+    { "code": "logistics", "segments": ["partner_national", "partner_international"], "label": { "en": "Logistics / shipping company", "hi": "लॉजिस्टिक्स / शिपिंग कंपनी" } },
+    { "code": "nbfc", "segments": ["partner_national"], "label": { "en": "NBFC / agri-lender", "hi": "एनबीएफसी / कृषि ऋणदाता" } },
+    { "code": "cooperative_bank", "segments": ["partner_national"], "label": { "en": "Cooperative or rural bank", "hi": "सहकारी या ग्रामीण बैंक" } }
   ]
 }

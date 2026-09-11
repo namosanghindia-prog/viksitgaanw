@@ -20,6 +20,19 @@ export const isInvestor = (segment: Segment) => INVESTOR_SEGMENTS.includes(segme
 export const isPartner = (segment: Segment) => PARTNER_SEGMENTS.includes(segment);
 export const isInternational = (segment: Segment) => INTERNATIONAL_SEGMENTS.includes(segment);
 
+/** Organisation types that lend; the same list as services/loans.py. */
+const LENDER_TYPES = ['bank', 'nbfc', 'cooperative_bank'];
+
+/** A bank, NBFC or cooperative bank: offers loans, and answers applications. */
+export const isLender = (profile: Profile | null) =>
+  !!profile &&
+  profile.segment === 'partner_national' &&
+  LENDER_TYPES.includes(String((profile.details as Record<string, unknown>).organisationType ?? ''));
+
+/** Farmers, and national partners borrowing for their members (FPOs, cooperatives). */
+export const canApplyForLoans = (profile: Profile | null) =>
+  !!profile && (profile.segment === 'farmer' || profile.segment === 'partner_national') && !isLender(profile);
+
 /**
  * What the owner may offer in answer to a farmer's request: money, a working
  * partnership, or -- for a partner organisation that also invests -- both.

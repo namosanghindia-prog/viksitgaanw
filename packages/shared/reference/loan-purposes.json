@@ -1,0 +1,16 @@
+{
+  "key": "loan_purposes",
+  "version": 1,
+  "items": [
+    { "code": "crop_loan_kcc",   "kinds": ["field_crop", "vegetable", "spice"],   "label": { "en": "Crop loan / Kisan Credit Card",       "hi": "फसल ऋण / किसान क्रेडिट कार्ड" } },
+    { "code": "horticulture",    "kinds": ["horticulture", "protected"],          "label": { "en": "Orchard, polyhouse or nursery",       "hi": "बाग़, पॉलीहाउस या नर्सरी" } },
+    { "code": "dairy_livestock", "kinds": ["livestock"],                          "label": { "en": "Dairy, goats, poultry or fish",       "hi": "डेयरी, बकरी, मुर्गी या मछली" } },
+    { "code": "farm_machinery",  "kinds": ["service"],                            "label": { "en": "Tractor and farm machinery",          "hi": "ट्रैक्टर और कृषि मशीनें" } },
+    { "code": "irrigation",      "kinds": ["horticulture", "protected", "field_crop", "vegetable"], "label": { "en": "Irrigation, drip or solar pump", "hi": "सिंचाई, ड्रिप या सोलर पंप" } },
+    { "code": "processing",      "kinds": ["processing"],                         "label": { "en": "Processing unit",                     "hi": "प्रसंस्करण इकाई" } },
+    { "code": "storage",         "kinds": ["processing", "service"],              "label": { "en": "Storage, cold room or warehouse",     "hi": "भंडारण, कोल्ड रूम या गोदाम" } },
+    { "code": "land_development","kinds": ["horticulture", "field_crop", "vegetable"], "label": { "en": "Land development, fencing, wells", "hi": "भूमि सुधार, बाड़, कुआँ" } },
+    { "code": "working_capital", "kinds": ["processing", "service", "livestock"], "label": { "en": "Working capital",                     "hi": "कार्यशील पूंजी" } },
+    { "code": "fpo_business",    "kinds": [],                                     "label": { "en": "FPO or group business",               "hi": "एफपीओ या समूह का व्यवसाय" } }
+  ]
+}

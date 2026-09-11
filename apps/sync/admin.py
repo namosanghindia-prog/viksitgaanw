@@ -19,6 +19,7 @@
     python apps/sync/admin.py unpromote <project-id>
     python apps/sync/admin.py promotions
     python apps/sync/admin.py revenue [--days 30]
+    python apps/sync/admin.py loans [--days 30]
 
 A subscription lets its profile upload videos directly (through Mux) instead
 of linking them on YouTube. People buy one from the app once a plan is on
@@ -283,6 +284,39 @@ def revenue(days: int) -> None:
         print(f"  {row['kind']:13} {row['plan']:24} {row['n']:>5} x  {_rupees(row['paise']):>12}  {row['plan_name']}")
 
 
+def loans_report(days: int) -> None:
+    """Loans sanctioned and disbursed through the platform, per lender: the basis for its commission."""
+    since = (date.today() - timedelta(days=days)).isoformat()
+    per_lender: dict[str, dict[str, float]] = {}
+    with server.db() as con:
+        names = _names(con)
+        rows = con.execute(
+            "SELECT payload FROM records WHERE entity_type = 'loan_application' AND deleted = 0 AND updated_at >= ?",
+            (since,),
+        ).fetchall()
+    for row in rows:
+        p = json.loads(row["payload"])
+        lender = per_lender.setdefault(p.get("lender_profile_id", "?"), {
+            "applied": 0, "sanctioned": 0, "sanctioned_amount": 0.0, "disbursed": 0, "disbursed_amount": 0.0,
+        })
+        lender["applied"] += 1
+        if p.get("status") in ("sanctioned", "disbursed"):
+            lender["sanctioned"] += 1
+            lender["sanctioned_amount"] += float(p.get("sanctioned_amount") or 0)
+        if p.get("status") == "disbursed":
+            lender["disbursed"] += 1
+            lender["disbursed_amount"] += float(p.get("disbursed_amount") or 0)
+    if not per_lender:
+        print(f"No loan applications in the last {days} days.")
+        return
+    print(f"Loan applications in the last {days} days, by lender:")
+    print(f"  {'lender':30} {'applied':>8} {'sanctioned':>11} {'amount':>14} {'disbursed':>10} {'amount':>14}")
+    for lender_id, t in sorted(per_lender.items(), key=lambda item: -item[1]["disbursed_amount"]):
+        print(f"  {names.get(lender_id, lender_id)[:30]:30} {t['applied']:>8.0f} {t['sanctioned']:>11.0f} "
+              f"{_rupees(int(t['sanctioned_amount'] * 100)):>14} {t['disbursed']:>10.0f} "
+              f"{_rupees(int(t['disbursed_amount'] * 100)):>14}")
+
+
 def unverify(profile_id: str) -> None:
     with server.db() as con:
         if con.execute("DELETE FROM verifications WHERE profile_id = ?", (profile_id,)).rowcount == 0:
@@ -318,6 +352,8 @@ def main() -> None:
     commands.add_parser("promotions", help="featured projects, live and ended")
     rev = commands.add_parser("revenue", help="money paid in, by plan")
     rev.add_argument("--days", type=int, default=30)
+    lns = commands.add_parser("loans", help="loans sanctioned and disbursed, per lender")
+    lns.add_argument("--days", type=int, default=30)
     retire = commands.add_parser("retire-plan", help="take a plan off sale")
     retire.add_argument("code")
     commands.add_parser("plans", help="plans and their prices")
@@ -354,6 +390,8 @@ def main() -> None:
         list_promotions()
     elif args.command == "revenue":
         revenue(args.days)
+    elif args.command == "loans":
+        loans_report(args.days)
     elif args.command == "retire-plan":
         retire_plan(args.code)
     elif args.command == "plans":

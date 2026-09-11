@@ -2,7 +2,7 @@ import type { AppNotification, LanguageCode, ReferenceItem } from '@viksitgaanw/
 import { findItem } from '@viksitgaanw/shared';
 
 import type { StringKey } from '../i18n';
-import { formatDate } from './format';
+import { formatDate, formatMoneyShort } from './format';
 
 /** Kinds the app has a sentence for; anything else reads as a generic change. */
 const KNOWN = new Set([
@@ -40,6 +40,13 @@ const KNOWN = new Set([
   'subscription_paid',
   'promotion_paid',
   'project_featured',
+  'loan_application_received',
+  'loan_withdrawn',
+  'loan_under_review',
+  'loan_documents_requested',
+  'loan_sanctioned',
+  'loan_disbursed',
+  'loan_declined',
 ]);
 
 export const NOTE_ICON: Record<string, string> = {
@@ -65,6 +72,13 @@ export const NOTE_ICON: Record<string, string> = {
   subscription_paid: '⭐',
   promotion_paid: '⭐',
   project_featured: '🔔',
+  loan_application_received: '🏦',
+  loan_withdrawn: '🏦',
+  loan_under_review: '🏦',
+  loan_documents_requested: '📄',
+  loan_sanctioned: '✅',
+  loan_disbursed: '💰',
+  loan_declined: '🏦',
 };
 
 /**
@@ -84,6 +98,10 @@ export function describeNotification(
     if (value !== null && value !== undefined) params[key] = value;
   }
   if (typeof params.date === 'string') params.date = formatDate(params.date, lang);
+  // Loan amounts arrive as rupees; read them as a farmer would say them.
+  if (note.kind.startsWith('loan_') && typeof params.amount === 'number') {
+    params.amount = `₹${formatMoneyShort(params.amount, lang, (key) => t(key))}`;
+  }
   if (note.kind === 'weather_alert' && typeof note.params.code === 'string') {
     params.what = t(`advice.${note.params.code}` as StringKey);
   }

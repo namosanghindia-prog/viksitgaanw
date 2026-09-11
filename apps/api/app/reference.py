@@ -34,6 +34,8 @@ REFERENCE_FILES: dict[str, str] = {
     "investment_modes": "investment-modes.json",
     "investor_types": "investor-types.json",
     "irrigation_types": "irrigation-types.json",
+    "loan_documents": "loan-documents.json",
+    "loan_purposes": "loan-purposes.json",
     "organisation_types": "organisation-types.json",
     "ownership_types": "ownership-types.json",
     "partner_roles": "partner-roles.json",

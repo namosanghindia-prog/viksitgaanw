@@ -86,6 +86,15 @@ class EventType:
     PROMOTION_CHECKOUT = "promotion.checkout_started"
     #: A promotion went through: advertising revenue, with the amount in paise.
     PROMOTION_PAID = "promotion.paid"
+    #: A lender published a loan product.
+    LOAN_PRODUCT_CREATED = "loan_product.created"
+    #: A farmer or FPO applied for a loan, with their consent to share.
+    LOAN_APPLIED = "loan.applied"
+    #: The lender reviewed, asked for documents, declined -- or the applicant withdrew.
+    LOAN_UPDATED = "loan.updated"
+    #: The lender sanctioned a loan, with the amount: a lender commission is invoiced on these two.
+    LOAN_SANCTIONED = "loan.sanctioned"
+    LOAN_DISBURSED = "loan.disbursed"
     #: The owner opened an identity check (DigiLocker) in the browser.
     KYC_STARTED = "kyc.started"
     #: The sync server confirmed the owner's identity: trust before money moves.

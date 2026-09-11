@@ -52,6 +52,8 @@ from ..models import (
     InvestmentInterest,
     InvestmentRequest,
     LandShare,
+    LoanApplication,
+    LoanProduct,
     MediaFile,
     Message,
     Milestone,
@@ -86,20 +88,26 @@ MODELS: dict[str, type] = {
     "land_share": LandShare,
     "farm_update": FarmUpdate,
     "project_invite": ProjectInvite,
+    "loan_product": LoanProduct,
+    "loan_application": LoanApplication,
 }
 #: Records that leave the device only while their owner has them online.
-PUBLIC = {"profile", "investment_request", "equipment_listing", "farmer_group", "land_share", "farm_update"}
+PUBLIC = {"profile", "investment_request", "equipment_listing", "farmer_group", "land_share", "farm_update",
+          "loan_product"}
 #: Columns that describe this device, not the record.
 LOCAL_ONLY = {"sync_state", "is_device_owner", "origin", "farmer_id", "parcel_id", "report_id"}
 #: Order to apply a pulled page in, parents before children.
 APPLY_ORDER = [
     "profile", "connection", "land_share", "farm_update",
-    "farmer_group", "group_member", "investment_request", "equipment_listing",
+    "farmer_group", "group_member", "investment_request", "equipment_listing", "loan_product",
     "insurance_policy", "investment_interest", "project_invite", "equipment_enquiry", "equipment_partnership",
-    "deal", "dispute", "rating", "message",
+    "loan_application", "deal", "dispute", "rating", "message",
 ]
 #: On a record the owner created, the other side may only change these.
 COUNTERPARTY_FIELDS = ("status", "responded_at")
+#: ...except a loan application, whose lender writes its own half (services/loans.py).
+LENDER_FIELDS = ("status", "lender_note", "documents_requested", "sanctioned_amount", "interest_rate",
+                 "sanctioned_tenure_months", "disbursed_amount", "disbursed_on", "responded_at")
 MEDIA_ENTITY = {"profile": "profile", "equipment_listing": "equipment", "land_share": "land", "farm_update": "update"}
 
 
@@ -442,7 +450,8 @@ def _apply_one(session: Session, entity_type: str, entity_id: str, payload: dict
                     setattr(row, key, value)
             _apply_milestones(session, row, payload.get("milestones", []))
         else:
-            for key in COUNTERPARTY_FIELDS:
+            fields = LENDER_FIELDS if entity_type == "loan_application" else COUNTERPARTY_FIELDS
+            for key in fields:
                 if key in values:
                     setattr(row, key, values[key])
         return row, before
@@ -550,6 +559,32 @@ def _promotion_alert(session: Session, request: InvestmentRequest, before: dict 
            link="/", entity_type="investment_request", entity_id=request.id)
 
 
+#: What an applicant is told when the lender moves their application on.
+LOAN_NOTICES = {"under_review", "documents_requested", "sanctioned", "disbursed", "declined"}
+
+
+def _loan_notice(session: Session, application: LoanApplication, before: dict | None, owner: Profile) -> None:
+    was = (before or {}).get("status")
+    product = session.get(LoanProduct, application.product_id)
+    title = product.title if product else ""
+    if application.lender_profile_id == owner.id:
+        if before is None:
+            notify(session, owner.id, "loan_application_received",
+                   params={"name": _name(session, application.profile_id), "title": title,
+                           "amount": round(application.amount_requested)},
+                   link="/loan-desk", entity_type="loan_application", entity_id=application.id)
+        elif was != application.status and application.status == "withdrawn":
+            notify(session, owner.id, "loan_withdrawn",
+                   params={"name": _name(session, application.profile_id), "title": title},
+                   link="/loan-desk", entity_type="loan_application", entity_id=application.id)
+    elif application.profile_id == owner.id and was != application.status and application.status in LOAN_NOTICES:
+        amount = application.disbursed_amount if application.status == "disbursed" else application.sanctioned_amount
+        notify(session, owner.id, f"loan_{application.status}",
+               params={"name": _name(session, application.lender_profile_id), "title": title,
+                       "amount": round(amount or application.amount_requested)},
+               link="/loans", entity_type="loan_application", entity_id=application.id)
+
+
 def _hooks(session: Session, entity_type: str, row: Any, before: dict | None, owner: Profile) -> None:
     """Turn what the other side did into a notification for the owner."""
     from . import connections, directory  # noqa: PLC0415
@@ -573,6 +608,8 @@ def _hooks(session: Session, entity_type: str, row: Any, before: dict | None, ow
                link="/timeline", entity_type=entity_type, entity_id=row.id)
     elif entity_type == "investment_request" and row.profile_id != owner.id:
         _promotion_alert(session, row, before, owner)
+    elif entity_type == "loan_application":
+        _loan_notice(session, row, before, owner)
     elif entity_type == "investment_interest":
         request = session.get(InvestmentRequest, row.request_id)
         if before is None and request and request.profile_id == owner.id:

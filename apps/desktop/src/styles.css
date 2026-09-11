@@ -3065,6 +3065,114 @@ code {
   justify-content: flex-end;
 }
 
+/* ------------------------------------------------------------------ *
+ * Loans: lenders' offers, applications and the loan desk
+ * ------------------------------------------------------------------ */
+
+.loans {
+  display: grid;
+  gap: 16px;
+}
+
+.loan {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-left: 6px solid var(--sky);
+  border-radius: var(--radius-lg);
+  padding: 18px 22px;
+  box-shadow: var(--shadow);
+}
+
+.loan--fits {
+  border-left-color: var(--leaf);
+}
+
+.loan--application {
+  border-left-color: var(--line);
+  box-shadow: none;
+}
+
+.loan--open {
+  border-left-color: var(--warn);
+}
+
+.loan__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.loan__title {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.loan__figures {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 8px 16px;
+  margin: 0;
+}
+
+.loan__figures dt {
+  color: var(--ink-muted);
+  font-size: 0.85rem;
+}
+
+.loan__figures dd {
+  margin: 0;
+  font-weight: 600;
+}
+
+.loan-facts {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  background: var(--wheat);
+}
+
+.loan-steps {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.loan-steps__item {
+  padding: 4px 12px;
+  border-radius: 999px;
+  background: var(--wheat-dark);
+  color: var(--ink-muted);
+  font-size: 0.85rem;
+}
+
+.loan-steps__item--done {
+  background: var(--leaf-light);
+  color: var(--leaf-dark);
+}
+
+.loan-steps__item--now {
+  background: var(--leaf);
+  color: var(--white);
+  font-weight: 600;
+}
+
+.loan-apply {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--line);
+}
+
 .receipts {
   list-style: none;
   margin: 0;

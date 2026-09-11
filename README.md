@@ -763,6 +763,38 @@ For development, `VG_PAYMENTS_SANDBOX=1` (with no Razorpay keys) opens a pretend
 payment page on the sync server, marked "TEST — no money moves", instead of
 Razorpay; everything after the payment runs as it would for real.
 
+### Loans
+
+Banks, NBFCs and cooperative banks join as partner organisations and publish
+**loan products** — purpose (crop loan/KCC, orchard, dairy, machinery,
+irrigation, processing, storage…), amount range, rates, term, security,
+documents, states served, and whether farmers, FPOs or both may apply. A
+farmer (or an FPO for its members) opens **Loans**, picks a project report,
+and sees the loans that suit it first: does it lend for this kind of project,
+for the amount in the report, in this state. From a saved report on a plot's
+suggestions, **Apply for a loan** goes straight there.
+
+Applying shares exactly what the farmer ticks — the report's figures, the
+land's facts, their name and phone (required: a lender cannot answer someone
+it cannot reach) — never the Aadhaar number, survey number or pin. The lender
+works its **Loan desk**: review, ask for documents (the farmer answers in the
+app), sanction with amount, rate and term, record the pay-out, or decline.
+Each step notifies the farmer.
+
+The app never lends or moves money: the lender decides and pays into the
+farmer's bank account. Which side may write which field is enforced on the
+sync server as well — an applicant cannot mark their own loan sanctioned or
+paid, a lender cannot change what was asked for, and money is recorded only
+after a sanction. Devices record `loan.applied`, `loan.sanctioned` and
+`loan.disbursed` (with amounts); `python apps/sync/admin.py loans --days 30`
+totals sanctions and pay-outs per lender — the figures a lender's commission
+is invoiced on.
+
+To try it alone on one laptop, `python scripts/demo_lender.py setup` publishes
+a test bank with three loans on the local sync server; `list` shows the
+applications it receives and `answer <id> review|documents|sanction|disburse|decline`
+answers them, as a bank's device would.
+
 ### Identity checks
 
 A villager verifies by signing in on DigiLocker — a free government service,

@@ -2532,6 +2532,178 @@ class KycStartOut(ApiModel):
 
 
 # --------------------------------------------------------------------------- #
+# Loans
+# --------------------------------------------------------------------------- #
+
+#: Who a loan may be offered to: a farmer, or an FPO borrowing for its members.
+LOAN_APPLICANT_SEGMENTS = ("farmer", "partner_national")
+
+
+class LoanProductInput(ApiModel):
+    purpose: str
+    title: str = Field(min_length=1, max_length=200)
+    summary: str | None = Field(default=None, max_length=4000)
+    min_amount: float = Field(gt=0)
+    max_amount: float = Field(gt=0)
+    rate_min: float | None = Field(default=None, ge=0, le=60)
+    rate_max: float | None = Field(default=None, ge=0, le=60)
+    tenure_min_months: int | None = Field(default=None, ge=1, le=360)
+    tenure_max_months: int | None = Field(default=None, ge=1, le=360)
+    collateral: str | None = Field(default=None, max_length=200)
+    processing_fee: str | None = Field(default=None, max_length=120)
+    documents: list[str] = Field(default_factory=list)
+    states: list[str] = Field(default_factory=list)
+    segments: list[str] = Field(default_factory=lambda: ["farmer"])
+    status: Literal["active", "paused"] = "active"
+
+    @field_validator("purpose")
+    @classmethod
+    def _known_purpose(cls, value: str) -> str:
+        return _check_code("loan_purposes", value, "loan purpose")  # type: ignore[return-value]
+
+    @field_validator("documents")
+    @classmethod
+    def _known_documents(cls, values: list[str]) -> list[str]:
+        return _dedupe(_check_codes("loan_documents", values, "documents"))
+
+    @field_validator("segments")
+    @classmethod
+    def _known_segments(cls, values: list[str]) -> list[str]:
+        unknown = [v for v in values if v not in LOAN_APPLICANT_SEGMENTS]
+        if unknown or not values:
+            raise ValueError("Offer the loan to farmers, FPOs or both.")
+        return _dedupe(values)
+
+    @field_validator("summary", "collateral", "processing_fee", mode="before")
+    @classmethod
+    def _blank(cls, value: Any) -> Any:
+        return _blank_to_none(value)
+
+    @model_validator(mode="after")
+    def _ranges(self) -> "LoanProductInput":
+        if self.min_amount > self.max_amount:
+            raise ValueError("The smallest loan cannot be more than the largest.")
+        if self.rate_min is not None and self.rate_max is not None and self.rate_min > self.rate_max:
+            raise ValueError("The lowest rate cannot be more than the highest.")
+        if (self.tenure_min_months and self.tenure_max_months
+                and self.tenure_min_months > self.tenure_max_months):
+            raise ValueError("The shortest term cannot be longer than the longest.")
+        return self
+
+
+class LoanMatchOut(ApiModel):
+    """How well a loan suits an applicant's project: 0-100, and why."""
+
+    score: int
+    #: purpose | amount | state -- what fits.
+    reasons: list[str] = Field(default_factory=list)
+    #: The same codes, for what does not.
+    misses: list[str] = Field(default_factory=list)
+
+
+class LoanProductOut(ApiModel):
+    id: str
+    purpose: str
+    title: str
+    summary: str | None = None
+    min_amount: float
+    max_amount: float
+    rate_min: float | None = None
+    rate_max: float | None = None
+    tenure_min_months: int | None = None
+    tenure_max_months: int | None = None
+    collateral: str | None = None
+    processing_fee: str | None = None
+    documents: list[str] = Field(default_factory=list)
+    states: list[str] = Field(default_factory=list)
+    segments: list[str] = Field(default_factory=list)
+    status: str
+    lender: ProfileCardOut
+    is_mine: bool = False
+    #: For the lender: its applications, by status.
+    application_counts: dict[str, int] = Field(default_factory=dict)
+    #: For an applicant: how well it suits their project.
+    match: LoanMatchOut | None = None
+    #: For an applicant: their open application to it, if any.
+    my_application_id: str | None = None
+    visibility: Visibility = "offline"
+    shared_at: datetime | None = None
+    origin: str
+    created_at: datetime
+    updated_at: datetime
+
+
+class LoanApplicationInput(ApiModel):
+    product_id: str
+    #: The project report to apply with; strongly advised.
+    report_id: str | None = None
+    amount_requested: float = Field(gt=0)
+    tenure_months: int | None = Field(default=None, ge=1, le=360)
+    applicant_note: str | None = Field(default=None, max_length=2000)
+    #: What the applicant agrees to share with this lender. Contact is required:
+    #: a lender cannot answer someone it cannot reach.
+    share_report: bool = True
+    share_land: bool = True
+    share_contact: bool
+
+    @field_validator("applicant_note", mode="before")
+    @classmethod
+    def _blank(cls, value: Any) -> Any:
+        return _blank_to_none(value)
+
+
+LoanAction = Literal["review", "documents", "sanction", "disburse", "decline", "withdraw", "reply"]
+
+
+class LoanDecisionInput(ApiModel):
+    action: LoanAction
+    note: str | None = Field(default=None, max_length=2000)
+    #: For "documents": what the lender still needs.
+    documents: list[str] = Field(default_factory=list)
+    #: For "sanction" and "disburse": rupees.
+    amount: float | None = Field(default=None, gt=0)
+    rate: float | None = Field(default=None, ge=0, le=60)
+    tenure_months: int | None = Field(default=None, ge=1, le=360)
+    disbursed_on: date | None = None
+
+    @field_validator("documents")
+    @classmethod
+    def _known_documents(cls, values: list[str]) -> list[str]:
+        return _dedupe(_check_codes("loan_documents", values, "documents"))
+
+
+class LoanApplicationOut(ApiModel):
+    id: str
+    product_id: str
+    product_title: str
+    purpose: str
+    lender: ProfileCardOut
+    applicant: ProfileCardOut
+    #: True on the applicant's own device; False on the lender's.
+    is_mine: bool = False
+    amount_requested: float
+    tenure_months: int | None = None
+    applicant_note: str | None = None
+    #: What the applicant agreed to share: place, plan figures, land, contact.
+    snapshot: dict[str, Any] = Field(default_factory=dict)
+    consent: dict[str, Any] = Field(default_factory=dict)
+    consented_at: datetime | None = None
+    status: str
+    lender_note: str | None = None
+    documents_requested: list[str] = Field(default_factory=list)
+    sanctioned_amount: float | None = None
+    interest_rate: float | None = None
+    sanctioned_tenure_months: int | None = None
+    disbursed_amount: float | None = None
+    disbursed_on: date | None = None
+    responded_at: datetime | None = None
+    report_id: str | None = None
+    origin: str
+    created_at: datetime
+    updated_at: datetime
+
+
+# --------------------------------------------------------------------------- #
 # Finding investors and farmers
 # --------------------------------------------------------------------------- #
 

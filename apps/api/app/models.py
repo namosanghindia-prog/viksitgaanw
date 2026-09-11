@@ -1381,3 +1381,110 @@ class SubscriptionPayment(Base):
     #: A promotion's length, and the project it promotes.
     days: Mapped[int | None] = mapped_column(Integer)
     target_id: Mapped[str | None] = mapped_column(String(36), index=True)
+
+
+# --------------------------------------------------------------------------- #
+# Loans: lenders' offers, and farmers applying with their project report
+# --------------------------------------------------------------------------- #
+
+
+class LoanProduct(Base):
+    """A loan a bank, NBFC or cooperative bank offers -- published like a machine.
+
+    The lender makes the credit decision and moves the money; the app only
+    puts the right farmer, with a sound project report, in front of it.
+    """
+
+    __tablename__ = "loan_products"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    profile_id: Mapped[str] = mapped_column(
+        ForeignKey("profiles.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    #: A code from loan-purposes.json.
+    purpose: Mapped[str] = mapped_column(String(32), nullable=False, index=True)
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    summary: Mapped[str | None] = mapped_column(Text)
+    #: Rupees.
+    min_amount: Mapped[float] = mapped_column(Float, nullable=False)
+    max_amount: Mapped[float] = mapped_column(Float, nullable=False)
+    #: Per cent a year, as the lender quotes it.
+    rate_min: Mapped[float | None] = mapped_column(Float)
+    rate_max: Mapped[float | None] = mapped_column(Float)
+    tenure_min_months: Mapped[int | None] = mapped_column(Integer)
+    tenure_max_months: Mapped[int | None] = mapped_column(Integer)
+    #: In plain words: "No collateral up to Rs 1.6 lakh", "Land mortgage".
+    collateral: Mapped[str | None] = mapped_column(String(200))
+    processing_fee: Mapped[str | None] = mapped_column(String(120))
+    #: Codes from loan-documents.json the lender asks for.
+    documents: Mapped[list[str]] = mapped_column(JSON, default=list)
+    #: LGD state codes served; empty means all India.
+    states: Mapped[list[str]] = mapped_column(JSON, default=list)
+    #: Who may apply: farmer, partner_national (an FPO for its members).
+    segments: Mapped[list[str]] = mapped_column(JSON, default=list)
+    #: active | paused
+    status: Mapped[str] = mapped_column(String(16), default="active", nullable=False, index=True)
+    visibility: Mapped[str] = mapped_column(String(16), default="offline", nullable=False, index=True)
+    shared_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    origin: Mapped[str] = mapped_column(String(16), default="local", nullable=False)
+    sync_state: Mapped[str] = mapped_column(String(16), default="local_only", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, onupdate=_now)
+
+    profile: Mapped[Profile] = relationship()
+    applications: Mapped[list["LoanApplication"]] = relationship(
+        back_populates="product", cascade="all, delete-orphan"
+    )
+
+
+class LoanApplication(Base):
+    """A farmer (or an FPO) applying for one loan product, with their consent to share.
+
+    The applicant owns the record; the lender answers it. Which side may write
+    which field is enforced on the sync server too, so an applicant cannot mark
+    their own loan sanctioned, nor a lender rewrite what was asked for.
+    """
+
+    __tablename__ = "loan_applications"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    product_id: Mapped[str] = mapped_column(
+        ForeignKey("loan_products.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    profile_id: Mapped[str] = mapped_column(
+        ForeignKey("profiles.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    #: The lender, kept here so its inbox needs no join through the product.
+    lender_profile_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
+    # Local links, on the applicant's device only.
+    report_id: Mapped[str | None] = mapped_column(ForeignKey("project_reports.id", ondelete="SET NULL"))
+    parcel_id: Mapped[str | None] = mapped_column(ForeignKey("land_parcels.id", ondelete="SET NULL"))
+
+    #: Rupees.
+    amount_requested: Mapped[float] = mapped_column(Float, nullable=False)
+    tenure_months: Mapped[int | None] = mapped_column(Integer)
+    applicant_note: Mapped[str | None] = mapped_column(Text)
+    #: What the applicant agreed to share: the plan's figures, the land, their phone.
+    snapshot: Mapped[dict] = mapped_column(JSON, default=dict)
+    consent: Mapped[dict] = mapped_column(JSON, default=dict)
+    consented_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    #: submitted | under_review | documents_requested | sanctioned | disbursed | declined | withdrawn
+    status: Mapped[str] = mapped_column(String(24), default="submitted", nullable=False, index=True)
+    # The lender's side.
+    lender_note: Mapped[str | None] = mapped_column(Text)
+    documents_requested: Mapped[list[str]] = mapped_column(JSON, default=list)
+    sanctioned_amount: Mapped[float | None] = mapped_column(Float)
+    interest_rate: Mapped[float | None] = mapped_column(Float)
+    sanctioned_tenure_months: Mapped[int | None] = mapped_column(Integer)
+    disbursed_amount: Mapped[float | None] = mapped_column(Float)
+    disbursed_on: Mapped[date | None] = mapped_column(Date)
+    responded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    origin: Mapped[str] = mapped_column(String(16), default="local", nullable=False)
+    sync_state: Mapped[str] = mapped_column(String(16), default="local_only", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, onupdate=_now)
+
+    product: Mapped[LoanProduct] = relationship(back_populates="applications")
+    profile: Mapped[Profile] = relationship()

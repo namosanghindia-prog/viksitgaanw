@@ -1,0 +1,20 @@
+{
+  "key": "loan_documents",
+  "version": 1,
+  "allowCustom": true,
+  "multi": true,
+  "items": [
+    { "code": "aadhaar",        "label": { "en": "Aadhaar card",                              "hi": "आधार कार्ड" } },
+    { "code": "pan",            "label": { "en": "PAN card",                                  "hi": "पैन कार्ड" } },
+    { "code": "land_record",    "label": { "en": "Land record (khatauni / 7/12 / RoR)",       "hi": "भूमि अभिलेख (खतौनी / 7/12 / आरओआर)" } },
+    { "code": "bank_statement", "label": { "en": "Bank passbook or statement, 6 months",      "hi": "बैंक पासबुक या स्टेटमेंट, 6 महीने" } },
+    { "code": "project_report", "label": { "en": "Project report (DPR)",                      "hi": "परियोजना रिपोर्ट (डीपीआर)" } },
+    { "code": "photo",          "label": { "en": "Passport-size photo",                       "hi": "पासपोर्ट साइज़ फ़ोटो" } },
+    { "code": "quotation",      "label": { "en": "Supplier quotation",                        "hi": "आपूर्तिकर्ता का कोटेशन" } },
+    { "code": "income_proof",   "label": { "en": "Income proof",                              "hi": "आय का प्रमाण" } },
+    { "code": "kcc",            "label": { "en": "Kisan Credit Card",                         "hi": "किसान क्रेडिट कार्ड" } },
+    { "code": "no_dues",        "label": { "en": "No-dues certificate from other banks",      "hi": "दूसरे बैंकों से अदेयता प्रमाणपत्र" } },
+    { "code": "registration",   "label": { "en": "FPO / society registration",                "hi": "एफपीओ / समिति पंजीकरण" } },
+    { "code": "gst",            "label": { "en": "GST registration",                          "hi": "जीएसटी पंजीकरण" } }
+  ]
+}

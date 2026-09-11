@@ -57,6 +57,8 @@ from ..models import (
     SchemeApplication,
     SubscriptionPayment,
     VideoUpload,
+    LoanApplication,
+    LoanProduct,
 )
 from ..schemas import BackupOut
 from . import media
@@ -277,6 +279,10 @@ def export(session: Session, owner: Profile) -> dict[str, Any]:
         ),
         "video_uploads": rows(VideoUpload, VideoUpload.id.isnot(None)),
         "subscription_payments": rows(SubscriptionPayment, SubscriptionPayment.id.isnot(None)),
+        "loan_products": rows(LoanProduct, LoanProduct.profile_id == owner.id),
+        "loan_applications": rows(
+            LoanApplication, LoanApplication.profile_id == owner.id, LoanApplication.lender_profile_id == owner.id
+        ),
     }
     record_event(session, EventType.DATA_EXPORTED, entity_type="profile", entity_id=owner.id)
     return data
@@ -301,6 +307,11 @@ def erase(session: Session, owner: Profile, confirm: str) -> dict[str, int]:
         enqueue_sync(session, entity_type="land_share", entity_id=share_id, operation="delete")
     for update_id in update_ids:
         enqueue_sync(session, entity_type="farm_update", entity_id=update_id, operation="delete")
+    # A lender's loans and an applicant's applications go from the cloud too.
+    for product_id in session.scalars(select(LoanProduct.id).where(LoanProduct.profile_id == owner.id)):
+        enqueue_sync(session, entity_type="loan_product", entity_id=product_id, operation="delete")
+    for application_id in session.scalars(select(LoanApplication.id).where(LoanApplication.profile_id == owner.id)):
+        enqueue_sync(session, entity_type="loan_application", entity_id=application_id, operation="delete")
 
     # Pictures and PDFs live on disk, not in the rows the cascade removes.
     for entity_type, ids in (

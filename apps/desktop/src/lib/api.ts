@@ -16,6 +16,11 @@ import type {
   KycStart,
   KycState,
   LandShare,
+  LoanApplication,
+  LoanApplicationInput,
+  LoanDecision,
+  LoanProduct,
+  LoanProductInput,
   ProjectInvite,
   Promotion,
   Subscription,
@@ -594,6 +599,29 @@ export const api = {
     request<SubscriptionPayment>('/subscription/checkout', { method: 'POST', body: { plan } }),
   checkPayment: (id: string) =>
     request<SubscriptionPayment>(`/subscription/payments/${id}/check`, { method: 'POST' }),
+
+  /* Loans */
+  loanRoles: (signal?: AbortSignal) => request<{ lender: boolean; applicant: boolean }>('/loans/roles', { signal }),
+  loans: (query: { reportId?: string | null; purpose?: string | null }, signal?: AbortSignal) =>
+    request<LoanProduct[]>('/loans', {
+      params: { reportId: query.reportId ?? undefined, purpose: query.purpose ?? undefined },
+      signal,
+    }),
+  myLoanProducts: (signal?: AbortSignal) => request<LoanProduct[]>('/loans/mine', { signal }),
+  createLoanProduct: (body: LoanProductInput) => request<LoanProduct>('/loans', { method: 'POST', body }),
+  updateLoanProduct: (id: string, body: LoanProductInput) =>
+    request<LoanProduct>(`/loans/${id}`, { method: 'PUT', body }),
+  deleteLoanProduct: (id: string) => request<void>(`/loans/${id}`, { method: 'DELETE' }),
+  shareLoanProduct: (id: string) => request<LoanProduct>(`/loans/${id}/share`, { method: 'POST' }),
+  unshareLoanProduct: (id: string) => request<LoanProduct>(`/loans/${id}/unshare`, { method: 'POST' }),
+  applyForLoan: (body: LoanApplicationInput) =>
+    request<LoanApplication>('/loan-applications', { method: 'POST', body }),
+  myLoanApplications: (signal?: AbortSignal) => request<LoanApplication[]>('/loan-applications/mine', { signal }),
+  loanDesk: (signal?: AbortSignal) => request<LoanApplication[]>('/loan-applications/desk', { signal }),
+  decideLoan: (id: string, body: LoanDecision) =>
+    request<LoanApplication>(`/loan-applications/${id}/decide`, { method: 'POST', body }),
+  allReports: (lang: string, signal?: AbortSignal) =>
+    request<ProjectReport[]>('/reports', { params: { lang }, signal }),
 
   /* Promoting a project */
   promotion: (requestId: string, signal?: AbortSignal) =>

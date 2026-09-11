@@ -138,6 +138,9 @@ export function PlanPage() {
                   >
                     {t('nav.findInvestors')}
                   </Link>
+                  <Link className="button button--small" to={`/loans?report=${report.id}`}>
+                    🏦 {t('loans.applyWithReport')}
+                  </Link>
                   <a
                     className="button button--small button--primary"
                     href={api.reportFileUrl(report)}

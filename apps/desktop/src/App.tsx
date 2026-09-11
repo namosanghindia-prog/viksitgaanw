@@ -1,5 +1,5 @@
 import { NavLink, Route, Routes } from 'react-router-dom';
-import type { LanguageCode, Profile, Segment } from '@viksitgaanw/shared';
+import type { LanguageCode, Profile } from '@viksitgaanw/shared';
 
 import { LANGUAGES, useI18n } from './i18n';
 import type { StringKey } from './i18n';
@@ -10,7 +10,7 @@ import { useProfile } from './lib/profile';
 import { Avatar } from './components/Avatar';
 import { MoreMenu } from './components/MoreMenu';
 import type { MenuEntry } from './components/MoreMenu';
-import { isInvestor, isPartner, responderKinds } from './lib/segments';
+import { canApplyForLoans, isInvestor, isLender, isPartner, responderKinds } from './lib/segments';
 import { AddLandPage, EditLandPage } from './pages/AddLandPage';
 import { BrowsePage } from './pages/BrowsePage';
 import { ConnectionsPage } from './pages/ConnectionsPage';
@@ -40,11 +40,14 @@ import { OnboardingPage } from './pages/OnboardingPage';
 import { ParcelInsurancePage } from './pages/ParcelInsurancePage';
 import { PlanPage } from './pages/PlanPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { LoanDeskPage } from './pages/LoanDeskPage';
+import { LoansPage } from './pages/LoansPage';
 import { PromotePage } from './pages/PromotePage';
 import { RequestInvestmentPage } from './pages/RequestInvestmentPage';
 
 /** The top-bar links each kind of user gets. The first is their home screen. */
-function navFor(segment: Segment): Array<{ to: string; label: StringKey }> {
+function navFor(profile: Profile): Array<{ to: string; label: StringKey }> {
+  const { segment } = profile;
   const timeline = { to: '/timeline', label: 'nav.timeline' as StringKey };
   if (segment === 'farmer') {
     // "Add land" lives on My land; the bar keeps room for the marketplace.
@@ -52,7 +55,18 @@ function navFor(segment: Segment): Array<{ to: string; label: StringKey }> {
       timeline,
       { to: '/', label: 'nav.myLand' },
       { to: '/investors', label: 'nav.findInvestors' },
+      { to: '/loans', label: 'nav.loans' },
       { to: '/machines', label: 'nav.machines' },
+    ];
+  }
+  if (isLender(profile)) {
+    // A bank's work here is its loan desk; machines are not its business.
+    return [
+      timeline,
+      { to: '/loan-desk', label: 'nav.loanDesk' },
+      { to: '/', label: 'nav.opportunities' },
+      { to: '/interests', label: 'nav.myInterests' },
+      { to: '/farmers', label: 'nav.findFarmers' },
     ];
   }
   if (isPartner(segment)) {
@@ -90,7 +104,8 @@ const seesSchemes = (profile: Profile) => !isInvestor(profile.segment);
 function moreFor(profile: Profile): MenuEntry[] {
   const entries: MenuEntry[] = [{ to: '/connections', label: 'nav.connections', icon: '🤝' }];
   // Partners' top bar is full already; finding farmers sits behind More.
-  if (isPartner(profile.segment)) entries.push({ to: '/farmers', label: 'nav.findFarmers', icon: '🌾' });
+  if (isPartner(profile.segment) && !isLender(profile)) entries.push({ to: '/farmers', label: 'nav.findFarmers', icon: '🌾' });
+  if (isPartner(profile.segment) && canApplyForLoans(profile)) entries.push({ to: '/loans', label: 'nav.loans', icon: '🏦' });
   if (makesDeals(profile)) entries.push({ to: '/deals', label: 'nav.deals', icon: '📜' });
   if (seesGroups(profile)) entries.push({ to: '/groups', label: 'nav.groups', icon: '👥' });
   entries.push({ to: '/prices', label: 'nav.prices', icon: '📈' });
@@ -125,7 +140,7 @@ export function App() {
 
         {profile ? (
           <nav className="topbar__nav">
-            {navFor(profile.segment).map((entry) => (
+            {navFor(profile).map((entry) => (
               <NavLink key={entry.to} to={entry.to} end className="navlink">
                 {t(entry.label)}
               </NavLink>
@@ -218,6 +233,8 @@ export function App() {
             <Route path="/insights" element={<InsightsPage />} />
             <Route path="/settings" element={<DataPage />} />
             <Route path="/subscription" element={<SubscriptionPage />} />
+            {canApplyForLoans(profile) ? <Route path="/loans" element={<LoansPage />} /> : null}
+            {isLender(profile) ? <Route path="/loan-desk" element={<LoanDeskPage />} /> : null}
             {seesSchemes(profile) ? <Route path="/schemes" element={<SchemesPage />} /> : null}
             {makesDeals(profile) ? (
               <>

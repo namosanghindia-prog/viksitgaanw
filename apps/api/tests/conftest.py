@@ -56,6 +56,8 @@ from app.models import (  # noqa: E402
     InvestmentRequest,
     LandParcel,
     LandShare,
+    LoanApplication,
+    LoanProduct,
     Profile,
     ProjectInvite,
     ProjectReport,
@@ -83,6 +85,8 @@ def clean_user_data() -> None:
         session.execute(delete(AppEvent))
         # Newer platform tables first: they point at everything else.
         for model in (
+            LoanApplication,
+            LoanProduct,
             SubscriptionPayment,
             ProjectInvite,
             VideoUpload,

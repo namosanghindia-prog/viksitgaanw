@@ -36,6 +36,8 @@ export interface ReferenceItem {
   url?: string;
   /** A choice the person typed themselves (``custom:<text>``), not a list entry. */
   custom?: boolean;
+  /** Loan purposes: the kinds of project they finance. */
+  kinds?: string[];
 }
 
 export interface ReferenceList {
@@ -1436,6 +1438,126 @@ export interface Subscription {
   payments: SubscriptionPayment[];
   /** sync_off | offline | payments_off | no_plans | no_end, or null. */
   reason: string | null;
+}
+
+/* ------------------------------------------------------------------ *
+ * Loans
+ * ------------------------------------------------------------------ */
+
+export interface LoanProductInput {
+  purpose: string;
+  title: string;
+  summary?: string | null;
+  minAmount: number;
+  maxAmount: number;
+  rateMin?: number | null;
+  rateMax?: number | null;
+  tenureMinMonths?: number | null;
+  tenureMaxMonths?: number | null;
+  collateral?: string | null;
+  processingFee?: string | null;
+  documents: string[];
+  /** LGD state codes served; empty means all India. */
+  states: string[];
+  /** farmer | partner_national (an FPO for its members). */
+  segments: string[];
+  status: 'active' | 'paused';
+}
+
+/** How well a loan suits a project: purpose, amount and state. */
+export interface LoanMatch {
+  score: number;
+  reasons: string[];
+  misses: string[];
+}
+
+export interface LoanProduct extends LoanProductInput {
+  id: string;
+  lender: ProfileCard;
+  isMine: boolean;
+  applicationCounts: Record<string, number>;
+  match: LoanMatch | null;
+  myApplicationId: string | null;
+  visibility: Visibility;
+  sharedAt: string | null;
+  origin: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type LoanStatus =
+  | 'submitted'
+  | 'under_review'
+  | 'documents_requested'
+  | 'sanctioned'
+  | 'disbursed'
+  | 'declined'
+  | 'withdrawn';
+
+export interface LoanApplicationInput {
+  productId: string;
+  reportId?: string | null;
+  amountRequested: number;
+  tenureMonths?: number | null;
+  applicantNote?: string | null;
+  shareReport: boolean;
+  shareLand: boolean;
+  shareContact: boolean;
+}
+
+export interface LoanApplication {
+  id: string;
+  productId: string;
+  productTitle: string;
+  purpose: string;
+  lender: ProfileCard;
+  applicant: ProfileCard;
+  isMine: boolean;
+  amountRequested: number;
+  tenureMonths: number | null;
+  applicantNote: string | null;
+  /** What the applicant agreed to share: place, plan figures, land, contact. */
+  snapshot: {
+    place?: string;
+    kycStatus?: string;
+    plan?: {
+      reportNumber: string;
+      totalProjectCost: number;
+      termLoan: number;
+      netPerYear: number;
+      suitabilityScore: number;
+      opportunity?: Label;
+    };
+    land?: { areaHectares?: number; soilType?: string | null; waterSources?: string[]; existingCrops?: string[] };
+    contact?: { name?: string; phone?: string | null; email?: string | null };
+  };
+  consent: { report?: boolean; land?: boolean; contact?: boolean };
+  consentedAt: string | null;
+  status: LoanStatus;
+  lenderNote: string | null;
+  documentsRequested: string[];
+  sanctionedAmount: number | null;
+  interestRate: number | null;
+  sanctionedTenureMonths: number | null;
+  disbursedAmount: number | null;
+  disbursedOn: string | null;
+  respondedAt: string | null;
+  reportId: string | null;
+  origin: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export type LoanAction = 'review' | 'documents' | 'sanction' | 'disburse' | 'decline' | 'withdraw' | 'reply';
+
+export interface LoanDecision {
+  action: LoanAction;
+  note?: string | null;
+  documents?: string[];
+  amount?: number | null;
+  rate?: number | null;
+  tenureMonths?: number | null;
+  disbursedOn?: string | null;
 }
 
 /* ------------------------------------------------------------------ *

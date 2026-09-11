@@ -178,7 +178,8 @@ def client_address(request: Request) -> str:
 
 
 #: Records anyone in the audience may read.
-PUBLIC_TYPES = {"profile", "investment_request", "equipment_listing", "farmer_group", "rating", "insurance_policy"}
+PUBLIC_TYPES = {"profile", "investment_request", "equipment_listing", "farmer_group", "rating", "insurance_policy",
+                "loan_product"}
 #: Records only the owner's connections may read.
 CONNECTION_TYPES = {"land_share", "farm_update"}
 #: Records only the parties named in them may read.
@@ -192,6 +193,7 @@ PRIVATE_TYPES = {
     "deal",
     "dispute",
     "group_member",
+    "loan_application",
 }
 KNOWN_TYPES = PUBLIC_TYPES | PRIVATE_TYPES | CONNECTION_TYPES
 #: Records that link two people, and the statuses at which they do.
@@ -202,7 +204,15 @@ LINKS = {
     "equipment_partnership": {"active"},
     "group_member": {"active"},
     "deal": {"drafting", "active", "disputed", "completed"},
+    # Applying shares the applicant's contact with that lender, by consent.
+    "loan_application": {"submitted", "under_review", "documents_requested", "sanctioned", "disbursed"},
 }
+#: A loan application's two halves: the lender writes only these, and the
+#: applicant cannot write them at all (so nobody marks their own loan paid out).
+LOAN_LENDER_FIELDS = ("lender_note", "documents_requested", "sanctioned_amount", "interest_rate",
+                      "sanctioned_tenure_months", "disbursed_amount", "disbursed_on", "responded_at")
+LOAN_LENDER_STATUSES = {"under_review", "documents_requested", "sanctioned", "disbursed", "declined"}
+LOAN_OPEN = {"submitted", "under_review", "documents_requested"}
 #: What a newly connected person should now receive from the other.
 RESEND_ON_CONNECT = ("profile", "land_share", "farm_update", "insurance_policy")
 #: Fields the counterparty may change on a record someone else created.
@@ -365,8 +375,13 @@ def _rules(con: Conn, entity_type: str, payload: dict[str, Any]) -> tuple[str, l
     p = payload
     if entity_type == "profile":
         return p["id"], []
-    if entity_type in ("investment_request", "equipment_listing", "land_share", "farm_update"):
+    if entity_type in ("investment_request", "equipment_listing", "land_share", "farm_update", "loan_product"):
         return p["profile_id"], []
+    if entity_type == "loan_application":
+        lender = _owner_of(con, "loan_product", p["product_id"])
+        if lender is None or p.get("lender_profile_id") != lender:
+            raise HTTPException(status_code=422, detail="That loan is not on this server.")
+        return p["profile_id"], [p["profile_id"], lender]
     if entity_type == "connection":
         return p["requester_profile_id"], [p["requester_profile_id"], p["addressee_profile_id"]]
     if entity_type == "project_invite":
@@ -455,6 +470,39 @@ def _resend(con: Conn, parties: list[str]) -> None:
                 "UPDATE records SET rev = ? WHERE entity_type = ? AND entity_id = ?",
                 (_next_rev(con), row["entity_type"], row["entity_id"]),
             )
+
+
+def _loan_guard(existing: Row | None, incoming: dict[str, Any], by_lender: bool) -> dict[str, Any]:
+    """A loan application as each side may write it.
+
+    The lender changes only its own half and moves the status only to a
+    lender's step. The applicant writes the rest; it may withdraw an open
+    application, and otherwise the status stays where the lender left it.
+    """
+    before = json.loads(existing["payload"]) if existing is not None else {}
+    if by_lender:
+        out = dict(before)
+        for field in LOAN_LENDER_FIELDS:
+            if field in incoming:
+                out[field] = incoming[field]
+        wanted, was = incoming.get("status"), before.get("status")
+        # Nothing after a withdrawal; money only after a sanction.
+        if wanted in LOAN_LENDER_STATUSES and was != "withdrawn" and (
+            wanted != "disbursed" or was in ("sanctioned", "disbursed")
+        ):
+            out["status"] = wanted
+        if "updated_at" in incoming:
+            out["updated_at"] = incoming["updated_at"]
+        return out
+    out = {key: value for key, value in incoming.items() if key not in LOAN_LENDER_FIELDS}
+    out.update({field: before[field] for field in LOAN_LENDER_FIELDS if field in before})
+    if existing is None:
+        out["status"] = "submitted"
+    elif incoming.get("status") == "withdrawn" and before.get("status") in LOAN_OPEN:
+        out["status"] = "withdrawn"
+    else:
+        out["status"] = before.get("status", "submitted")
+    return out
 
 
 def _visible(con: Conn, row: Row, puller: Device) -> bool:
@@ -561,6 +609,11 @@ def push(body: PushIn, me: Device = Depends(device)) -> dict[str, Any]:
                     and owner != me.profile_id
                 ):
                     raise HTTPException(status_code=403, detail="not yours to create")
+                if record.entity_type == "loan_application":
+                    if existing is None and owner != me.profile_id:
+                        raise HTTPException(status_code=403, detail="only the applicant applies")
+                    by_lender = existing is not None and existing["owner_profile_id"] != me.profile_id
+                    payload = _loan_guard(existing, dict(record.payload), by_lender)
 
                 was = json.loads(existing["payload"]).get("status") if existing is not None else None
 
