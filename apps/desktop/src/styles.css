@@ -2880,3 +2880,56 @@ code {
   margin: 4px 0 0;
 }
 
+/* ------------------------------------------------------------------ *
+ * Phone width
+ * ------------------------------------------------------------------ */
+
+/* On a phone the top bar's links wrap onto a row of their own instead of
+   pushing the whole page sideways, and the profile chip shows only its
+   picture. Last in the file so it wins over the wider layouts above. */
+@media (max-width: 700px) {
+  .topbar {
+    padding: 10px 12px;
+  }
+
+  .topbar__brand {
+    flex: 1 1 auto;
+  }
+
+  .topbar .topbar__nav {
+    order: 3;
+    flex: 1 1 100%;
+    flex-wrap: wrap;
+    row-gap: 2px;
+  }
+
+  .navlink {
+    padding: 8px 10px;
+  }
+
+  .topbar .topbar__right {
+    gap: 6px;
+  }
+
+  .langswitch__button {
+    padding: 6px 10px;
+  }
+
+  .navlink--profile .navlink__text {
+    display: none;
+  }
+
+  .more__panel {
+    max-width: calc(100vw - 24px);
+  }
+
+  .content {
+    padding: 16px 12px;
+  }
+
+  /* A plot card's buttons wrap instead of running off the screen. */
+  .parcel__side {
+    flex-wrap: wrap;
+    justify-content: flex-start;
+  }
+}

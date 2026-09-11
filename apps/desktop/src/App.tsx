@@ -171,7 +171,7 @@ export function App() {
                 segment={profile.segment}
                 size="sm"
               />{' '}
-              {profile.organisationName || profile.displayName}
+              <span className="navlink__text">{profile.organisationName || profile.displayName}</span>
               {profile.visibility === 'online' ? <span title={t('share.online')}> 🌐</span> : null}
             </NavLink>
           ) : null}
