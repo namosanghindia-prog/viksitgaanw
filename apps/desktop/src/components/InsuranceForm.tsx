@@ -133,7 +133,7 @@ export function InsuranceForm({ categories, initial, currencyChoice = false, onS
 
         <div className="modal__body stack">
           {categories.length > 1 ? (
-            <ChoiceGroup label={t('insurance.category')} items={categories} value={category} onChange={pickCategory} />
+            <ChoiceGroup label={t('insurance.category')} items={categories} allowCustom value={category} onChange={pickCategory} />
           ) : null}
 
           {schemes.length ? (

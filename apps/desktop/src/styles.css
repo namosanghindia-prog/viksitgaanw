@@ -628,6 +628,33 @@ code {
   content: '✓ ';
 }
 
+/* "Other -- type your own": a dashed outline says it opens something. */
+.chip--add {
+  border-style: dashed;
+  color: var(--ink-muted);
+}
+
+/* A choice the person typed: the same chip, in italics, so it reads as theirs. */
+.chip--custom {
+  font-style: italic;
+}
+
+.choice-own {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.choice-own__input {
+  font: inherit;
+  min-height: 46px;
+  padding: 8px 14px;
+  border: 2px solid var(--leaf);
+  border-radius: 999px;
+  width: min(100%, 18rem);
+}
+
 /* ------------------------------------------------------------------ *
  * Callouts and buttons
  * ------------------------------------------------------------------ */

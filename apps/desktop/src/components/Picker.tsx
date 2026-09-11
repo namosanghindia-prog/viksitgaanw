@@ -1,4 +1,5 @@
 import { useCallback, useMemo, useState } from 'react';
+import { customCode, customText, isCustom } from '@viksitgaanw/shared';
 
 import { useI18n } from '../i18n';
 import { useDismissable } from '../lib/hooks';
@@ -27,6 +28,8 @@ interface PickerProps {
   onSearchChange?: (value: string) => void;
   searchPlaceholder?: string;
   allowClear?: boolean;
+  /** Offer what was typed in the search box as a choice of its own (``custom:<text>``). */
+  allowCustom?: boolean;
 }
 
 /**
@@ -53,6 +56,7 @@ export function Picker({
   onSearchChange,
   searchPlaceholder,
   allowClear = false,
+  allowCustom = false,
 }: PickerProps) {
   const { t } = useI18n();
   const [open, setOpen] = useState(false);
@@ -78,7 +82,15 @@ export function Picker({
     );
   }, [options, localQuery, remoteSearch]);
 
-  const selected = options.find((option) => option.value === value) ?? null;
+  const selected =
+    options.find((option) => option.value === value) ??
+    (value && isCustom(value) ? { value, label: customText(value) } : null);
+
+  // What was typed, as a choice -- unless it is exactly the name of an option.
+  const typedCode = allowCustom && !remoteSearch ? customCode(localQuery) : null;
+  const typedExact = options.some(
+    (option) => option.label.trim().toLocaleLowerCase() === localQuery.trim().toLocaleLowerCase(),
+  );
 
   const handleSearch = (next: string) => {
     if (remoteSearch) onSearchChange?.(next);
@@ -148,7 +160,7 @@ export function Picker({
 
           <div className="picker__list">
             {loading ? <p className="picker__empty">{t('common.loading')}</p> : null}
-            {!loading && visible.length === 0 ? (
+            {!loading && visible.length === 0 && !typedCode ? (
               <p className="picker__empty">{t('location.noResults')}</p>
             ) : null}
             {visible.map((option) => (
@@ -168,6 +180,19 @@ export function Picker({
                 ) : null}
               </button>
             ))}
+            {typedCode && !typedExact ? (
+              <button
+                type="button"
+                role="option"
+                aria-selected={false}
+                className="picker__option picker__option--custom"
+                onClick={() => select({ value: typedCode, label: customText(typedCode) })}
+              >
+                <span className="picker__option-label">
+                  ＋ {t('choice.use', { text: customText(typedCode) })}
+                </span>
+              </button>
+            ) : null}
           </div>
         </div>
       ) : null}

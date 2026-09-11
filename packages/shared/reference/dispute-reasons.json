@@ -1,6 +1,7 @@
 {
   "key": "dispute_reasons",
   "version": 1,
+  "allowCustom": true,
   "items": [
     { "code": "payment_not_received", "label": { "en": "Money was not released as agreed", "hi": "तय पैसा जारी नहीं हुआ" } },
     { "code": "work_not_done",        "label": { "en": "The work was not done",              "hi": "काम नहीं हुआ" } },
@@ -8,6 +9,10 @@
     { "code": "delay",                "label": { "en": "Too much delay",                     "hi": "बहुत देरी" } },
     { "code": "terms_changed",        "label": { "en": "Terms were changed",                 "hi": "शर्तें बदल दी गईं" } },
     { "code": "misuse",               "label": { "en": "Money used for something else",     "hi": "पैसा किसी और काम में लगाया" } },
-    { "code": "other",                "label": { "en": "Something else",                     "hi": "कुछ और" } }
+    { "code": "other",                "label": { "en": "Something else",                     "hi": "कुछ और" } },
+    { "code": "damage", "label": { "en": "Machine or produce damaged", "hi": "मशीन या उपज को नुकसान" } },
+    { "code": "wrong_quantity", "label": { "en": "Wrong quantity or weight", "hi": "गलत मात्रा या तौल" } },
+    { "code": "no_response", "label": { "en": "The other side does not answer", "hi": "दूसरा पक्ष जवाब नहीं दे रहा" } },
+    { "code": "misbehaviour", "label": { "en": "Rude or unfair behaviour", "hi": "बुरा या अनुचित व्यवहार" } }
   ]
 }

@@ -1,6 +1,7 @@
 {
   "key": "diary_activities",
   "version": 1,
+  "allowCustom": true,
   "items": [
     { "code": "land_preparation", "label": { "en": "Land preparation", "hi": "खेत की तैयारी" } },
     { "code": "sowing",           "label": { "en": "Sowing / planting", "hi": "बुवाई / रोपाई" } },
@@ -12,6 +13,17 @@
     { "code": "harvest",          "label": { "en": "Harvest",          "hi": "कटाई / तुड़ाई" } },
     { "code": "sale",             "label": { "en": "Sale",             "hi": "बिक्री" } },
     { "code": "labour",           "label": { "en": "Labour / hire",    "hi": "मज़दूरी / किराया" } },
-    { "code": "other",            "label": { "en": "Other",            "hi": "अन्य" } }
+    { "code": "other",            "label": { "en": "Other",            "hi": "अन्य" } },
+    { "code": "nursery", "label": { "en": "Nursery raising", "hi": "नर्सरी तैयार करना" } },
+    { "code": "transplanting", "label": { "en": "Transplanting", "hi": "रोपाई" } },
+    { "code": "manure", "label": { "en": "Farmyard manure / compost", "hi": "गोबर खाद / कम्पोस्ट" } },
+    { "code": "mulching", "label": { "en": "Mulching", "hi": "मल्चिंग" } },
+    { "code": "staking", "label": { "en": "Staking / trellis", "hi": "सहारा / मचान बाँधना" } },
+    { "code": "pest_scouting", "label": { "en": "Checking for pests", "hi": "कीट की निगरानी" } },
+    { "code": "soil_test", "label": { "en": "Soil test", "hi": "मिट्टी की जाँच" } },
+    { "code": "grading", "label": { "en": "Grading and packing", "hi": "छँटाई और पैकिंग" } },
+    { "code": "storage", "label": { "en": "Storage", "hi": "भंडारण" } },
+    { "code": "machine_hire", "label": { "en": "Machine hired", "hi": "मशीन किराये पर ली" } },
+    { "code": "repair", "label": { "en": "Repair / maintenance", "hi": "मरम्मत / रखरखाव" } }
   ]
 }

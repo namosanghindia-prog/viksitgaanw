@@ -182,11 +182,12 @@ export function AddPartnerDialog({ onClose, onAdded }: { onClose: () => void; on
             <LocationCascader value={area} onChange={setArea} depth={AREA[kind].depth} requiredLevels={AREA[kind].required} />
           </fieldset>
 
-          <ChoiceGroup label={t('addPartner.role')} items={REFERENCE.partner_roles.items} value={role} onChange={setRole} />
+          <ChoiceGroup label={t('addPartner.role')} items={REFERENCE.partner_roles.items} allowCustom value={role} onChange={setRole} />
           <ChoiceGroup
             label={t('addPartner.types')}
             hint={t('addPartner.typesHint')}
             items={REFERENCE.equipment_types.items}
+            allowCustom
             categories={REFERENCE.equipment_types.categories}
             multiple
             value={types}

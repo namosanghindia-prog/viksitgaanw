@@ -1,6 +1,7 @@
 {
   "key": "organisation_types",
   "version": 1,
+  "allowCustom": true,
   "items": [
     { "code": "fpo",                "segments": ["partner_national"],                          "label": { "en": "Farmer producer organisation (FPO)", "hi": "किसान उत्पादक संगठन (एफपीओ)" } },
     { "code": "cooperative",        "segments": ["partner_national"],                          "label": { "en": "Cooperative society",                "hi": "सहकारी समिति" } },
@@ -15,6 +16,14 @@
     { "code": "food_processor",     "segments": ["partner_national", "partner_international"], "label": { "en": "Food processor",                     "hi": "खाद्य प्रसंस्करण इकाई" } },
     { "code": "agritech",           "segments": ["partner_national", "partner_international"], "label": { "en": "Agritech company",                   "hi": "एग्रीटेक कंपनी" } },
     { "code": "research",           "segments": ["partner_national", "partner_international"], "label": { "en": "Research institute / university / KVK", "hi": "शोध संस्थान / विश्वविद्यालय / केवीके" } },
-    { "code": "ngo",                "segments": ["partner_national", "partner_international"], "label": { "en": "NGO / foundation",                   "hi": "स्वयंसेवी संस्था / फ़ाउंडेशन" } }
+    { "code": "ngo",                "segments": ["partner_national", "partner_international"], "label": { "en": "NGO / foundation",                   "hi": "स्वयंसेवी संस्था / फ़ाउंडेशन" } },
+    { "code": "trader", "segments": ["partner_national"], "label": { "en": "Trader / commission agent (arhtiya)", "hi": "व्यापारी / आढ़तिया" } },
+    { "code": "warehouse", "segments": ["partner_national"], "label": { "en": "Warehouse / cold storage", "hi": "वेयरहाउस / कोल्ड स्टोरेज" } },
+    { "code": "custom_hiring_centre", "segments": ["partner_national"], "label": { "en": "Custom hiring centre", "hi": "कस्टम हायरिंग सेंटर" } },
+    { "code": "dairy_union", "segments": ["partner_national"], "label": { "en": "Dairy / milk union", "hi": "डेयरी / दुग्ध संघ" } },
+    { "code": "bank", "segments": ["partner_national"], "label": { "en": "Bank / microfinance", "hi": "बैंक / माइक्रोफाइनेंस" } },
+    { "code": "kvk", "segments": ["partner_national"], "label": { "en": "Krishi Vigyan Kendra / agri university", "hi": "कृषि विज्ञान केंद्र / कृषि विश्वविद्यालय" } },
+    { "code": "certification_body", "segments": ["partner_national", "partner_international"], "label": { "en": "Certification body", "hi": "प्रमाणन संस्था" } },
+    { "code": "logistics", "segments": ["partner_national", "partner_international"], "label": { "en": "Logistics / shipping company", "hi": "लॉजिस्टिक्स / शिपिंग कंपनी" } }
   ]
 }

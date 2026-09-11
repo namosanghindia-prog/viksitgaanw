@@ -346,7 +346,7 @@ function DisputeSection({ deal, busy, act }: { deal: Deal; busy: string | null; 
       {opening ? (
         <div className="stack">
           <p className="callout callout--warn">{t('dispute.pausesDeal')}</p>
-          <ChoiceGroup label={t('dispute.reason')} items={REFERENCE.dispute_reasons.items} value={reason} onChange={setReason} />
+          <ChoiceGroup label={t('dispute.reason')} items={REFERENCE.dispute_reasons.items} allowCustom value={reason} onChange={setReason} />
           <TextField
             id="disputeDescription"
             label={t('dispute.description')}

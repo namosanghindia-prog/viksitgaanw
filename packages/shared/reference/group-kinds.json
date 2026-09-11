@@ -1,10 +1,14 @@
 {
   "key": "group_kinds",
   "version": 1,
+  "allowCustom": true,
   "items": [
     { "code": "fpo",         "label": { "en": "Farmer producer organisation (FPO)", "hi": "किसान उत्पादक संगठन (एफपीओ)" } },
     { "code": "cooperative", "label": { "en": "Cooperative society",                "hi": "सहकारी समिति" } },
     { "code": "shg",         "label": { "en": "Self-help group",                    "hi": "स्वयं सहायता समूह" } },
-    { "code": "informal",    "label": { "en": "Group of neighbours (not registered)", "hi": "पड़ोसियों का समूह (अपंजीकृत)" } }
+    { "code": "informal",    "label": { "en": "Group of neighbours (not registered)", "hi": "पड़ोसियों का समूह (अपंजीकृत)" } },
+    { "code": "jlg", "label": { "en": "Joint liability group (JLG)", "hi": "संयुक्त देयता समूह (जेएलजी)" } },
+    { "code": "water_users", "label": { "en": "Water users' association", "hi": "जल उपयोगकर्ता संघ" } },
+    { "code": "farmers_club", "label": { "en": "Farmers' club", "hi": "किसान क्लब" } }
   ]
 }

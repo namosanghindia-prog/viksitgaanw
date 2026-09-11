@@ -134,6 +134,7 @@ export function MachineFormPage() {
         <ChoiceGroup
           label={t('machineForm.type')}
           items={REFERENCE.equipment_types.items}
+          allowCustom
           categories={REFERENCE.equipment_types.categories}
           value={type}
           onChange={setType}
@@ -147,7 +148,7 @@ export function MachineFormPage() {
           <TextField id="year" label={t('machineForm.year')} type="number" inputMode="numeric" min={1950} value={year} onChange={setYear} optional />
           <TextField id="quantity" label={t('machineForm.quantity')} type="number" inputMode="numeric" min={1} value={quantity} onChange={setQuantity} />
         </div>
-        <ChoiceGroup label={t('machineForm.condition')} items={REFERENCE.equipment_conditions.items} value={condition} onChange={setCondition} />
+        <ChoiceGroup label={t('machineForm.condition')} items={REFERENCE.equipment_conditions.items} allowCustom value={condition} onChange={setCondition} />
         <TextField id="machineDescription" label={t('machineForm.description')} value={description} onChange={setDescription} multiline optional maxLength={4000} />
       </section>
 

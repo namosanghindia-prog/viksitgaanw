@@ -1,11 +1,16 @@
 {
   "key": "ownership_types",
   "version": 1,
+  "allowCustom": true,
   "items": [
     { "code": "owned",        "label": { "en": "Owned",              "hi": "स्वयं की" } },
     { "code": "leased",       "label": { "en": "Leased / rented",    "hi": "पट्टे / किराये पर" } },
     { "code": "sharecropped", "label": { "en": "Sharecropped",       "hi": "बटाई पर" } },
     { "code": "ancestral",    "label": { "en": "Ancestral (undivided)", "hi": "पैतृक (अविभाजित)" } },
-    { "code": "community",    "label": { "en": "Community / FPO",    "hi": "सामुदायिक / एफपीओ" } }
+    { "code": "community",    "label": { "en": "Community / FPO",    "hi": "सामुदायिक / एफपीओ" } },
+    { "code": "joint_family", "label": { "en": "Joint family land", "hi": "संयुक्त परिवार की ज़मीन" } },
+    { "code": "government_patta", "label": { "en": "Government allotted (patta)", "hi": "सरकारी पट्टा" } },
+    { "code": "forest_rights", "label": { "en": "Forest rights (FRA) title", "hi": "वन अधिकार पट्टा" } },
+    { "code": "mortgaged_in", "label": { "en": "Taken on mortgage (girvi)", "hi": "गिरवी पर ली ज़मीन" } }
   ]
 }

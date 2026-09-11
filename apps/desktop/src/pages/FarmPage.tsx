@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import type { DiaryEntry, DiaryInput, Weather } from '@viksitgaanw/shared';
-import { REFERENCE, findItem } from '@viksitgaanw/shared';
+import { REFERENCE, customText, findItem, isCustom } from '@viksitgaanw/shared';
 
 import { ChoiceGroup } from '../components/ChoiceGroup';
 import { PhotoButton } from '../components/PhotoButton';
@@ -269,9 +269,10 @@ function DiaryForm({
   const [error, setError] = useState<string | null>(null);
 
   const cropOptions = useMemo(() => {
-    // The plot's own crops first, then everything else.
+    // The plot's own crops first -- those typed on the plot too -- then everything else.
     const all = REFERENCE.crops.items.map((item) => ({ value: item.code, label: rt(item) }));
-    return [...all.filter((o) => crops.includes(o.value)), ...all.filter((o) => !crops.includes(o.value))];
+    const typed = crops.filter(isCustom).map((code) => ({ value: code, label: customText(code) }));
+    return [...typed, ...all.filter((o) => crops.includes(o.value)), ...all.filter((o) => !crops.includes(o.value))];
   }, [crops, rt]);
   const unitOptions = useMemo(
     () => REFERENCE.quantity_units.items.map((item) => ({ value: item.code, label: rt(item) })),
@@ -313,10 +314,10 @@ function DiaryForm({
 
   return (
     <div className="stack diary__form">
-      <ChoiceGroup label={t('diary.activity')} items={REFERENCE.diary_activities.items} value={activity} onChange={setActivity} />
+      <ChoiceGroup label={t('diary.activity')} items={REFERENCE.diary_activities.items} allowCustom value={activity} onChange={setActivity} />
       <div className="field-row">
         <TextField id="diaryDate" label={t('diary.date')} type="date" value={date} onChange={setDate} />
-        <Picker label={t('diary.crop')} placeholder={t('common.notSelected')} options={cropOptions} value={crop} onChange={setCrop} allowClear />
+        <Picker label={t('diary.crop')} placeholder={t('common.notSelected')} options={cropOptions} value={crop} onChange={setCrop} allowClear allowCustom />
       </div>
       {inputs ? (
         <div className="field-row">

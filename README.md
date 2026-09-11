@@ -784,6 +784,15 @@ belong to the selected state, or a village under the wrong sub-district is
 rejected with a clear message. A silently-wrong plot size or an unverifiable
 address would end up on a project report a bank is asked to lend against.
 
+**But never a dead end.** Where a list cannot cover everything — crops, soils,
+machines, needs, certifications and fifteen more — the last chip is **Other —
+type your own**. What is typed is kept as `custom:<text>` in the same field,
+shows as typed in every language and on reports, and counts as "not stated"
+for the suggestion engine rather than as a mismatch. Lists marked
+`"allowCustom": true` in `packages/shared/reference/` take one; units,
+countries, profile types and the lists rules depend on do not. Typed text is
+one line of at most 60 characters, without markup.
+
 **Metering hooks from day one.** `app_events` records parcel creation, report
 generation and deal completion as first-class events. The monetisation plan
 bills on the latter two, and retrofitting an event log means losing history.

@@ -1,10 +1,12 @@
 {
   "key": "water_types",
   "version": 1,
+  "allowCustom": true,
   "items": [
     { "code": "sweet",   "label": { "en": "Sweet / fresh",     "hi": "मीठा पानी" } },
     { "code": "salty",   "label": { "en": "Salty / brackish",  "hi": "खारा पानी" } },
     { "code": "other",   "label": { "en": "Other",             "hi": "अन्य" } },
-    { "code": "unknown", "label": { "en": "I am not sure",     "hi": "मुझे पता नहीं है" } }
+    { "code": "unknown", "label": { "en": "I am not sure",     "hi": "मुझे पता नहीं है" } },
+    { "code": "hard", "label": { "en": "Hard (leaves white deposits)", "hi": "भारी पानी (सफ़ेद परत छोड़ता है)" } }
   ]
 }

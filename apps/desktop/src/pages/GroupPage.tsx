@@ -161,7 +161,11 @@ function Members({ group, act }: { group: FarmerGroup; act: Act }) {
     setAdding(false);
   };
 
-  const cropItems = REFERENCE.crops.items.filter((item) => group.crops.length === 0 || group.crops.includes(item.code));
+  // The group's own crops, typed ones included; any crop at all when it names none.
+  const openCrops = group.crops.length === 0;
+  const cropItems = openCrops
+    ? REFERENCE.crops.items
+    : group.crops.map((code) => findItem('crops', code)).filter((item): item is ReferenceItem => !!item);
 
   return (
     <section className="card">
@@ -184,7 +188,7 @@ function Members({ group, act }: { group: FarmerGroup; act: Act }) {
           <div className="narrow">
             <TextField id="memberLand" label={t('groups.memberLand')} type="number" inputMode="decimal" min={0} value={land} onChange={setLand} required />
           </div>
-          <ChoiceGroup label={t('groups.memberCrops')} items={cropItems} multiple value={crops} onChange={setCrops} />
+          <ChoiceGroup label={t('groups.memberCrops')} items={cropItems} allowCustom={openCrops} multiple value={crops} onChange={setCrops} />
           <div className="actions">
             <button type="button" className="button button--ghost" onClick={() => setAdding(false)}>
               {t('common.cancel')}
@@ -374,12 +378,13 @@ function GroupRequest({ group, onMade }: { group: FarmerGroup; onMade: () => voi
           </div>
           <ChoiceGroup label={t('request.seeking')} items={seekingItems} multiple value={seeking} onChange={setSeeking} />
           {seeking.includes('investment') ? (
-            <ChoiceGroup label={t('request.modes')} items={REFERENCE.investment_modes.items} multiple value={modes} onChange={setModes} />
+            <ChoiceGroup label={t('request.modes')} items={REFERENCE.investment_modes.items} allowCustom multiple value={modes} onChange={setModes} />
           ) : null}
           {seeking.includes('partnership') ? (
             <ChoiceGroup
               label={t('request.partnershipTypes')}
               items={REFERENCE.partnership_types.items}
+              allowCustom
               multiple
               value={partnershipTypes}
               onChange={setPartnershipTypes}

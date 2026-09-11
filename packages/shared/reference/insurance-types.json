@@ -1,6 +1,7 @@
 {
   "key": "insurance_types",
   "version": 1,
+  "allowCustom": true,
   "items": [
     {
       "code": "crop",
@@ -90,6 +91,33 @@
       "note": {
         "en": "Covers produce lost or damaged on the road, at the port or at sea.",
         "hi": "सड़क, बंदरगाह या समुद्र में खोए या खराब हुए माल को कवर करता है।"
+      }
+    },
+    {
+      "code": "pumpset",
+      "scopes": ["request", "parcel"],
+      "label": { "en": "Pump set and tube-well", "hi": "पंप सेट और ट्यूबवेल" },
+      "note": {
+        "en": "A burnt motor or a collapsed bore can stop irrigation in the middle of a season.",
+        "hi": "जली मोटर या धँसा बोर मौसम के बीच में सिंचाई रोक सकता है।"
+      }
+    },
+    {
+      "code": "vehicle",
+      "scopes": ["farmer", "partner"],
+      "label": { "en": "Vehicle (tractor, pickup)", "hi": "वाहन (ट्रैक्टर, पिकअप)" },
+      "note": {
+        "en": "Third-party cover is compulsory on the road; own-damage cover pays for your own repairs.",
+        "hi": "सड़क पर थर्ड-पार्टी बीमा ज़रूरी है; अपने नुकसान का बीमा अपनी मरम्मत का खर्च देता है।"
+      }
+    },
+    {
+      "code": "stored_produce",
+      "scopes": ["request", "partner"],
+      "label": { "en": "Stored produce / warehouse stock", "hi": "भंडारित उपज / गोदाम का माल" },
+      "note": {
+        "en": "Grain or produce in a store can be lost to fire, flood or theft before it is sold.",
+        "hi": "गोदाम में रखा अनाज या उपज बिकने से पहले आग, बाढ़ या चोरी में जा सकती है।"
       }
     }
   ]

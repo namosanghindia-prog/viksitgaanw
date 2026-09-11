@@ -1,12 +1,17 @@
 {
   "key": "irrigation_types",
   "version": 1,
+  "allowCustom": true,
   "items": [
     { "code": "rainfed",   "label": { "en": "Rainfed (no irrigation)", "hi": "वर्षा आधारित (सिंचाई नहीं)" } },
     { "code": "flood",     "label": { "en": "Flood / surface",         "hi": "बाढ़ / सतही" } },
     { "code": "furrow",    "label": { "en": "Furrow",                  "hi": "कूँड़ विधि" } },
     { "code": "drip",      "label": { "en": "Drip",                    "hi": "ड्रिप" } },
     { "code": "sprinkler", "label": { "en": "Sprinkler",               "hi": "स्प्रिंकलर" } },
-    { "code": "mixed",     "label": { "en": "Mixed",                   "hi": "मिश्रित" } }
+    { "code": "mixed",     "label": { "en": "Mixed",                   "hi": "मिश्रित" } },
+    { "code": "basin", "label": { "en": "Basin / ring (around trees)", "hi": "थाला / रिंग (पेड़ों के चारों ओर)" } },
+    { "code": "border", "label": { "en": "Border strip (kyari)", "hi": "क्यारी / पट्टी सिंचाई" } },
+    { "code": "micro_sprinkler", "label": { "en": "Micro-sprinkler / rain pipe", "hi": "माइक्रो स्प्रिंकलर / रेन पाइप" } },
+    { "code": "pitcher", "label": { "en": "Pitcher / pot irrigation", "hi": "घड़ा सिंचाई" } }
   ]
 }

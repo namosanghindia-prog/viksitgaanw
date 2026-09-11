@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import type { AdminLevel, LocationSelection, Profile, ProfileInput, Segment } from '@viksitgaanw/shared';
-import { REFERENCE, findItem, itemsForSegment } from '@viksitgaanw/shared';
+import { REFERENCE, findItem, isCustom, itemsForSegment } from '@viksitgaanw/shared';
 
 import { useI18n } from '../i18n';
 import { api } from '../lib/api';
@@ -223,7 +223,11 @@ export function ProfileForm({
   const organisationRequired =
     partner ||
     government ||
-    (investor && investorType !== null && !PERSONAL_INVESTOR_TYPES.includes(investorType));
+    (investor &&
+      investorType !== null &&
+      !PERSONAL_INVESTOR_TYPES.includes(investorType) &&
+      // A type they typed may be a person or a company: do not insist.
+      !isCustom(investorType));
   const phoneRequired = segment === 'farmer' || segment === 'investor_india' || segment === 'partner_national';
   const emailRequired = international || government;
 
@@ -319,6 +323,7 @@ export function ProfileForm({
             <ChoiceGroup
               label={t('profile.investorType')}
               items={itemsForSegment('investor_types', segment)}
+              allowCustom
               value={investorType}
               onChange={(value) => setDetail('investorType', value)}
             />
@@ -331,6 +336,7 @@ export function ProfileForm({
             <ChoiceGroup
               label={t('profile.orgType')}
               items={itemsForSegment('organisation_types', segment)}
+              allowCustom
               value={(details.organisationType as string | null) ?? null}
               onChange={(value) => setDetail('organisationType', value)}
             />
@@ -510,6 +516,7 @@ export function ProfileForm({
           <ChoiceGroup
             label={t('profile.needs')}
             items={REFERENCE.farmer_needs.items}
+            allowCustom
             multiple
             value={list('needs')}
             onChange={(value) => setDetail('needs', value)}
@@ -565,6 +572,7 @@ export function ProfileForm({
           <ChoiceGroup
             label={t('profile.modes')}
             items={REFERENCE.investment_modes.items}
+            allowCustom
             multiple
             value={list('modes')}
             onChange={(value) => setDetail('modes', value)}
@@ -575,6 +583,7 @@ export function ProfileForm({
             label={t('profile.sectors')}
             hint={t('profile.sectorsHint')}
             items={REFERENCE.opportunity_kinds.items}
+            allowCustom
             multiple
             value={list('sectors')}
             onChange={(value) => setDetail('sectors', value)}
@@ -656,6 +665,7 @@ export function ProfileForm({
           <ChoiceGroup
             label={t('profile.partnershipTypes')}
             items={REFERENCE.partnership_types.items}
+            allowCustom
             multiple
             value={list('partnershipTypes')}
             onChange={(value) => setDetail('partnershipTypes', value)}
@@ -681,6 +691,7 @@ export function ProfileForm({
           <ChoiceGroup
             label={t('profile.crops')}
             items={REFERENCE.crops.items}
+            allowCustom
             categories={REFERENCE.crops.categories}
             multiple
             value={list('crops')}
@@ -698,6 +709,7 @@ export function ProfileForm({
             <ChoiceGroup
               label={t('profile.certifications')}
               items={REFERENCE.certifications.items}
+              allowCustom
               multiple
               value={list('certificationsRequired')}
               onChange={(value) => setDetail('certificationsRequired', value)}
@@ -714,6 +726,7 @@ export function ProfileForm({
               <ChoiceGroup
                 label={t('profile.modes')}
                 items={REFERENCE.investment_modes.items}
+                allowCustom
                 multiple
                 value={list('investmentModes')}
                 onChange={(value) => setDetail('investmentModes', value)}

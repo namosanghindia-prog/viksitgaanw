@@ -92,20 +92,67 @@ def valid_codes(key: str) -> frozenset[str]:
     return frozenset(item["code"] for item in get_list(key)["items"])
 
 
+# --------------------------------------------------------------------------- #
+# Choices people type themselves
+# --------------------------------------------------------------------------- #
+
+#: A choice the person typed rather than picked -- "Dragon fruit", "Kisan
+#: club" -- is kept in the same field as a list code, as ``custom:<text>``.
+#: Only lists marked ``"allowCustom": true`` take one; units, countries and
+#: the lists rules depend on do not. Such a choice shows as typed in every
+#: language, and the engine treats it as not stated.
+CUSTOM_PREFIX = "custom:"
+CUSTOM_MAX_LENGTH = 60
+
+
+def custom_text(code: str | None) -> str | None:
+    """The typed text of a custom choice; None for a list code."""
+    if code and code.startswith(CUSTOM_PREFIX):
+        return code[len(CUSTOM_PREFIX):]
+    return None
+
+
+def is_custom(code: str | None) -> bool:
+    return custom_text(code) is not None
+
+
+def allows_custom(key: str) -> bool:
+    return bool(get_list(key).get("allowCustom"))
+
+
+def well_formed_custom(code: str) -> bool:
+    """Text a person may type: one line, trimmed, single-spaced, no markup."""
+    text = custom_text(code)
+    if text is None or not 0 < len(text) <= CUSTOM_MAX_LENGTH:
+        return False
+    if text != " ".join(text.split()):
+        return False
+    return all(ch.isprintable() and ch not in "<>" for ch in text)
+
+
 def is_valid(key: str, code: str | None) -> bool:
-    """True when ``code`` is a member of the reference list (None passes)."""
+    """True when ``code`` is a member of the reference list, or a custom choice
+    the list takes (None passes)."""
     if code is None:
         return True
-    return code in valid_codes(key)
+    if code in valid_codes(key):
+        return True
+    return is_custom(code) and allows_custom(key) and well_formed_custom(code)
 
 
 def get_item(key: str, code: str | None) -> dict[str, Any] | None:
-    """The full reference entry for ``code``, or None."""
+    """The full reference entry for ``code``, or None.
+
+    A custom choice on a list that takes one comes back as an entry of its
+    own, labelled with its text, so labels resolve without special cases.
+    """
     if code is None:
         return None
     for item in get_list(key)["items"]:
         if item["code"] == code:
             return item
+    if is_valid(key, code) and is_custom(code):
+        return {"code": code, "label": {"en": custom_text(code)}, "custom": True}
     return None
 
 

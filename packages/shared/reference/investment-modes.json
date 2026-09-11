@@ -1,6 +1,7 @@
 {
   "key": "investment_modes",
   "version": 1,
+  "allowCustom": true,
   "multi": true,
   "items": [
     {

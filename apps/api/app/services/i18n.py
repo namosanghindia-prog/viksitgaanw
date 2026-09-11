@@ -126,6 +126,12 @@ class Translator:
         if not code:
             return self.s("v.notStated")
 
+        from .. import reference as reference_data
+
+        typed = reference_data.custom_text(code)
+        if typed is not None:
+            return typed  # what the person typed, as they typed it, in every language
+
         override = (
             knowledge.load_catalogue(self.language)
             .get("reference", {})
@@ -134,8 +140,6 @@ class Translator:
         )
         if override:
             return override
-
-        from .. import reference as reference_data
 
         try:
             items = reference_data.get_list(list_key)["items"]

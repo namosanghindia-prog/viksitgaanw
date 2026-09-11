@@ -98,7 +98,12 @@ const BASE = {
   water_sources: waterSources as ReferenceList,
   water_types: waterTypes as ReferenceList,
   /** Opportunity kinds from the knowledge base: what investors call sectors. */
-  opportunity_kinds: { key: 'opportunity_kinds', version: 1, items: opportunitiesMeta.kinds } as ReferenceList,
+  opportunity_kinds: {
+    key: 'opportunity_kinds',
+    version: 1,
+    allowCustom: true,
+    items: opportunitiesMeta.kinds,
+  } as ReferenceList,
 } as const;
 
 export const REFERENCE = Object.fromEntries(
@@ -125,7 +130,47 @@ export function pickLabel(label: Label | undefined, lang: LanguageCode): string 
 
 export function findItem(key: ReferenceKey, code: string | null | undefined): ReferenceItem | undefined {
   if (!code) return undefined;
+  if (isCustom(code)) return customItem(code);
   return REFERENCE[key].items.find((item) => item.code === code);
+}
+
+/* ------------------------------------------------------------------ *
+ * Choices people type themselves
+ * ------------------------------------------------------------------ */
+
+/**
+ * A choice typed rather than picked -- "Dragon fruit", "Kisan club" -- is kept
+ * in the same field as a list code, as ``custom:<text>``. Only lists marked
+ * ``allowCustom`` take one (see apps/api/app/reference.py, which checks the
+ * same rules). It shows as typed in every language.
+ */
+export const CUSTOM_PREFIX = 'custom:';
+export const CUSTOM_MAX_LENGTH = 60;
+
+export function isCustom(code: string | null | undefined): boolean {
+  return !!code && code.startsWith(CUSTOM_PREFIX);
+}
+
+export function customText(code: string): string {
+  return code.slice(CUSTOM_PREFIX.length);
+}
+
+/** What someone typed, as it is stored: one line, single-spaced, no markup. Null when nothing is left. */
+export function customCode(text: string): string | null {
+  const clean = text
+    .replace(/[<>]/g, '')
+    .split(/\s+/)
+    .filter(Boolean)
+    .join(' ')
+    .slice(0, CUSTOM_MAX_LENGTH)
+    .trim();
+  return clean ? `${CUSTOM_PREFIX}${clean}` : null;
+}
+
+/** A typed choice as a list entry, so every label lookup works unchanged. */
+export function customItem(code: string): ReferenceItem {
+  const text = customText(code);
+  return { code, label: { en: text, hi: text }, custom: true };
 }
 
 /**

@@ -161,12 +161,13 @@ export function GroupFormPage() {
       <h2 className="page__title">{groupId ? t('groups.edit') : t('groups.create')}</h2>
       <div className="stack">
         <TextField id="groupName" label={t('groups.name')} value={name} onChange={setName} required maxLength={200} />
-        <ChoiceGroup label={t('groups.kind')} items={REFERENCE.group_kinds.items} value={kind} onChange={setKind} />
+        <ChoiceGroup label={t('groups.kind')} items={REFERENCE.group_kinds.items} allowCustom value={kind} onChange={setKind} />
         <TextField id="groupAbout" label={t('groups.description')} value={description} onChange={setDescription} multiline optional maxLength={4000} />
         <LocationCascader value={place} onChange={setPlace} depth="subdistrict" requiredLevels={['state', 'district']} />
         <ChoiceGroup
           label={t('groups.crops')}
           items={REFERENCE.crops.items}
+          allowCustom
           categories={REFERENCE.crops.categories}
           multiple
           value={crops}

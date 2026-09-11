@@ -72,11 +72,12 @@ export function AskPartnerDialog({ seller, onClose, onSent }: AskPartnerDialogPr
           </button>
         </header>
         <div className="modal__body stack">
-          <ChoiceGroup label={t('askPartner.role')} items={roles} value={role} onChange={setRole} />
+          <ChoiceGroup label={t('askPartner.role')} items={roles} allowCustom value={role} onChange={setRole} />
           <ChoiceGroup
             label={t('askPartner.types')}
             hint={t('addPartner.typesHint')}
             items={REFERENCE.equipment_types.items}
+            allowCustom
             categories={REFERENCE.equipment_types.categories}
             multiple
             value={types}

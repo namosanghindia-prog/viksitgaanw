@@ -1,6 +1,7 @@
 {
   "key": "certifications",
   "version": 1,
+  "allowCustom": true,
   "multi": true,
   "items": [
     { "code": "organic_india", "label": { "en": "India Organic (NPOP)", "hi": "इंडिया ऑर्गेनिक (एनपीओपी)" } },
@@ -9,6 +10,17 @@
     { "code": "globalgap",     "label": { "en": "GLOBALG.A.P.",         "hi": "ग्लोबलगैप" } },
     { "code": "indgap",        "label": { "en": "IndGAP",               "hi": "इंडगैप" } },
     { "code": "fairtrade",     "label": { "en": "Fairtrade",            "hi": "फ़ेयरट्रेड" } },
-    { "code": "rainforest",    "label": { "en": "Rainforest Alliance",  "hi": "रेनफ़ॉरेस्ट एलायंस" } }
+    { "code": "rainforest",    "label": { "en": "Rainforest Alliance",  "hi": "रेनफ़ॉरेस्ट एलायंस" } },
+    { "code": "pgs_india", "label": { "en": "PGS-India organic", "hi": "पीजीएस-इंडिया जैविक" } },
+    { "code": "fssai", "label": { "en": "FSSAI food licence", "hi": "एफएसएसएआई खाद्य लाइसेंस" } },
+    { "code": "apeda", "label": { "en": "APEDA export registration", "hi": "एपीडा निर्यात पंजीकरण" } },
+    { "code": "agmark", "label": { "en": "AGMARK grading", "hi": "एगमार्क ग्रेडिंग" } },
+    { "code": "gi_tag", "label": { "en": "GI tag (geographical indication)", "hi": "जीआई टैग (भौगोलिक संकेत)" } },
+    { "code": "haccp", "label": { "en": "HACCP food safety", "hi": "एचएसीसीपी खाद्य सुरक्षा" } },
+    { "code": "iso22000", "label": { "en": "ISO 22000", "hi": "आईएसओ 22000" } },
+    { "code": "brcgs", "label": { "en": "BRCGS", "hi": "बीआरसीजीएस" } },
+    { "code": "halal", "label": { "en": "Halal", "hi": "हलाल" } },
+    { "code": "kosher", "label": { "en": "Kosher", "hi": "कोशर" } },
+    { "code": "residue_tested", "label": { "en": "Pesticide-residue tested", "hi": "कीटनाशक-अवशेष जाँची उपज" } }
   ]
 }

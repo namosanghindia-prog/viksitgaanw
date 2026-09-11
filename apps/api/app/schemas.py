@@ -326,7 +326,11 @@ class InvestorDetails(ApiModel):
     @field_validator("sectors")
     @classmethod
     def _known_sectors(cls, values: list[str]) -> list[str]:
-        unknown = [v for v in values if v not in knowledge.kind_index()]
+        # A sector the investor typed ("custom:Bamboo") is kept, though it matches no project kind.
+        unknown = [
+            v for v in values
+            if v not in knowledge.kind_index() and not reference.well_formed_custom(v)
+        ]
         if unknown:
             raise ValueError(f"Unknown sectors: {', '.join(unknown)}")
         return _dedupe(values)
@@ -618,7 +622,12 @@ class ProfileInput(ApiModel):
             investor_type = self.details["investor_type"]
             if not reference.allowed_for_segment("investor_types", investor_type, segment):
                 raise ValueError(f"'{investor_type}' is not an investor type for this profile.")
-            if investor_type not in seg.PERSONAL_INVESTOR_TYPES and not self.organisation_name:
+            # A type they typed themselves may be a person or a company: do not insist.
+            if (
+                investor_type not in seg.PERSONAL_INVESTOR_TYPES
+                and not reference.is_custom(investor_type)
+                and not self.organisation_name
+            ):
                 raise ValueError("Enter the name of the company, fund or institution.")
             if segment == "investor_india" and not self.phone:
                 raise ValueError("A mobile number is required.")

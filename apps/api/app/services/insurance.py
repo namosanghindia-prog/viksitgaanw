@@ -82,6 +82,10 @@ def category_label(code: str) -> str:
 
 def scope_allows(scope: str, category: str) -> bool:
     item = reference.get_item("insurance_types", category) or {}
+    # Cover the person typed themselves may be recorded anywhere; it never
+    # stands in for the cover a project's rule names, which is by list code.
+    if item.get("custom"):
+        return True
     return scope in item.get("scopes", [])
 
 

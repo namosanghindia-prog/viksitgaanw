@@ -1,6 +1,7 @@
 {
   "key": "water_sources",
   "version": 1,
+  "allowCustom": true,
   "multi": true,
   "items": [
     { "code": "borewell",   "label": { "en": "Borewell / tubewell", "hi": "बोरवेल / ट्यूबवेल" } },
@@ -11,6 +12,11 @@
     { "code": "farm_pond",  "label": { "en": "Farm pond",           "hi": "खेत तालाब" } },
     { "code": "lift",       "label": { "en": "Lift irrigation",     "hi": "लिफ्ट सिंचाई" } },
     { "code": "rainfed",    "label": { "en": "Rain only",           "hi": "केवल वर्षा" } },
-    { "code": "other",      "label": { "en": "Other",               "hi": "अन्य" } }
+    { "code": "other",      "label": { "en": "Other",               "hi": "अन्य" } },
+    { "code": "shared_tubewell", "label": { "en": "Government / shared tube-well", "hi": "सरकारी / साझा ट्यूबवेल" } },
+    { "code": "spring", "label": { "en": "Spring / stream", "hi": "झरना / नाला" } },
+    { "code": "check_dam", "label": { "en": "Check dam", "hi": "चेक डैम" } },
+    { "code": "rainwater_tank", "label": { "en": "Rainwater harvesting tank", "hi": "वर्षा जल संचयन टंकी" } },
+    { "code": "tanker", "label": { "en": "Water tanker", "hi": "पानी का टैंकर" } }
   ]
 }

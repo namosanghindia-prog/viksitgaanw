@@ -1,6 +1,7 @@
 {
   "key": "farmer_needs",
   "version": 1,
+  "allowCustom": true,
   "multi": true,
   "items": [
     { "code": "investment",  "label": { "en": "An investor for a project",          "hi": "परियोजना के लिए निवेशक" } },
@@ -9,6 +10,16 @@
     { "code": "buyers",      "label": { "en": "Buyers for my produce",              "hi": "मेरी उपज के खरीदार" } },
     { "code": "equipment",   "label": { "en": "Machinery on rent",                  "hi": "किराये पर मशीनरी" } },
     { "code": "training",    "label": { "en": "Training and advice",                "hi": "प्रशिक्षण और सलाह" } },
-    { "code": "schemes",     "label": { "en": "Help with government schemes",       "hi": "सरकारी योजनाओं में मदद" } }
+    { "code": "schemes",     "label": { "en": "Help with government schemes",       "hi": "सरकारी योजनाओं में मदद" } },
+    { "code": "insurance", "label": { "en": "Insurance", "hi": "बीमा" } },
+    { "code": "storage", "label": { "en": "Storage / cold storage", "hi": "भंडारण / कोल्ड स्टोरेज" } },
+    { "code": "transport", "label": { "en": "Transport to market", "hi": "मंडी तक ढुलाई" } },
+    { "code": "seeds_inputs", "label": { "en": "Good seeds, fertiliser and sprays", "hi": "अच्छे बीज, खाद और दवा" } },
+    { "code": "soil_testing", "label": { "en": "Soil testing", "hi": "मिट्टी की जाँच" } },
+    { "code": "irrigation", "label": { "en": "Irrigation / water", "hi": "सिंचाई / पानी" } },
+    { "code": "labour", "label": { "en": "Farm labour", "hi": "खेत मज़दूर" } },
+    { "code": "land_lease", "label": { "en": "Land to lease", "hi": "पट्टे पर ज़मीन" } },
+    { "code": "processing", "label": { "en": "Processing / value addition", "hi": "प्रसंस्करण / मूल्य संवर्धन" } },
+    { "code": "certification", "label": { "en": "Organic or export certification", "hi": "जैविक या निर्यात प्रमाणन" } }
   ]
 }

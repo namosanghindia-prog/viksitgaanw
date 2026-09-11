@@ -18,7 +18,18 @@
     "globalgap": "গ্লোবালগ্যাপ (GLOBALG.A.P.)",
     "indgap": "ইন্ডগ্যাপ (IndGAP)",
     "fairtrade": "ফেয়ারট্রেড",
-    "rainforest": "রেনফরেস্ট অ্যালায়েন্স"
+    "rainforest": "রেনফরেস্ট অ্যালায়েন্স",
+    "pgs_india": "পিজিএস-ইন্ডিয়া জৈব",
+    "fssai": "এফএসএসএআই খাদ্য লাইসেন্স",
+    "apeda": "এপিডা রপ্তানি নিবন্ধন",
+    "agmark": "অ্যাগমার্ক গ্রেডিং",
+    "gi_tag": "জিআই ট্যাগ (ভৌগোলিক নির্দেশক)",
+    "haccp": "এইচএসিসিপি খাদ্য নিরাপত্তা",
+    "iso22000": "আইএসও ২২০০০",
+    "brcgs": "বিআরসিজিএস",
+    "halal": "হালাল",
+    "kosher": "কোশার",
+    "residue_tested": "কীটনাশক-অবশেষ পরীক্ষিত"
   },
   "countries": {
     "AF": "আফগানিস্তান",
@@ -322,7 +333,78 @@
     "berseem": "বারসিম",
     "napier": "নেপিয়ার ঘাস",
     "fallow": "পতিত",
-    "other": "অন্যান্য"
+    "other": "অন্যান্য",
+    "kodo": "কোদো",
+    "kutki": "কুটকি",
+    "foxtail_millet": "কাউন",
+    "barnyard_millet": "শ্যামা ধান",
+    "proso_millet": "চিনা",
+    "oats": "ওটস",
+    "moth": "মথকলাই",
+    "kulthi": "কুলথি কলাই",
+    "lobia": "লোবিয়া",
+    "rajma": "রাজমা",
+    "khesari": "খেসারি",
+    "linseed": "তিসি",
+    "safflower": "কুসুম",
+    "niger": "সরগুজা",
+    "tobacco": "তামাক",
+    "cabbage": "বাঁধাকপি",
+    "carrot": "গাজর",
+    "radish": "মুলো",
+    "spinach": "পালং শাক",
+    "bottle_gourd": "লাউ",
+    "bitter_gourd": "করলা",
+    "ridge_gourd": "ঝিঙে",
+    "pointed_gourd": "পটল",
+    "cucumber": "শসা",
+    "pumpkin": "কুমড়ো",
+    "capsicum": "ক্যাপসিকাম",
+    "beans": "শিম",
+    "drumstick": "সজনে",
+    "sweet_potato": "মিষ্টি আলু",
+    "colocasia": "কচু",
+    "yam": "ওল",
+    "mushroom": "মাশরুম",
+    "apple": "আপেল",
+    "litchi": "লিচু",
+    "pineapple": "আনারস",
+    "jackfruit": "কাঁঠাল",
+    "sapota": "সবেদা",
+    "custard_apple": "আতা",
+    "watermelon": "তরমুজ",
+    "muskmelon": "খরমুজ",
+    "strawberry": "স্ট্রবেরি",
+    "dragon_fruit": "ড্রাগন ফল",
+    "ber": "কুল",
+    "aonla": "আমলকী",
+    "jamun": "জাম",
+    "fig": "ডুমুর",
+    "black_pepper": "গোলমরিচ",
+    "cardamom": "এলাচ",
+    "fenugreek": "মেথি",
+    "fennel": "মৌরি",
+    "ajwain": "জোয়ান",
+    "cashew": "কাজু",
+    "cocoa": "কোকো",
+    "oil_palm": "তেল পাম",
+    "bamboo": "বাঁশ",
+    "lucerne": "লুসার্ন ঘাস",
+    "fodder_sorghum": "গোখাদ্য জোয়ার",
+    "marigold": "গাঁদা",
+    "rose": "গোলাপ",
+    "tuberose": "রজনীগন্ধা",
+    "jasmine": "বেলফুল",
+    "chrysanthemum": "চন্দ্রমল্লিকা",
+    "gerbera": "জারবেরা",
+    "ashwagandha": "অশ্বগন্ধা",
+    "aloe_vera": "ঘৃতকুমারী",
+    "tulsi": "তুলসী",
+    "stevia": "স্টেভিয়া",
+    "lemongrass": "লেমনগ্রাস",
+    "mentha": "পুদিনা",
+    "isabgol": "ইসবগুল",
+    "safed_musli": "সাদা মুসলি"
   },
   "crop_categories": {
     "cereal": "দানাশস্য",
@@ -334,7 +416,9 @@
     "spice": "মশলা",
     "plantation": "বাগিচা ফসল",
     "fodder": "গোখাদ্য",
-    "other": "অন্যান্য"
+    "other": "অন্যান্য",
+    "flower": "ফুল",
+    "medicinal": "ঔষধি ও সুগন্ধি গাছ"
   },
   "depth_units": {
     "foot": "ফুট",
@@ -351,7 +435,18 @@
     "harvest": "ফসল তোলা",
     "sale": "বিক্রি",
     "labour": "মজুরি / ভাড়া",
-    "other": "অন্যান্য"
+    "other": "অন্যান্য",
+    "nursery": "বীজতলা তৈরি",
+    "transplanting": "রোয়া",
+    "manure": "গোবর সার / কম্পোস্ট",
+    "mulching": "মালচিং",
+    "staking": "মাচা বাঁধা",
+    "pest_scouting": "পোকা পর্যবেক্ষণ",
+    "soil_test": "মাটি পরীক্ষা",
+    "grading": "বাছাই ও প্যাকিং",
+    "storage": "মজুত",
+    "machine_hire": "যন্ত্র ভাড়া",
+    "repair": "মেরামত / রক্ষণাবেক্ষণ"
   },
   "dispute_reasons": {
     "payment_not_received": "কথামতো টাকা ছাড়া হয়নি",
@@ -360,13 +455,18 @@
     "delay": "খুব বেশি দেরি",
     "terms_changed": "শর্ত বদলে দেওয়া হয়েছে",
     "misuse": "টাকা অন্য কাজে লাগানো হয়েছে",
-    "other": "অন্য কিছু"
+    "other": "অন্য কিছু",
+    "damage": "যন্ত্র বা ফসলের ক্ষতি",
+    "wrong_quantity": "ভুল পরিমাণ বা ওজন",
+    "no_response": "অন্য পক্ষ সাড়া দিচ্ছে না",
+    "misbehaviour": "খারাপ বা অন্যায় আচরণ"
   },
   "equipment_conditions": {
     "new": "নতুন",
     "like_new": "পুরনো — প্রায় নতুন",
     "good": "পুরনো — ভালো",
-    "fair": "পুরনো — সারাই লাগবে"
+    "fair": "পুরনো — সারাই লাগবে",
+    "needs_repair": "মেরামত দরকার"
   },
   "equipment_types": {
     "tractor": "ট্র্যাক্টর",
@@ -392,7 +492,36 @@
     "chaff_cutter": "খড় কাটার মেশিন",
     "milking_machine": "দুধ দোয়ানোর মেশিন",
     "bulk_milk_cooler": "বাল্ক মিল্ক কুলার",
-    "other": "অন্য মেশিন"
+    "other": "অন্য মেশিন",
+    "mini_tractor": "মিনি ট্রাক্টর",
+    "bullock_cart": "গরুর গাড়ি",
+    "pickup": "পিকআপ ভ্যান",
+    "generator": "ডিজেল জেনারেটর",
+    "ridger": "রিজার / বেড তৈরির যন্ত্র",
+    "puddler": "কাদা করার যন্ত্র",
+    "subsoiler": "সাবসয়লার",
+    "power_weeder": "পাওয়ার উইডার",
+    "happy_seeder": "হ্যাপি সিডার",
+    "zero_till_drill": "জিরো টিল বীজ বপন যন্ত্র",
+    "planter": "প্ল্যান্টার (আলু / ভুট্টা)",
+    "mulch_layer": "মালচিং যন্ত্র",
+    "boom_sprayer": "বুম স্প্রেয়ার",
+    "mist_blower": "মিস্ট ব্লোয়ার",
+    "solar_pump": "সৌর পাম্প",
+    "rain_gun": "রেন গান",
+    "hdpe_pipes": "এইচডিপিই / পিভিসি পাইপ",
+    "straw_reaper": "খড় কাটার যন্ত্র",
+    "maize_sheller": "ভুট্টা ছাড়ানোর যন্ত্র",
+    "groundnut_digger": "চিনাবাদাম তোলার যন্ত্র",
+    "potato_digger": "আলু তোলার যন্ত্র",
+    "flour_mill": "আটা চাকি",
+    "oil_expeller": "তেলের ঘানি",
+    "rice_huller": "ধান ভাঙার কল",
+    "mobile_cold_room": "ভ্রাম্যমাণ হিমঘর",
+    "weighing_scale": "ওজন যন্ত্র",
+    "feed_machine": "পশুখাদ্য তৈরির যন্ত্র",
+    "egg_incubator": "ডিম ফোটানোর যন্ত্র",
+    "pond_aerator": "পুকুরের এয়ারেটর"
   },
   "farmer_needs": {
     "investment": "প্রকল্পের জন্য বিনিয়োগকারী",
@@ -401,7 +530,17 @@
     "buyers": "আমার ফসলের ক্রেতা",
     "equipment": "ভাড়ায় যন্ত্রপাতি",
     "training": "প্রশিক্ষণ ও পরামর্শ",
-    "schemes": "সরকারি প্রকল্পে সাহায্য"
+    "schemes": "সরকারি প্রকল্পে সাহায্য",
+    "insurance": "বিমা",
+    "storage": "মজুত / হিমঘর",
+    "transport": "বাজারে পরিবহণ",
+    "seeds_inputs": "ভালো বীজ, সার ও ওষুধ",
+    "soil_testing": "মাটি পরীক্ষা",
+    "irrigation": "সেচ / জল",
+    "labour": "খেতমজুর",
+    "land_lease": "লিজে জমি",
+    "processing": "প্রক্রিয়াকরণ / মূল্য সংযোজন",
+    "certification": "জৈব বা রপ্তানি শংসাপত্র"
   },
   "government_levels": {
     "gram_panchayat": "গ্রাম পঞ্চায়েত",
@@ -415,7 +554,10 @@
     "fpo": "কৃষক উৎপাদক সংস্থা (এফপিও)",
     "cooperative": "সমবায় সমিতি",
     "shg": "স্বনির্ভর গোষ্ঠী",
-    "informal": "প্রতিবেশীদের দল (নিবন্ধিত নয়)"
+    "informal": "প্রতিবেশীদের দল (নিবন্ধিত নয়)",
+    "jlg": "যৌথ দায়বদ্ধ দল (জেএলজি)",
+    "water_users": "জল ব্যবহারকারী সমিতি",
+    "farmers_club": "কৃষক ক্লাব"
   },
   "insurance_schemes": {
     "pmfby": "প্রধানমন্ত্রী ফসল বিমা যোজনা (পিএমএফবিওয়াই)",
@@ -438,7 +580,10 @@
     "life": "জীবন বিমা",
     "health": "স্বাস্থ্য বিমা",
     "trade_credit": "ব্যবসা / রপ্তানি ঋণ বিমা",
-    "cargo": "মাল / পরিবহন বিমা"
+    "cargo": "মাল / পরিবহন বিমা",
+    "pumpset": "পাম্প সেট ও নলকূপ",
+    "vehicle": "যানবাহন (ট্রাক্টর, পিকআপ)",
+    "stored_produce": "মজুত ফসল / গুদামের মাল"
   },
   "investment_modes": {
     "revenue_share": "ফসল বিক্রির আয়ে ভাগ",
@@ -467,7 +612,11 @@
     "furrow": "নালা পদ্ধতি",
     "drip": "ড্রিপ",
     "sprinkler": "স্প্রিঙ্কলার",
-    "mixed": "মিশ্র"
+    "mixed": "মিশ্র",
+    "basin": "গাছের গোড়ায় বেসিন সেচ",
+    "border": "আল বেঁধে সেচ",
+    "micro_sprinkler": "মাইক্রো স্প্রিংকলার / রেন পাইপ",
+    "pitcher": "কলসি সেচ"
   },
   "organisation_types": {
     "fpo": "কৃষক উৎপাদক সংস্থা (এফপিও)",
@@ -483,14 +632,26 @@
     "food_processor": "খাদ্য প্রক্রিয়াকরণ সংস্থা",
     "agritech": "এগ্রিটেক কোম্পানি",
     "research": "গবেষণা প্রতিষ্ঠান / বিশ্ববিদ্যালয় / কেভিকে",
-    "ngo": "স্বেচ্ছাসেবী সংস্থা / ফাউন্ডেশন"
+    "ngo": "স্বেচ্ছাসেবী সংস্থা / ফাউন্ডেশন",
+    "trader": "ব্যবসায়ী / আড়তদার",
+    "warehouse": "গুদাম / হিমঘর",
+    "custom_hiring_centre": "কাস্টম হায়ারিং সেন্টার",
+    "dairy_union": "ডেয়ারি / দুগ্ধ সমবায়",
+    "bank": "ব্যাংক / ক্ষুদ্রঋণ সংস্থা",
+    "kvk": "কৃষি বিজ্ঞান কেন্দ্র / কৃষি বিশ্ববিদ্যালয়",
+    "certification_body": "শংসাপত্র প্রদানকারী সংস্থা",
+    "logistics": "লজিস্টিকস / জাহাজ কোম্পানি"
   },
   "ownership_types": {
     "owned": "নিজস্ব",
     "leased": "ইজারা / ভাড়া",
     "sharecropped": "ভাগচাষ",
     "ancestral": "পৈতৃক (অবিভক্ত)",
-    "community": "সামূহিক / এফপিও"
+    "community": "সামূহিক / এফপিও",
+    "joint_family": "যৌথ পরিবারের জমি",
+    "government_patta": "সরকারি পাট্টা",
+    "forest_rights": "বনাধিকার পাট্টা",
+    "mortgaged_in": "বন্ধকি জমি"
   },
   "partner_roles": {
     "rental_point": "ভাড়া কেন্দ্র",
@@ -498,7 +659,11 @@
     "operator": "মেশিন চালক",
     "service_centre": "সার্ভিস ও সারাই কেন্দ্র",
     "demo_farm": "প্রদর্শনী খামার",
-    "distributor": "পরিবেশক / ডিলার"
+    "distributor": "পরিবেশক / ডিলার",
+    "mechanic": "মিস্ত্রি",
+    "spare_parts": "যন্ত্রাংশের দোকান",
+    "booking_agent": "বুকিং এজেন্ট",
+    "trainer": "প্রশিক্ষক"
   },
   "partnership_types": {
     "contract_farming": "চুক্তি চাষ",
@@ -510,7 +675,15 @@
     "export": "রপ্তানির সঙ্গে যোগ",
     "equipment": "মেশিন ও যন্ত্রপাতি",
     "training": "প্রশিক্ষণ",
-    "certification": "শংসাপত্রে সহায়তা (জৈব, জিএপি)"
+    "certification": "শংসাপত্রে সহায়তা (জৈব, জিএপি)",
+    "storage": "মজুত / গুদাম",
+    "cold_chain": "হিমশৃঙ্খল",
+    "logistics": "পরিবহণ ও লজিস্টিকস",
+    "credit": "ঋণ / অর্থ সংযোগ",
+    "insurance": "বিমা",
+    "branding": "ব্র্যান্ডিং ও প্যাকেজিং",
+    "soil_testing": "মাটি ও জল পরীক্ষা",
+    "land_lease": "জমি লিজ"
   },
   "quantity_units": {
     "kg": "কেজি",
@@ -566,13 +739,19 @@
     "farm_pond": "খেতের পুকুর",
     "lift": "লিফট সেচ",
     "rainfed": "শুধু বৃষ্টি",
-    "other": "অন্যান্য"
+    "other": "অন্যান্য",
+    "shared_tubewell": "সরকারি / যৌথ নলকূপ",
+    "spring": "ঝরনা / ছড়া",
+    "check_dam": "চেক ড্যাম",
+    "rainwater_tank": "বৃষ্টির জল ধরার ট্যাঙ্ক",
+    "tanker": "জলের ট্যাঙ্কার"
   },
   "water_types": {
     "sweet": "মিঠা জল",
     "salty": "নোনা জল",
     "other": "অন্যান্য",
-    "unknown": "আমি জানি না"
+    "unknown": "আমি জানি না",
+    "hard": "খর জল (সাদা দাগ পড়ে)"
   },
   "opportunity_kinds": {
     "horticulture": "বাগিচা / উদ্যানপালন",

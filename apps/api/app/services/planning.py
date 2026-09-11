@@ -13,7 +13,7 @@ from typing import Any, Callable
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
-from .. import knowledge
+from .. import knowledge, reference
 from ..models import District, FarmerGroup, InvestmentRequest, LandParcel, MandiPrice, State, SubDistrict, Village
 from ..schemas import (
     EconomicsOut,
@@ -40,26 +40,38 @@ def land_profile(parcel: LandParcel, session: Session | None = None) -> LandProf
     the family's crops across all its plots, what other farms in the district
     grow, and how many villages are in the tehsil. The suggestions and the
     report both pass one, so the two always agree.
+
+    A soil, water source or crop the farmer typed themselves is left out: the
+    engine knows nothing about it, so it counts as not stated rather than as
+    a mismatch.
     """
     return LandProfile(
         area_hectares=float(parcel.area_hectares),
         state_code=parcel.state_code,
         district_code=parcel.district_code,
-        soil_type=parcel.soil_type,
-        water_sources=tuple(parcel.water_sources or []),
-        water_type=parcel.water_type,
+        soil_type=_known(parcel.soil_type),
+        water_sources=_known_all(parcel.water_sources),
+        water_type=_known(parcel.water_type),
         water_depth_metres=parcel.water_depth_metres,
-        irrigation_type=parcel.irrigation_type,
-        existing_crops=tuple(parcel.existing_crops or []),
+        irrigation_type=_known(parcel.irrigation_type),
+        existing_crops=_known_all(parcel.existing_crops),
         **(_surroundings(session, parcel) if session is not None else {}),
     )
+
+
+def _known(code: str | None) -> str | None:
+    return None if reference.is_custom(code) else code
+
+
+def _known_all(codes: list[str] | None) -> tuple[str, ...]:
+    return tuple(code for code in codes or [] if not reference.is_custom(code))
 
 
 def _surroundings(session: Session, parcel: LandParcel) -> dict[str, Any]:
     household: set[str] = set()
     if parcel.farmer_id:
         for crops in session.scalars(select(LandParcel.existing_crops).where(LandParcel.farmer_id == parcel.farmer_id)):
-            household.update(crops or [])
+            household.update(_known_all(crops))
 
     # Other farms nearby: open projects and farmer groups in the district this
     # device can see. Sample data and the owner's own records do not count.

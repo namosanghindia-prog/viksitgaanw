@@ -1,6 +1,7 @@
 {
   "key": "soil_types",
   "version": 1,
+  "allowCustom": true,
   "items": [
     { "code": "unknown",         "label": { "en": "I am not sure",        "hi": "मुझे पता नहीं है" } },
     { "code": "alluvial",        "label": { "en": "Alluvial",             "hi": "जलोढ़ (दोमट)" } },

@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
-import type { InvestmentRequest, Seeking } from '@viksitgaanw/shared';
-import { REFERENCE } from '@viksitgaanw/shared';
+import type { InvestmentRequest, ReferenceItem, Seeking } from '@viksitgaanw/shared';
+import { findItem } from '@viksitgaanw/shared';
+
+const present = (item: ReferenceItem | undefined): item is ReferenceItem => !!item;
 
 import { useI18n } from '../i18n';
 import { api } from '../lib/api';
@@ -41,11 +43,12 @@ export function InterestDialog({ request, kind, onClose, onSent }: InterestDialo
   }, [busy, onClose]);
 
   const modes = useMemo(
-    () => REFERENCE.investment_modes.items.filter((item) => request.modes.includes(item.code)),
+    // What the farmer asked for, including anything they typed themselves.
+    () => request.modes.map((code) => findItem('investment_modes', code)).filter(present),
     [request.modes],
   );
   const partnerships = useMemo(
-    () => REFERENCE.partnership_types.items.filter((item) => request.partnershipTypes.includes(item.code)),
+    () => request.partnershipTypes.map((code) => findItem('partnership_types', code)).filter(present),
     [request.partnershipTypes],
   );
 

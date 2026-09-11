@@ -18,7 +18,18 @@
     "globalgap": "ग्लोबलगॅप",
     "indgap": "इंडगॅप",
     "fairtrade": "फेअरट्रेड",
-    "rainforest": "रेनफॉरेस्ट अलायन्स"
+    "rainforest": "रेनफॉरेस्ट अलायन्स",
+    "pgs_india": "पीजीएस-इंडिया सेंद्रिय",
+    "fssai": "एफएसएसएआय अन्न परवाना",
+    "apeda": "अपेडा निर्यात नोंदणी",
+    "agmark": "ॲगमार्क प्रतवारी",
+    "gi_tag": "जीआय टॅग (भौगोलिक मानांकन)",
+    "haccp": "एचएसीसीपी अन्न सुरक्षा",
+    "iso22000": "आयएसओ २२०००",
+    "brcgs": "बीआरसीजीएस",
+    "halal": "हलाल",
+    "kosher": "कोशर",
+    "residue_tested": "कीटकनाशक-अवशेष तपासलेले"
   },
   "countries": {
     "AF": "अफगाणिस्तान",
@@ -322,7 +333,78 @@
     "berseem": "बरसीम",
     "napier": "नेपियर गवत",
     "fallow": "पडीक",
-    "other": "इतर"
+    "other": "इतर",
+    "kodo": "कोद्रा",
+    "kutki": "सावा",
+    "foxtail_millet": "राळा",
+    "barnyard_millet": "भगर / वरई",
+    "proso_millet": "वरी",
+    "oats": "ओट",
+    "moth": "मटकी",
+    "kulthi": "कुळीथ",
+    "lobia": "चवळी",
+    "rajma": "राजमा",
+    "khesari": "लाखोळी",
+    "linseed": "जवस",
+    "safflower": "करडई",
+    "niger": "कारळे",
+    "tobacco": "तंबाखू",
+    "cabbage": "कोबी",
+    "carrot": "गाजर",
+    "radish": "मुळा",
+    "spinach": "पालक",
+    "bottle_gourd": "दुधी भोपळा",
+    "bitter_gourd": "कारले",
+    "ridge_gourd": "दोडका",
+    "pointed_gourd": "परवर",
+    "cucumber": "काकडी",
+    "pumpkin": "लाल भोपळा",
+    "capsicum": "ढोबळी मिरची",
+    "beans": "घेवडा",
+    "drumstick": "शेवगा",
+    "sweet_potato": "रताळे",
+    "colocasia": "अळू",
+    "yam": "सुरण",
+    "mushroom": "अळिंबी",
+    "apple": "सफरचंद",
+    "litchi": "लिची",
+    "pineapple": "अननस",
+    "jackfruit": "फणस",
+    "sapota": "चिकू",
+    "custard_apple": "सीताफळ",
+    "watermelon": "कलिंगड",
+    "muskmelon": "खरबूज",
+    "strawberry": "स्ट्रॉबेरी",
+    "dragon_fruit": "ड्रॅगन फ्रूट",
+    "ber": "बोर",
+    "aonla": "आवळा",
+    "jamun": "जांभूळ",
+    "fig": "अंजीर",
+    "black_pepper": "काळी मिरी",
+    "cardamom": "वेलची",
+    "fenugreek": "मेथी",
+    "fennel": "बडीशेप",
+    "ajwain": "ओवा",
+    "cashew": "काजू",
+    "cocoa": "कोको",
+    "oil_palm": "तेलताड",
+    "bamboo": "बांबू",
+    "lucerne": "लसूणघास",
+    "fodder_sorghum": "चारा ज्वारी",
+    "marigold": "झेंडू",
+    "rose": "गुलाब",
+    "tuberose": "निशिगंध",
+    "jasmine": "मोगरा",
+    "chrysanthemum": "शेवंती",
+    "gerbera": "जरबेरा",
+    "ashwagandha": "अश्वगंधा",
+    "aloe_vera": "कोरफड",
+    "tulsi": "तुळस",
+    "stevia": "स्टेव्हिया",
+    "lemongrass": "गवती चहा",
+    "mentha": "पुदिना",
+    "isabgol": "इसबगोल",
+    "safed_musli": "सफेद मुसळी"
   },
   "crop_categories": {
     "cereal": "तृणधान्ये",
@@ -334,7 +416,9 @@
     "spice": "मसाले",
     "plantation": "मळ्याची पिके",
     "fodder": "चारा",
-    "other": "इतर"
+    "other": "इतर",
+    "flower": "फुले",
+    "medicinal": "औषधी व सुगंधी वनस्पती"
   },
   "depth_units": {
     "foot": "फूट",
@@ -351,7 +435,18 @@
     "harvest": "काढणी / तोडणी",
     "sale": "विक्री",
     "labour": "मजुरी / भाडे",
-    "other": "इतर"
+    "other": "इतर",
+    "nursery": "रोपवाटिका तयार करणे",
+    "transplanting": "पुनर्लागवड",
+    "manure": "शेणखत / कंपोस्ट",
+    "mulching": "आच्छादन",
+    "staking": "आधार / मांडव बांधणी",
+    "pest_scouting": "कीड पाहणी",
+    "soil_test": "माती परीक्षण",
+    "grading": "प्रतवारी व पॅकिंग",
+    "storage": "साठवण",
+    "machine_hire": "यंत्र भाड्याने घेतले",
+    "repair": "दुरुस्ती / देखभाल"
   },
   "dispute_reasons": {
     "payment_not_received": "ठरल्याप्रमाणे पैसे दिले नाहीत",
@@ -360,13 +455,18 @@
     "delay": "खूप उशीर",
     "terms_changed": "अटी बदलल्या",
     "misuse": "पैसे दुसऱ्याच कामासाठी वापरले",
-    "other": "दुसरे काही"
+    "other": "दुसरे काही",
+    "damage": "यंत्र किंवा मालाचे नुकसान",
+    "wrong_quantity": "चुकीचे प्रमाण किंवा वजन",
+    "no_response": "दुसरी बाजू उत्तर देत नाही",
+    "misbehaviour": "उद्धट किंवा अन्यायकारक वागणूक"
   },
   "equipment_conditions": {
     "new": "नवीन",
     "like_new": "वापरलेले — जवळपास नवीन",
     "good": "वापरलेले — चांगले",
-    "fair": "वापरलेले — दुरुस्ती हवी"
+    "fair": "वापरलेले — दुरुस्ती हवी",
+    "needs_repair": "दुरुस्ती आवश्यक"
   },
   "equipment_types": {
     "tractor": "ट्रॅक्टर",
@@ -392,7 +492,36 @@
     "chaff_cutter": "कडबा कुट्टी यंत्र",
     "milking_machine": "दूध काढण्याचे यंत्र",
     "bulk_milk_cooler": "बल्क मिल्क कूलर",
-    "other": "इतर यंत्र"
+    "other": "इतर यंत्र",
+    "mini_tractor": "मिनी ट्रॅक्टर",
+    "bullock_cart": "बैलगाडी",
+    "pickup": "पिकअप / छोटे मालवाहू वाहन",
+    "generator": "डिझेल जनरेटर",
+    "ridger": "सरी यंत्र / गादीवाफा यंत्र",
+    "puddler": "चिखलणी यंत्र",
+    "subsoiler": "सबसॉयलर",
+    "power_weeder": "पॉवर वीडर",
+    "happy_seeder": "हॅपी सीडर",
+    "zero_till_drill": "शून्य मशागत पेरणी यंत्र",
+    "planter": "लागवड यंत्र (बटाटा / मका)",
+    "mulch_layer": "मल्चिंग यंत्र",
+    "boom_sprayer": "बूम फवारणी यंत्र",
+    "mist_blower": "मिस्ट ब्लोअर",
+    "solar_pump": "सौर पंप",
+    "rain_gun": "रेन गन",
+    "hdpe_pipes": "एचडीपीई / पीव्हीसी पाईप",
+    "straw_reaper": "भुसा यंत्र",
+    "maize_sheller": "मका सोलणी यंत्र",
+    "groundnut_digger": "भुईमूग काढणी यंत्र",
+    "potato_digger": "बटाटा काढणी यंत्र",
+    "flour_mill": "पिठाची गिरणी",
+    "oil_expeller": "तेल घाणा",
+    "rice_huller": "भात भरडणी यंत्र",
+    "mobile_cold_room": "फिरते शीतगृह",
+    "weighing_scale": "वजन काटा",
+    "feed_machine": "पशुखाद्य यंत्र",
+    "egg_incubator": "अंडी उबवणी यंत्र",
+    "pond_aerator": "तलाव एरेटर"
   },
   "farmer_needs": {
     "investment": "प्रकल्पासाठी गुंतवणूकदार",
@@ -401,7 +530,17 @@
     "buyers": "माझ्या शेतमालासाठी खरेदीदार",
     "equipment": "भाड्याने यंत्रे",
     "training": "प्रशिक्षण आणि सल्ला",
-    "schemes": "शासकीय योजनांसाठी मदत"
+    "schemes": "शासकीय योजनांसाठी मदत",
+    "insurance": "विमा",
+    "storage": "साठवण / शीतगृह",
+    "transport": "बाजारापर्यंत वाहतूक",
+    "seeds_inputs": "चांगले बियाणे, खते व औषधे",
+    "soil_testing": "माती परीक्षण",
+    "irrigation": "सिंचन / पाणी",
+    "labour": "शेतमजूर",
+    "land_lease": "भाडेपट्ट्याने जमीन",
+    "processing": "प्रक्रिया / मूल्यवर्धन",
+    "certification": "सेंद्रिय किंवा निर्यात प्रमाणपत्र"
   },
   "government_levels": {
     "gram_panchayat": "ग्रामपंचायत",
@@ -415,7 +554,10 @@
     "fpo": "शेतकरी उत्पादक कंपनी (एफपीओ)",
     "cooperative": "सहकारी संस्था",
     "shg": "स्वयं सहाय्यता गट (बचत गट)",
-    "informal": "शेजाऱ्यांचा गट (नोंदणी नसलेला)"
+    "informal": "शेजाऱ्यांचा गट (नोंदणी नसलेला)",
+    "jlg": "संयुक्त दायित्व गट (जेएलजी)",
+    "water_users": "पाणी वापर संस्था",
+    "farmers_club": "शेतकरी मंडळ"
   },
   "insurance_schemes": {
     "pmfby": "प्रधानमंत्री पीक विमा योजना (पीएमएफबीवाय)",
@@ -438,7 +580,10 @@
     "life": "जीवन विमा",
     "health": "आरोग्य विमा",
     "trade_credit": "व्यापार / निर्यात कर्ज विमा",
-    "cargo": "माल वाहतूक विमा"
+    "cargo": "माल वाहतूक विमा",
+    "pumpset": "पंप संच व कूपनलिका",
+    "vehicle": "वाहन (ट्रॅक्टर, पिकअप)",
+    "stored_produce": "साठवलेला माल / गोदामातील साठा"
   },
   "investment_modes": {
     "revenue_share": "पिकाच्या उत्पन्नात वाटा",
@@ -467,7 +612,11 @@
     "furrow": "सरी पद्धत",
     "drip": "ठिबक",
     "sprinkler": "तुषार",
-    "mixed": "मिश्र"
+    "mixed": "मिश्र",
+    "basin": "आळे पद्धत (झाडांभोवती)",
+    "border": "सारा पद्धत",
+    "micro_sprinkler": "सूक्ष्म तुषार / रेन पाईप",
+    "pitcher": "मडके सिंचन"
   },
   "organisation_types": {
     "fpo": "शेतकरी उत्पादक कंपनी (एफपीओ)",
@@ -483,14 +632,26 @@
     "food_processor": "अन्न प्रक्रिया उद्योग",
     "agritech": "अ‍ॅग्रीटेक कंपनी",
     "research": "संशोधन संस्था / विद्यापीठ / कृषी विज्ञान केंद्र",
-    "ngo": "स्वयंसेवी संस्था / फाउंडेशन"
+    "ngo": "स्वयंसेवी संस्था / फाउंडेशन",
+    "trader": "व्यापारी / अडत्या",
+    "warehouse": "गोदाम / शीतगृह",
+    "custom_hiring_centre": "कस्टम हायरिंग केंद्र",
+    "dairy_union": "दूध संघ / डेअरी",
+    "bank": "बँक / सूक्ष्म वित्त संस्था",
+    "kvk": "कृषी विज्ञान केंद्र / कृषी विद्यापीठ",
+    "certification_body": "प्रमाणन संस्था",
+    "logistics": "लॉजिस्टिक्स / शिपिंग कंपनी"
   },
   "ownership_types": {
     "owned": "स्वतःची",
     "leased": "भाडेपट्ट्यावर",
     "sharecropped": "बटाईने",
     "ancestral": "वडिलोपार्जित (अविभक्त)",
-    "community": "सामुदायिक / एफपीओ"
+    "community": "सामुदायिक / एफपीओ",
+    "joint_family": "एकत्र कुटुंबाची जमीन",
+    "government_patta": "सरकारी पट्टा",
+    "forest_rights": "वन हक्क पट्टा",
+    "mortgaged_in": "गहाण घेतलेली जमीन"
   },
   "partner_roles": {
     "rental_point": "भाडे केंद्र",
@@ -498,7 +659,11 @@
     "operator": "यंत्र चालक",
     "service_centre": "सर्व्हिस व दुरुस्ती केंद्र",
     "demo_farm": "प्रात्यक्षिक शेत",
-    "distributor": "वितरक / डीलर"
+    "distributor": "वितरक / डीलर",
+    "mechanic": "मेकॅनिक",
+    "spare_parts": "सुटे भाग दुकान",
+    "booking_agent": "बुकिंग एजंट",
+    "trainer": "प्रशिक्षक"
   },
   "partnership_types": {
     "contract_farming": "करार शेती",
@@ -510,7 +675,15 @@
     "export": "निर्यातीशी जोडणी",
     "equipment": "यंत्रसामग्री आणि उपकरणे",
     "training": "प्रशिक्षण",
-    "certification": "प्रमाणपत्रासाठी मदत (सेंद्रिय, जीएपी)"
+    "certification": "प्रमाणपत्रासाठी मदत (सेंद्रिय, जीएपी)",
+    "storage": "साठवण / गोदाम",
+    "cold_chain": "शीत साखळी",
+    "logistics": "वाहतूक व लॉजिस्टिक्स",
+    "credit": "कर्ज / वित्त जोडणी",
+    "insurance": "विमा",
+    "branding": "ब्रँडिंग व पॅकेजिंग",
+    "soil_testing": "माती व पाणी परीक्षण",
+    "land_lease": "जमीन भाडेपट्टा"
   },
   "quantity_units": {
     "kg": "किलो",
@@ -566,13 +739,19 @@
     "farm_pond": "शेततळे",
     "lift": "उपसा सिंचन",
     "rainfed": "फक्त पाऊस",
-    "other": "इतर"
+    "other": "इतर",
+    "shared_tubewell": "सरकारी / सामायिक कूपनलिका",
+    "spring": "झरा / ओढा",
+    "check_dam": "बंधारा",
+    "rainwater_tank": "पावसाचे पाणी साठवण टाकी",
+    "tanker": "पाण्याचा टँकर"
   },
   "water_types": {
     "sweet": "गोड पाणी",
     "salty": "खारे पाणी",
     "other": "इतर",
-    "unknown": "मला माहीत नाही"
+    "unknown": "मला माहीत नाही",
+    "hard": "जड पाणी (पांढरा थर बसतो)"
   },
   "opportunity_kinds": {
     "horticulture": "फळबाग / उद्यानविद्या",

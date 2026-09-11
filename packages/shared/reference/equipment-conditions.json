@@ -1,10 +1,12 @@
 {
   "key": "equipment_conditions",
   "version": 1,
+  "allowCustom": true,
   "items": [
     { "code": "new",       "label": { "en": "New",                 "hi": "नई" } },
     { "code": "like_new",  "label": { "en": "Used — like new",     "hi": "पुरानी — लगभग नई" } },
     { "code": "good",      "label": { "en": "Used — good",         "hi": "पुरानी — अच्छी" } },
-    { "code": "fair",      "label": { "en": "Used — needs work",   "hi": "पुरानी — मरम्मत चाहिए" } }
+    { "code": "fair",      "label": { "en": "Used — needs work",   "hi": "पुरानी — मरम्मत चाहिए" } },
+    { "code": "needs_repair", "label": { "en": "Needs repair", "hi": "मरम्मत चाहिए" } }
   ]
 }

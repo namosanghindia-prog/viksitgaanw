@@ -1,6 +1,7 @@
 {
   "key": "partner_roles",
   "version": 1,
+  "allowCustom": true,
   "items": [
     {
       "code": "rental_point",
@@ -31,6 +32,26 @@
       "code": "distributor",
       "label": { "en": "Distributor / dealer", "hi": "वितरक / डीलर" },
       "note": { "en": "Stocks and sells machines across a district or state.", "hi": "ज़िले या राज्य में मशीनें रखता और बेचता है।" }
+    },
+    {
+      "code": "mechanic",
+      "label": { "en": "Mechanic", "hi": "मैकेनिक / मिस्त्री" },
+      "note": { "en": "Repairs the machines on the spot, so a breakdown does not cost a whole day.", "hi": "मौके पर मशीन ठीक करता है, ताकि खराबी से पूरा दिन बर्बाद न हो।" }
+    },
+    {
+      "code": "spare_parts",
+      "label": { "en": "Spare parts shop", "hi": "स्पेयर पार्ट्स दुकान" },
+      "note": { "en": "Keeps the parts that wear out, close to where the machines work.", "hi": "घिसने वाले पुर्ज़े वहीं पास में रखता है जहाँ मशीनें चलती हैं।" }
+    },
+    {
+      "code": "booking_agent",
+      "label": { "en": "Booking agent", "hi": "बुकिंग एजेंट" },
+      "note": { "en": "Takes hire bookings in the village and keeps the machine's calendar.", "hi": "गाँव में किराये की बुकिंग लेता है और मशीन का कैलेंडर संभालता है।" }
+    },
+    {
+      "code": "trainer",
+      "label": { "en": "Trainer", "hi": "प्रशिक्षक" },
+      "note": { "en": "Teaches farmers and operators to use the machine safely and well.", "hi": "किसानों और चालकों को मशीन सुरक्षित और सही तरीके से चलाना सिखाता है।" }
     }
   ]
 }

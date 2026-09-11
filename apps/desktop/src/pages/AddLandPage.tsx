@@ -387,6 +387,7 @@ function LandForm({ initial, parcelId }: { initial: FormState; parcelId?: string
           <ChoiceGroup
             label={t('land.ownership')}
             items={REFERENCE.ownership_types.items}
+            allowCustom
             value={form.ownershipType}
             onChange={(ownershipType) => patch({ ownershipType })}
           />
@@ -394,6 +395,7 @@ function LandForm({ initial, parcelId }: { initial: FormState; parcelId?: string
           <ChoiceGroup
             label={t('land.soil')}
             items={REFERENCE.soil_types.items}
+            allowCustom
             value={form.soilType}
             onChange={(soilType) => patch({ soilType })}
           />
@@ -402,6 +404,7 @@ function LandForm({ initial, parcelId }: { initial: FormState; parcelId?: string
             label={t('land.water')}
             hint={t('land.waterHint')}
             items={REFERENCE.water_sources.items}
+            allowCustom
             multiple
             value={form.waterSources}
             onChange={(waterSources) => patch({ waterSources })}
@@ -411,6 +414,7 @@ function LandForm({ initial, parcelId }: { initial: FormState; parcelId?: string
             label={t('land.waterType')}
             hint={t('land.waterTypeHint')}
             items={REFERENCE.water_types.items}
+            allowCustom
             value={form.waterType}
             onChange={(waterType) => patch({ waterType })}
           />
@@ -458,6 +462,7 @@ function LandForm({ initial, parcelId }: { initial: FormState; parcelId?: string
           <ChoiceGroup
             label={t('land.irrigation')}
             items={REFERENCE.irrigation_types.items}
+            allowCustom
             value={form.irrigationType}
             onChange={(irrigationType) => patch({ irrigationType })}
           />
@@ -466,6 +471,7 @@ function LandForm({ initial, parcelId }: { initial: FormState; parcelId?: string
             label={t('land.crops')}
             hint={t('land.cropsHint')}
             items={REFERENCE.crops.items}
+            allowCustom
             categories={REFERENCE.crops.categories}
             multiple
             value={form.existingCrops}

@@ -1,6 +1,7 @@
 {
   "key": "investor_types",
   "version": 1,
+  "allowCustom": true,
   "items": [
     { "code": "individual",          "segments": ["investor_india", "investor_international"], "label": { "en": "Individual",                        "hi": "व्यक्तिगत" } },
     { "code": "angel",               "segments": ["investor_india", "investor_international"], "label": { "en": "Angel investor",                    "hi": "एंजेल निवेशक" } },

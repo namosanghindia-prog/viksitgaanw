@@ -34,12 +34,16 @@ export interface ReferenceItem {
   /** Insurance schemes: which categories the scheme covers. */
   categories?: string[];
   url?: string;
+  /** A choice the person typed themselves (``custom:<text>``), not a list entry. */
+  custom?: boolean;
 }
 
 export interface ReferenceList {
   key: string;
   version: number;
   multi?: boolean;
+  /** People may type a choice of their own when none of the entries fits. */
+  allowCustom?: boolean;
   items: ReferenceItem[];
   categories?: ReferenceItem[];
 }

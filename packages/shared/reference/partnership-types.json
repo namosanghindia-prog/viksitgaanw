@@ -1,6 +1,7 @@
 {
   "key": "partnership_types",
   "version": 1,
+  "allowCustom": true,
   "multi": true,
   "items": [
     { "code": "contract_farming", "label": { "en": "Contract farming",                        "hi": "अनुबंध खेती" } },
@@ -12,6 +13,14 @@
     { "code": "export",           "label": { "en": "Export linkage",                          "hi": "निर्यात से जोड़ना" } },
     { "code": "equipment",        "label": { "en": "Machinery and equipment",                 "hi": "मशीनरी और उपकरण" } },
     { "code": "training",         "label": { "en": "Training",                                "hi": "प्रशिक्षण" } },
-    { "code": "certification",    "label": { "en": "Certification support (organic, GAP)",    "hi": "प्रमाणन सहायता (जैविक, जीएपी)" } }
+    { "code": "certification",    "label": { "en": "Certification support (organic, GAP)",    "hi": "प्रमाणन सहायता (जैविक, जीएपी)" } },
+    { "code": "storage", "label": { "en": "Storage / warehousing", "hi": "भंडारण / गोदाम" } },
+    { "code": "cold_chain", "label": { "en": "Cold chain", "hi": "कोल्ड चेन" } },
+    { "code": "logistics", "label": { "en": "Transport and logistics", "hi": "ढुलाई और लॉजिस्टिक्स" } },
+    { "code": "credit", "label": { "en": "Credit / finance linkage", "hi": "ऋण / वित्त से जोड़ना" } },
+    { "code": "insurance", "label": { "en": "Insurance", "hi": "बीमा" } },
+    { "code": "branding", "label": { "en": "Branding and packaging", "hi": "ब्रांडिंग और पैकेजिंग" } },
+    { "code": "soil_testing", "label": { "en": "Soil and water testing", "hi": "मिट्टी और पानी की जाँच" } },
+    { "code": "land_lease", "label": { "en": "Land lease", "hi": "ज़मीन पट्टा" } }
   ]
 }

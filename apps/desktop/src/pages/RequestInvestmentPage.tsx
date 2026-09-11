@@ -268,6 +268,7 @@ export function RequestInvestmentPage() {
             <ChoiceGroup
               label={t('request.modes')}
               items={REFERENCE.investment_modes.items}
+              allowCustom
               multiple
               value={modes}
               onChange={setModes}
@@ -281,6 +282,7 @@ export function RequestInvestmentPage() {
             <ChoiceGroup
               label={t('request.partnershipTypes')}
               items={REFERENCE.partnership_types.items}
+              allowCustom
               multiple
               value={partnershipTypes}
               onChange={setPartnershipTypes}
