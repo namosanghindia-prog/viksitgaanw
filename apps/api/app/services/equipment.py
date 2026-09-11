@@ -31,7 +31,7 @@ from ..schemas import (
     PartnershipInput,
     PartnershipOut,
 )
-from . import media
+from . import media, videos
 from .events import EventType, enqueue_sync, record_event
 from .hierarchy import location_error, resolve_location
 from .profiles import card
@@ -158,6 +158,7 @@ def serialise(session: Session, listing: EquipmentListing, viewer: Profile) -> E
             counts[enquiry.status] = counts.get(enquiry.status, 0) + 1
 
     return EquipmentOut(
+        intro_video=videos.out(listing.intro_video),
         id=listing.id,
         equipment_type=listing.equipment_type,
         title=listing.title,

@@ -18,6 +18,8 @@ import { DataPage } from './pages/DataPage';
 import { DealPage } from './pages/DealPage';
 import { DealPlanPage, DealsPage } from './pages/DealsPage';
 import { FarmPage } from './pages/FarmPage';
+import { FindFarmersPage } from './pages/FindFarmersPage';
+import { FindInvestorsPage } from './pages/FindInvestorsPage';
 import { GroupPage } from './pages/GroupPage';
 import { GroupFormPage, GroupsPage, canOrganise } from './pages/GroupsPage';
 import { InboxPage } from './pages/InboxPage';
@@ -52,7 +54,7 @@ function navFor(segment: Segment): Array<{ to: string; label: StringKey }> {
     return [
       timeline,
       { to: '/', label: 'nav.myLand' },
-      { to: '/requests', label: 'nav.findInvestors' },
+      { to: '/investors', label: 'nav.findInvestors' },
       { to: '/machines', label: 'nav.machines' },
     ];
   }
@@ -66,7 +68,12 @@ function navFor(segment: Segment): Array<{ to: string; label: StringKey }> {
     ];
   }
   if (isInvestor(segment)) {
-    return [timeline, { to: '/', label: 'nav.opportunities' }, { to: '/interests', label: 'nav.myInterests' }];
+    return [
+      timeline,
+      { to: '/', label: 'nav.opportunities' },
+      { to: '/farmers', label: 'nav.findFarmers' },
+      { to: '/interests', label: 'nav.myInterests' },
+    ];
   }
   return [timeline, { to: '/', label: 'nav.myArea' }];
 }
@@ -85,6 +92,8 @@ const seesSchemes = (profile: Profile) => !isInvestor(profile.segment);
 /** Second-line pages, behind "More". */
 function moreFor(profile: Profile): MenuEntry[] {
   const entries: MenuEntry[] = [{ to: '/connections', label: 'nav.connections', icon: '🤝' }];
+  // Partners' top bar is full already; finding farmers sits behind More.
+  if (isPartner(profile.segment)) entries.push({ to: '/farmers', label: 'nav.findFarmers', icon: '🌾' });
   if (makesDeals(profile)) entries.push({ to: '/deals', label: 'nav.deals', icon: '📜' });
   if (seesGroups(profile)) entries.push({ to: '/groups', label: 'nav.groups', icon: '👥' });
   entries.push({ to: '/prices', label: 'nav.prices', icon: '📈' });
@@ -249,6 +258,7 @@ export function App() {
                 <Route path="/land/:parcelId/insurance" element={<ParcelInsurancePage />} />
                 <Route path="/land/:parcelId/farm" element={<FarmPage />} />
                 <Route path="/requests" element={<MyRequestsPage />} />
+                <Route path="/investors" element={<FindInvestorsPage />} />
                 <Route path="/machines" element={<MachinesPage />} />
                 <Route path="*" element={<MyLandPage />} />
               </>
@@ -256,6 +266,7 @@ export function App() {
               <>
                 <Route path="/" element={<BrowsePage />} />
                 <Route path="/interests" element={<MyInterestsPage />} />
+                {profile.segment !== 'government' ? <Route path="/farmers" element={<FindFarmersPage />} /> : null}
                 <Route path="*" element={<BrowsePage />} />
               </>
             )}

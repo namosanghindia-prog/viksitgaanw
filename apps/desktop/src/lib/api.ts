@@ -11,7 +11,14 @@ import type {
   Connection,
   Connections,
   FarmUpdate,
+  FarmerListing,
+  InvestorListing,
   LandShare,
+  ProjectInvite,
+  Video,
+  VideoPlan,
+  VideoTarget,
+  VideoUpload,
   Backup,
   Conversation,
   Deal,
@@ -564,4 +571,46 @@ export const api = {
     request<FarmUpdate>('/updates', { method: 'POST', body: { body, landShareId: landShareId ?? null } }),
   addUpdatePhoto: (id: string, file: Blob) => upload<FarmUpdate>(`/updates/${id}/photos`, file, 'POST'),
   deleteUpdate: (id: string) => request<void>(`/updates/${id}`, { method: 'DELETE' }),
+
+  /* Videos */
+  videoPlan: (signal?: AbortSignal) => request<VideoPlan>('/videos/plan', { signal }),
+  setVideo: (target: VideoTarget, entityId: string, url: string) =>
+    request<Video>(`/videos/${target}/${entityId}`, { method: 'PUT', body: { url } }),
+  removeVideo: (target: VideoTarget, entityId: string) =>
+    request<void>(`/videos/${target}/${entityId}`, { method: 'DELETE' }),
+  uploadVideo: (target: VideoTarget, entityId: string, file: File) =>
+    upload<VideoUpload>(`/videos/${target}/${entityId}/upload`, withVideoType(file), 'POST'),
+  videoUploads: (signal?: AbortSignal) => request<VideoUpload[]>('/videos/uploads', { signal }),
+  cancelVideoUpload: (id: string) => request<void>(`/videos/uploads/${id}`, { method: 'DELETE' }),
+
+  /* Finding investors and farmers */
+  findInvestors: (stateCode?: string | null, signal?: AbortSignal) =>
+    request<InvestorListing[]>('/directory/investors', { params: { stateCode }, signal }),
+  findFarmers: (stateCode?: string | null, signal?: AbortSignal) =>
+    request<FarmerListing[]>('/directory/farmers', { params: { stateCode }, signal }),
+  sendProject: (investorId: string, requestId: string, message?: string | null) =>
+    request<ProjectInvite>(`/directory/investors/${investorId}/invite`, {
+      method: 'POST',
+      body: { requestId, message: message ?? null },
+    }),
+  projectInvites: (signal?: AbortSignal) => request<ProjectInvite[]>('/directory/invites', { signal }),
+  declineInvite: (id: string) =>
+    request<ProjectInvite>(`/directory/invites/${id}`, { method: 'PATCH', body: { status: 'declined' } }),
 };
+
+/** Some systems leave a video file's type blank; name it from the extension. */
+const VIDEO_TYPES: Record<string, string> = {
+  mp4: 'video/mp4',
+  m4v: 'video/mp4',
+  mov: 'video/quicktime',
+  webm: 'video/webm',
+  mkv: 'video/x-matroska',
+  '3gp': 'video/3gpp',
+  avi: 'video/x-msvideo',
+};
+
+function withVideoType(file: File): Blob {
+  if (file.type.startsWith('video/') && file.type !== 'video/avi') return file;
+  const extension = file.name.split('.').pop()?.toLowerCase() ?? '';
+  return new Blob([file], { type: VIDEO_TYPES[extension] ?? file.type });
+}

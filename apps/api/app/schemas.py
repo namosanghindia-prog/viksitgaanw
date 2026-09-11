@@ -38,6 +38,17 @@ class ApiModel(BaseModel):
     )
 
 
+class VideoOut(ApiModel):
+    """A video to play: a YouTube video id, or a Mux playback id.
+
+    Only ever a finished, playable video -- an upload still in progress lives
+    in ``video_uploads`` on the uploader's own device.
+    """
+
+    provider: Literal["youtube", "mux"]
+    id: str
+
+
 # --------------------------------------------------------------------------- #
 # Locations
 # --------------------------------------------------------------------------- #
@@ -204,6 +215,7 @@ class LandParcelOut(LandParcelBase):
     share_visibility: Visibility = "offline"
     shared_at: datetime | None = None
     photos: list["MediaOut"] = Field(default_factory=list)
+    intro_video: VideoOut | None = None
 
 
 # --------------------------------------------------------------------------- #
@@ -680,6 +692,8 @@ class ProfileOut(ApiModel):
     farmer_id: str | None = None
     #: Where the photo or logo can be fetched, or None.
     photo_url: str | None = None
+    biodata_video: VideoOut | None = None
+    intro_video: VideoOut | None = None
     visibility: Visibility = "offline"
     shared_at: datetime | None = None
     sync_state: SyncState
@@ -712,6 +726,8 @@ class ProfileCardOut(ApiModel):
     kyc_status: str
     origin: str
     photo_url: str | None = None
+    #: Their own video about themselves, playable wherever the card shows.
+    biodata_video: VideoOut | None = None
     #: Average stars other people gave after working with them, and how many.
     rating_avg: float | None = None
     rating_count: int = 0
@@ -1010,6 +1026,7 @@ class InvestmentRequestOut(ApiModel):
     status: RequestStatus
     #: The public snapshot of land and plan. See models.InvestmentRequest.
     listing: dict[str, Any]
+    intro_video: VideoOut | None = None
     opportunity_code: str | None = None
     opportunity_kind: str | None = None
     state_code: str
@@ -1121,6 +1138,7 @@ class EquipmentOut(ApiModel):
     id: str
     equipment_type: str
     title: str
+    intro_video: VideoOut | None = None
     brand: str | None = None
     model: str | None = None
     year_made: int | None = None
@@ -1320,6 +1338,7 @@ class LandShareOut(ApiModel):
     is_mine: bool
     label: str
     place: str | None = None
+    intro_video: VideoOut | None = None
     state_code: str | None = None
     area_value: float | None = None
     area_unit: str | None = None
@@ -1884,6 +1903,7 @@ class GroupOut(ApiModel):
     name: str
     kind: str
     description: str | None = None
+    intro_video: VideoOut | None = None
     state_code: str
     district_code: str
     subdistrict_code: str | None = None
@@ -2311,3 +2331,115 @@ class ConnectionsOut(ApiModel):
 
 ProfileCardOut.model_rebuild()
 LandParcelOut.model_rebuild()
+
+
+# --------------------------------------------------------------------------- #
+# Videos
+# --------------------------------------------------------------------------- #
+
+
+class VideoLinkInput(ApiModel):
+    #: A YouTube link as copied from the app or the browser.
+    url: str = Field(min_length=1, max_length=500)
+
+
+class VideoUploadOut(ApiModel):
+    """A subscriber's upload, as its owner follows it."""
+
+    id: str
+    target: str
+    entity_id: str
+    status: Literal["queued", "uploading", "processing", "ready", "failed"]
+    size: int
+    bytes_sent: int
+    #: 0-100, over the upload itself; processing on Mux comes after.
+    progress: int
+    error: str | None = None
+    created_at: datetime
+
+
+class VideoPlanOut(ApiModel):
+    """Whether this device's owner may upload videos directly."""
+
+    subscribed: bool
+    plan: str | None = None
+    until: date | None = None
+    #: Whether the server has video uploads switched on at all.
+    uploads_available: bool = False
+    #: Why the answer is unknown or no, in plain words -- e.g. sync is off.
+    reason: str | None = None
+
+
+# --------------------------------------------------------------------------- #
+# Finding investors and farmers
+# --------------------------------------------------------------------------- #
+
+
+class InvestorListingOut(ApiModel):
+    """An investor -- or a partner who invests -- as a farmer finds them."""
+
+    profile: ProfileCardOut
+    about: str | None = None
+    intro_video: VideoOut | None = None
+    sectors: list[str] = Field(default_factory=list)
+    modes: list[str] = Field(default_factory=list)
+    preferred_states: list[str] = Field(default_factory=list)
+    ticket_min: float | None = None
+    ticket_max: float | None = None
+    #: INR for Indian investors and partners, USD for international ones.
+    currency: str = "INR"
+    #: How well they suit the farmer's own open requests; None with none open.
+    fit: FitOut | None = None
+    #: The farmer's requests this investor may see and has not yet been sent.
+    sendable_request_ids: list[str] = Field(default_factory=list)
+    invited_request_ids: list[str] = Field(default_factory=list)
+    #: Projects they have already sent an interest on.
+    answered_request_ids: list[str] = Field(default_factory=list)
+
+
+class FarmerRequestBrief(ApiModel):
+    id: str
+    title: str
+    amount_sought: float
+    fit: FitOut | None = None
+    invited_me: bool = False
+
+
+class FarmerListingOut(ApiModel):
+    """A farmer as an investor or partner finds them."""
+
+    profile: ProfileCardOut
+    about: str | None = None
+    years_farming: int | None = None
+    needs: list[str] = Field(default_factory=list)
+    fpo_member: bool = False
+    has_kcc: bool = False
+    #: Their open requests the viewer may see, best fit first.
+    requests: list[FarmerRequestBrief] = Field(default_factory=list)
+
+
+class ProjectInviteInput(ApiModel):
+    request_id: str
+    message: str | None = Field(default=None, max_length=1000)
+
+    @field_validator("message", mode="before")
+    @classmethod
+    def _blank(cls, value: Any) -> Any:
+        return _blank_to_none(value)
+
+
+class ProjectInviteAnswer(ApiModel):
+    status: Literal["declined"]
+
+
+class ProjectInviteOut(ApiModel):
+    id: str
+    request_id: str
+    request_title: str | None = None
+    farmer: ProfileCardOut
+    investor: ProfileCardOut
+    message: str | None = None
+    status: Literal["sent", "declined", "answered"]
+    #: Whether the device owner sent it.
+    sent_by_me: bool
+    created_at: datetime

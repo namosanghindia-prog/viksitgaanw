@@ -34,6 +34,8 @@ const KNOWN = new Set([
   'connection_accepted',
   'land_shared',
   'update_posted',
+  'project_invited',
+  'video_ready',
 ]);
 
 export const NOTE_ICON: Record<string, string> = {
@@ -53,6 +55,8 @@ export const NOTE_ICON: Record<string, string> = {
   connection_accepted: '🤝',
   land_shared: '🌾',
   update_posted: '📣',
+  project_invited: '📨',
+  video_ready: '🎬',
 };
 
 /**

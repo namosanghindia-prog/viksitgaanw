@@ -68,7 +68,7 @@ The download is ~10 MB and the import takes about a minute, producing a
 ```bash
 npm run api          # local FastAPI backend on 127.0.0.1:8756 (docs at /docs)
 npm run dev:web      # Vite dev server on 127.0.0.1:5273, in a normal browser
-cd apps/api && python -m pytest    # API test suite (409 tests)
+cd apps/api && python -m pytest    # API test suite (446 tests)
 npm run typecheck    # TypeScript
 npm run build        # production frontend build
 python scripts/check_translations.py   # report translation coverage
@@ -186,6 +186,21 @@ python scripts/import_mandi_prices.py --fetch --api-key <key>   # data.gov.in
   *Updated* whenever the plot changes. Short farm updates with a picture go to
   the same people. Connected people can message each other and see each
   other's phone number.
+- **Videos** — every plot, project request, machine and farmer group can carry
+  an introduction video, and every profile a video biodata: the person telling
+  their own story, which a reader who reads slowly takes in far better than a
+  form. An investor, or a partner that invests, also has a video for their
+  listing. A video is a YouTube link (only its id is stored and synced), or —
+  for subscribers — a file uploaded directly to Mux. See [Videos](#videos).
+- **Find investors, find farmers** — a farmer's "Find investors" lists every
+  investor and investing partner who shared their profile, with what they
+  fund, how much, where and how, best match for the farmer's own projects
+  first; the farmer can send any shared project to one of them, and it is
+  pinned at the top of that investor's Opportunities until they answer or say
+  they are not interested. Investors and partners get "Find farmers": farmers
+  who shared their profile, with their video biodata and the projects open to
+  the viewer. Contact details stay hidden until the farmer accepts or the two
+  connect.
 - **Opt-in sync** — see [Sync](#sync).
 
 ---
@@ -509,6 +524,45 @@ The server in `apps/sync/server.py` (FastAPI + its own SQLite, `VG_SYNC_DB`)
 exists to develop and test this against. It is **not** a production service.
 `apps/api/tests/test_sync.py` runs two devices against it end to end.
 
+### Videos
+
+A YouTube link needs nothing set up: paste it under the item's 🎬 video, and
+only the 11-character video id is stored and synced. It plays from YouTube when
+the device is online (the player shows a picture of it first, and fetches
+nothing until someone presses play).
+
+**Direct uploads** are for subscribers and go through [Mux](https://www.mux.com):
+
+1. The Mux keys live on the sync server only — never on a villager's device.
+   Create an API access token in the Mux dashboard (Video: read and write),
+   then either set `MUX_TOKEN_ID` and `MUX_TOKEN_SECRET` in the environment
+   before starting the server, or put them in `apps/sync/.env` (git-ignored):
+
+   ```
+   MUX_TOKEN_ID=...
+   MUX_TOKEN_SECRET=...
+   ```
+
+2. There are no payments yet, so subscriptions are set by hand where the
+   server runs. A device appears once it has synced:
+
+   ```bash
+   python apps/sync/admin.py list
+   python apps/sync/admin.py subscribe <profile-id> --until 2027-03-31
+   python apps/sync/admin.py unsubscribe <profile-id>
+   ```
+
+3. A subscriber then sees **Upload a video file** next to the YouTube box. The
+   file is saved on the device first, then sent to Mux in 8 MB pieces on a
+   background thread; a dropped connection resumes where it stopped on the next
+   sync, and Mux keeps the upload address open for a week. Once Mux has encoded
+   it, the playback id goes on the item and travels like any other change. Mux
+   streams it adaptively (HLS, played with hls.js), so it suits a slow
+   connection.
+
+Uploads and video changes are recorded in `app_events`
+(`video.upload_started`, `video.uploaded`), ready for metering paid hosting.
+
 ---
 
 ## Design notes
@@ -540,7 +594,9 @@ until-shared visibility with a common timeline, the equipment marketplace with
 seller partner networks, notifications and messages, deals with milestone
 release, disputes and ratings, farmer groups with pooled requests, mandi
 prices, the farm diary, weather advice, backups and the sync protocol with a
-development server. Phase 2, next: KYC through an authorised provider, a
+development server, introduction and biodata videos with Mux uploads for
+subscribers, and farmers and investors finding each other. Phase 2, next:
+payments for subscriptions, KYC through an authorised provider, a
 production sync service (PostgreSQL, authentication beyond device tokens,
 abuse controls), legal review of the deal and dispute terms, and rating
 enquiries and partnerships as well as deals.
@@ -628,4 +684,6 @@ Every setting takes a `VG_`-prefixed environment variable.
 | `VG_ALLOW_NETWORK`  | `true`                             | `false` keeps the API offline  |
 | `VG_DATA_GOV_API_KEY` | none                             | Fetch Agmarknet mandi prices   |
 | `VG_SYNC_DB`        | `apps/sync/data/sync.db`           | Development sync server's DB   |
+| `MUX_TOKEN_ID`      | none (sync server only)            | Mux token for video uploads    |
+| `MUX_TOKEN_SECRET`  | none (sync server only)            | Its secret; or `apps/sync/.env`|
 | `VG_ALLOW_NETWORK`  | `true`                             | Permit the two online lookups  |

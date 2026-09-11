@@ -7,6 +7,7 @@ import { useI18n } from '../i18n';
 import { api } from '../lib/api';
 import { formatMoneyShort, formatNumber } from '../lib/format';
 import { PartyLine } from './RequestCard';
+import { VideoPlayer } from './Video';
 
 interface EquipmentCardProps {
   item: Equipment;
@@ -68,6 +69,7 @@ export function EquipmentCard({ item, showSeller = true, children }: EquipmentCa
             {item.origin === 'demo' ? <span className="badge badge--sample">{t('card.sample')}</span> : null}
           </div>
         </header>
+        {item.introVideo ? <VideoPlayer video={item.introVideo} title={item.title} compact /> : null}
 
         <dl className="request__figures">
           {item.forRent && item.rentRate ? (

@@ -8,6 +8,7 @@ import { MessageLink } from '../components/MessageLink';
 import { PartyLine } from '../components/RequestCard';
 import { ShareControl } from '../components/ShareControl';
 import { TextField } from '../components/TextField';
+import { VideoField, VideoPlayer } from '../components/Video';
 import { useI18n } from '../i18n';
 import { api } from '../lib/api';
 import { formatNumber } from '../lib/format';
@@ -83,6 +84,20 @@ export function GroupPage() {
 
       {error ? <p className="callout callout--error">{error}</p> : null}
       {group.description ? <p>{group.description}</p> : null}
+      {group.isMine ? (
+        <VideoField
+          target="group"
+          entityId={group.id}
+          video={group.introVideo}
+          label={t('video.group')}
+          onChanged={() => {
+            setLocal(null);
+            state.reload();
+          }}
+        />
+      ) : group.introVideo ? (
+        <VideoPlayer video={group.introVideo} title={group.name} />
+      ) : null}
       <p>
         <strong>{t('groups.pooled', { ha: formatNumber(group.totalHectares, lang, 2), n: group.memberCount })}</strong>
       </p>

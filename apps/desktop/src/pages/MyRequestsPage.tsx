@@ -7,6 +7,7 @@ import { InsuranceManager } from '../components/InsuranceManager';
 import { MessageLink } from '../components/MessageLink';
 import { ContactLine, PartyLine, RequestCard } from '../components/RequestCard';
 import { ShareControl } from '../components/ShareControl';
+import { VideoField } from '../components/Video';
 import { useI18n } from '../i18n';
 import { api } from '../lib/api';
 import { formatDate, formatMoneyShort } from '../lib/format';
@@ -70,6 +71,15 @@ export function MyRequestsPage() {
               onShare={() => api.shareRequest(request.id)}
               onUnshare={() => api.unshareRequest(request.id)}
               onChanged={requests.reload}
+            />
+            <VideoField
+              target="request"
+              entityId={request.id}
+              video={request.introVideo}
+              label={t('video.request')}
+              hint={t('video.requestHint')}
+              onChanged={requests.reload}
+              showPlayer={false}
             />
             {request.visibility === 'offline' ? <p className="muted small">{t('share.draftNote')}</p> : null}
             <section className="answers">

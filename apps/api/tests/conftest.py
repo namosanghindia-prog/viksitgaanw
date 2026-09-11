@@ -57,8 +57,10 @@ from app.models import (  # noqa: E402
     LandParcel,
     LandShare,
     Profile,
+    ProjectInvite,
     ProjectReport,
     SyncQueueEntry,
+    VideoUpload,
 )
 
 
@@ -80,6 +82,8 @@ def clean_user_data() -> None:
         session.execute(delete(AppEvent))
         # Newer platform tables first: they point at everything else.
         for model in (
+            ProjectInvite,
+            VideoUpload,
             Connection,
             FarmUpdate,
             LandShare,
@@ -111,6 +115,14 @@ def clean_user_data() -> None:
         session.execute(delete(ProjectReport))
         session.execute(delete(LandParcel))
         session.execute(delete(Farmer))
+
+
+@pytest.fixture(autouse=True)
+def no_background_uploads(monkeypatch) -> None:
+    """Video uploads run on a thread in the app; tests drive them directly."""
+    from app.services import videos
+
+    monkeypatch.setattr(videos, "BACKGROUND", False)
 
 
 @pytest.fixture()

@@ -21,7 +21,7 @@ from sqlalchemy.orm import Session
 
 from ..models import FarmUpdate, LandParcel, LandShare, Profile
 from ..schemas import FarmUpdateInput, FarmUpdateOut, LandShareOut, MediaOut
-from . import media
+from . import media, videos
 from .events import EventType, enqueue_sync, record_event
 from .hierarchy import resolve_location
 
@@ -75,6 +75,8 @@ def snapshot(session: Session, parcel: LandParcel) -> dict[str, Any]:
         "water_type": parcel.water_type,
         "irrigation_type": parcel.irrigation_type,
         "existing_crops": list(parcel.existing_crops or []),
+        # The farmer chose to show this video with the plot.
+        "video": parcel.intro_video,
     }
 
 
@@ -180,6 +182,7 @@ def serialise_land(session: Session, share: LandShare, viewer: Profile | None) -
         is_mine=bool(viewer and share.profile_id == viewer.id),
         label=snap.get("label") or "",
         place=snap.get("place"),
+        intro_video=videos.out(snap.get("video")),
         state_code=snap.get("state_code"),
         area_value=snap.get("area_value"),
         area_unit=snap.get("area_unit"),

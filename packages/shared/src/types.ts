@@ -125,6 +125,7 @@ export interface LandParcel extends LandParcelInput {
   sharedAt: string | null;
   /** Pictures of the plot, shown on its card once shared. */
   photos: MediaFile[];
+  introVideo: Video | null;
 }
 
 export type SyncState = 'local_only' | 'queued' | 'synced' | 'conflict';
@@ -487,6 +488,10 @@ export interface Profile extends ProfileInput {
   kycMethods: string[];
   farmerId: string | null;
   photoUrl: string | null;
+  /** The person telling their own story. */
+  biodataVideo: Video | null;
+  /** For investors and partners who invest: what they fund, on their listing. */
+  introVideo: Video | null;
   visibility: Visibility;
   sharedAt: string | null;
   syncState: SyncState;
@@ -507,6 +512,7 @@ export interface ProfileCard {
   /** local | synced | demo */
   origin: string;
   photoUrl: string | null;
+  biodataVideo: Video | null;
   contact: { phone: string | null; email: string | null } | null;
   /** Average stars from completed deals and rentals; null before any. */
   ratingAvg: number | null;
@@ -611,6 +617,7 @@ export interface InvestmentRequest {
   openTo: Segment[];
   status: RequestStatus;
   listing: RequestListing;
+  introVideo: Video | null;
   opportunityCode: string | null;
   opportunityKind: string | null;
   stateCode: string;
@@ -783,6 +790,7 @@ export interface Partnership {
 
 export interface Equipment extends Omit<EquipmentInput, 'status'> {
   id: string;
+  introVideo: Video | null;
   place: string | null;
   status: ListingStatus;
   visibility: Visibility;
@@ -867,6 +875,7 @@ export interface LandShare {
   isMine: boolean;
   label: string;
   place: string | null;
+  introVideo: Video | null;
   stateCode: string | null;
   areaValue: number | null;
   areaUnit: string | null;
@@ -1208,6 +1217,7 @@ export interface FarmerGroup {
   name: string;
   kind: string;
   description: string | null;
+  introVideo: Video | null;
   stateCode: string;
   districtCode: string;
   subdistrictCode: string | null;
@@ -1294,4 +1304,102 @@ export interface SyncRun {
   pulled: number;
   errors: string[];
   status: SyncStatus;
+}
+
+/* ------------------------------------------------------------------ *
+ * Videos
+ * ------------------------------------------------------------------ */
+
+/** A playable video: a YouTube video id, or a Mux playback id. */
+export interface Video {
+  provider: 'youtube' | 'mux';
+  id: string;
+}
+
+/** What a video can be put on. */
+export type VideoTarget = 'biodata' | 'listing' | 'land' | 'request' | 'machine' | 'group';
+
+export type VideoUploadStatus = 'queued' | 'uploading' | 'processing' | 'ready' | 'failed';
+
+/** A subscriber's upload, followed on their own device. */
+export interface VideoUpload {
+  id: string;
+  target: VideoTarget;
+  entityId: string;
+  status: VideoUploadStatus;
+  size: number;
+  bytesSent: number;
+  /** 0-100 over the upload itself; processing on Mux comes after. */
+  progress: number;
+  error: string | null;
+  createdAt: string;
+}
+
+export interface VideoPlan {
+  subscribed: boolean;
+  plan: string | null;
+  until: string | null;
+  uploadsAvailable: boolean;
+  /** sync_off | offline | no_profile | not_subscribed | server_off, or null. */
+  reason: string | null;
+}
+
+/* ------------------------------------------------------------------ *
+ * Finding investors and farmers
+ * ------------------------------------------------------------------ */
+
+export interface Fit {
+  score: number;
+  reasons: FitReason[];
+}
+
+/** An investor, or a partner who invests, as a farmer finds them. */
+export interface InvestorListing {
+  profile: ProfileCard;
+  about: string | null;
+  introVideo: Video | null;
+  sectors: string[];
+  modes: string[];
+  preferredStates: string[];
+  ticketMin: number | null;
+  ticketMax: number | null;
+  currency: 'INR' | 'USD';
+  /** Against the farmer's own open requests; null with none open. */
+  fit: Fit | null;
+  sendableRequestIds: string[];
+  invitedRequestIds: string[];
+  /** Projects they have already answered with an interest. */
+  answeredRequestIds: string[];
+}
+
+export interface FarmerRequestBrief {
+  id: string;
+  title: string;
+  amountSought: number;
+  fit: Fit | null;
+  invitedMe: boolean;
+}
+
+/** A farmer as an investor or partner finds them. */
+export interface FarmerListing {
+  profile: ProfileCard;
+  about: string | null;
+  yearsFarming: number | null;
+  needs: string[];
+  fpoMember: boolean;
+  hasKcc: boolean;
+  requests: FarmerRequestBrief[];
+}
+
+/** A farmer's project, put in front of one investor. */
+export interface ProjectInvite {
+  id: string;
+  requestId: string;
+  requestTitle: string | null;
+  farmer: ProfileCard;
+  investor: ProfileCard;
+  message: string | null;
+  status: 'sent' | 'declined' | 'answered';
+  sentByMe: boolean;
+  createdAt: string;
 }

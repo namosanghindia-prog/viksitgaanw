@@ -34,18 +34,28 @@ ADDITIVE_COLUMNS: dict[str, dict[str, str]] = {
         "water_depth_value": "FLOAT",
         "water_depth_unit": "VARCHAR(16)",
         "water_depth_metres": "FLOAT",
+        # Added with introduction videos.
+        "intro_video": "JSON",
     },
     # Added with "Share online": everything starts on the device only.
     "profiles": {
         "visibility": "VARCHAR(16) NOT NULL DEFAULT 'offline'",
         "shared_at": "DATETIME",
+        # Added with biodata and listing videos.
+        "biodata_video": "JSON",
+        "intro_video": "JSON",
     },
     "investment_requests": {
         "visibility": "VARCHAR(16) NOT NULL DEFAULT 'offline'",
         "shared_at": "DATETIME",
         # Added with farmer groups.
         "group_id": "VARCHAR(36)",
+        # Added with introduction videos.
+        "intro_video": "JSON",
     },
+    # Added with introduction videos.
+    "equipment_listings": {"intro_video": "JSON"},
+    "farmer_groups": {"intro_video": "JSON"},
 }
 
 

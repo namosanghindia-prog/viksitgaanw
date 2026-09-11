@@ -51,9 +51,11 @@ from ..models import (
     Milestone,
     Notification,
     Profile,
+    ProjectInvite,
     ProjectReport,
     Rating,
     SchemeApplication,
+    VideoUpload,
 )
 from ..schemas import BackupOut
 from . import media
@@ -269,6 +271,10 @@ def export(session: Session, owner: Profile) -> dict[str, Any]:
         ),
         "shared_land": rows(LandShare, LandShare.profile_id == owner.id),
         "farm_updates": rows(FarmUpdate, FarmUpdate.profile_id == owner.id),
+        "project_invites": rows(
+            ProjectInvite, ProjectInvite.farmer_profile_id == owner.id, ProjectInvite.investor_profile_id == owner.id
+        ),
+        "video_uploads": rows(VideoUpload, VideoUpload.id.isnot(None)),
     }
     record_event(session, EventType.DATA_EXPORTED, entity_type="profile", entity_id=owner.id)
     return data
@@ -309,6 +315,12 @@ def erase(session: Session, owner: Profile, confirm: str) -> dict[str, int]:
     )
     for milestone_id in milestone_ids:
         media.remove_all(session, "milestone", milestone_id)
+    # Videos still waiting to upload are files in the media folder.
+    from . import videos  # noqa: PLC0415
+
+    for upload in session.scalars(select(VideoUpload)):
+        videos.upload_path(upload).unlink(missing_ok=True)
+        session.delete(upload)
     if parcel_ids:
         for report in session.scalars(select(ProjectReport).where(ProjectReport.parcel_id.in_(parcel_ids))):
             try:

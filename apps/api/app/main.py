@@ -17,6 +17,7 @@ from .config import get_settings
 from .db import init_db
 from .routers import (
     data,
+    directory,
     equipment,
     farm,
     geo,
@@ -36,6 +37,7 @@ from .routers import (
     sync,
     tiles,
     trust,
+    videos,
 )
 
 logger = logging.getLogger("viksitgaanw")
@@ -89,6 +91,8 @@ def create_app() -> FastAPI:
     app.include_router(data.router, prefix=API_PREFIX)
     app.include_router(sync.router, prefix=API_PREFIX)
     app.include_router(social.router, prefix=API_PREFIX)
+    app.include_router(videos.router, prefix=API_PREFIX)
+    app.include_router(directory.router, prefix=API_PREFIX)
 
     @app.get("/", include_in_schema=False)
     def root() -> dict[str, str]:

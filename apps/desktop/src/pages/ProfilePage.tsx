@@ -7,12 +7,13 @@ import { Avatar } from '../components/Avatar';
 import { InsuranceManager } from '../components/InsuranceManager';
 import { PhotoButton } from '../components/PhotoButton';
 import { ProfileForm } from '../components/ProfileForm';
+import { VideoField } from '../components/Video';
 import { useI18n } from '../i18n';
 import { api } from '../lib/api';
 import { formatLocationPath, formatNumber } from '../lib/format';
 import { useAsync } from '../lib/hooks';
 import { useProfile } from '../lib/profile';
-import { isInvestor, isPartner, ticketCurrency } from '../lib/segments';
+import { isInvestor, isPartner, responderKinds, ticketCurrency } from '../lib/segments';
 import type { ReferenceKey } from '@viksitgaanw/shared';
 
 /** The owner's own profile: what it says, how verified it is, and editing it. */
@@ -173,6 +174,27 @@ export function ProfilePage() {
           ))}
         </dl>
         <p className="muted small">{t('profile.syncNote')}</p>
+      </section>
+
+      <section className="card">
+        <VideoField
+          target="biodata"
+          entityId={profile.id}
+          video={profile.biodataVideo}
+          label={t('video.biodata')}
+          hint={t('video.biodataHint')}
+          onChanged={reload}
+        />
+        {responderKinds(profile).includes('investment') ? (
+          <VideoField
+            target="listing"
+            entityId={profile.id}
+            video={profile.introVideo}
+            label={t('video.listing')}
+            hint={t('video.listingHint')}
+            onChanged={reload}
+          />
+        ) : null}
       </section>
 
       {insuranceScope ? (

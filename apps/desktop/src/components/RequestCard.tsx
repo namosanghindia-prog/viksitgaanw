@@ -12,6 +12,7 @@ import { Avatar } from './Avatar';
 import { ConnectButton } from './ConnectButton';
 import { InsuranceRow } from './InsuranceRow';
 import { ReadAloud } from './ReadAloud';
+import { VideoButton, VideoPlayer } from './Video';
 import { RatingBadge } from './Stars';
 
 /** "Pindra, Varanasi, Uttar Pradesh" from the request's frozen snapshot. */
@@ -57,6 +58,7 @@ export function PartyLine({
       </span>
       <RatingBadge average={party.ratingAvg} count={party.ratingCount} />
       {party.origin === 'demo' ? <span className="badge badge--sample">{t('card.sample')}</span> : null}
+      {party.biodataVideo ? <VideoButton video={party.biodataVideo} label={t('video.biodataShort')} /> : null}
       <ConnectButton party={party} onChanged={onConnectionChanged} />
     </div>
   );
@@ -147,6 +149,8 @@ export function RequestCard({ request, showRequester = true, children }: Request
       {request.fit && request.fit.reasons.length > 0 ? (
         <p className="request__fit">✓ {request.fit.reasons.map((code) => t(`fit.${code}`)).join(' · ')}</p>
       ) : null}
+
+      {request.introVideo ? <VideoPlayer video={request.introVideo} title={request.title} compact /> : null}
 
       <dl className="request__figures">
         <div>

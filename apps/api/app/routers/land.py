@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 from ..db import get_session
 from ..models import LandParcel, MediaFile
 from ..schemas import LandParcelCreate, LandParcelOut, LandParcelUpdate, MediaOut
-from ..services import landshare, media
+from ..services import landshare, media, videos
 from ..services.landshare import ShareError
 from ..services.profiles import get_owner
 from ..services.sharing import SharingError
@@ -62,6 +62,7 @@ def _serialise(session: Session, parcel: LandParcel) -> LandParcelOut:
         latitude=parcel.latitude,
         longitude=parcel.longitude,
         notes=parcel.notes,
+        intro_video=videos.out(parcel.intro_video),
         location=resolve_location(
             session,
             village_code=parcel.village_code,

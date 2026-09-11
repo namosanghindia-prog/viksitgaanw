@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from ..db import get_session
 from ..schemas import SyncConfigInput, SyncRunOut, SyncStatusOut
-from ..services import sync_client
+from ..services import sync_client, videos
 from .deps import fail
 
 router = APIRouter(prefix="/sync", tags=["sync"])
@@ -35,6 +35,8 @@ def run(session: Session = Depends(get_session)) -> SyncRunOut:
         session.commit()  # keep last_error
         raise fail(exc) from exc
     session.commit()
+    # Online again: carry on with any video still on its way to Mux.
+    videos.kick()
     return SyncRunOut(
         pushed=result.pushed, pulled=result.pulled, errors=result.errors, status=sync_client.status(session)
     )

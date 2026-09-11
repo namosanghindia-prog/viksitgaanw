@@ -2570,3 +2570,180 @@ code {
   cursor: pointer;
   font-size: 0.8rem;
 }
+
+/* ------------------------------------------------------------------ *
+ * Videos
+ * ------------------------------------------------------------------ */
+
+.video {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin: 10px 0;
+  max-width: 640px;
+}
+
+.video--compact {
+  max-width: 420px;
+}
+
+.video__poster,
+.video__frame {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 0;
+  border-radius: var(--radius);
+  background: var(--soil);
+  display: block;
+}
+
+.video__poster {
+  position: relative;
+  overflow: hidden;
+  padding: 0;
+  cursor: pointer;
+  color: var(--white);
+}
+
+.video__poster:disabled {
+  cursor: default;
+  background: var(--wheat-dark);
+  color: var(--ink-muted);
+}
+
+.video__poster img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.video__play {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  padding: 10px 18px;
+  border-radius: 999px;
+  background: rgba(31, 27, 22, 0.75);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.video__poster:disabled .video__play {
+  background: transparent;
+}
+
+.video__poster:hover:not(:disabled) .video__play,
+.video__poster:focus-visible .video__play {
+  background: var(--leaf);
+}
+
+.video__link {
+  align-self: flex-start;
+  color: var(--sky);
+}
+
+.video-dialog {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: grid;
+  place-items: center;
+  padding: 20px;
+  background: rgba(31, 27, 22, 0.6);
+}
+
+.video-dialog__body {
+  width: min(720px, 100%);
+  background: var(--white);
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-lg);
+  padding: 14px 16px;
+}
+
+.video-dialog__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+.video-field {
+  border-top: 1px dashed var(--line);
+  margin-top: 12px;
+  padding-top: 10px;
+}
+
+.video-field + .video-field {
+  margin-top: 16px;
+}
+
+.video-field__actions,
+.video-field__link {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  margin-top: 6px;
+}
+
+.video-field__link .input {
+  flex: 1 1 260px;
+}
+
+.video-field__editor {
+  margin-top: 8px;
+}
+
+.video-field__upload {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 8px 0;
+}
+
+.video-field__upload progress {
+  flex: 0 1 220px;
+  accent-color: var(--leaf);
+}
+
+/* ------------------------------------------------------------------ *
+ * Finding investors and farmers
+ * ------------------------------------------------------------------ */
+
+.invite-form {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+  max-width: 520px;
+}
+
+.invite-note {
+  background: #eef6fc;
+  border-radius: var(--radius);
+  padding: 8px 12px;
+  margin: 8px 0;
+}
+
+.invite-note p {
+  margin: 0 0 4px;
+}
+
+.farmer-card__projects {
+  list-style: none;
+  padding: 0;
+  margin: 4px 0 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.farmer-card__projects li {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}

@@ -71,6 +71,14 @@ class EventType:
     LAND_UNSHARED = "land_share.unshared"
     UPDATE_POSTED = "farm_update.posted"
     UPDATE_REMOVED = "farm_update.removed"
+    VIDEO_SET = "video.set"
+    VIDEO_REMOVED = "video.removed"
+    #: A subscriber's direct upload: the unit paid video hosting is metered by.
+    VIDEO_UPLOAD_STARTED = "video.upload_started"
+    VIDEO_UPLOADED = "video.uploaded"
+    #: A farmer put a project in front of an investor they found.
+    INVITE_SENT = "project_invite.sent"
+    INVITE_DECLINED = "project_invite.declined"
     INSURANCE_ADDED = "insurance_policy.added"
     INSURANCE_UPDATED = "insurance_policy.updated"
     INSURANCE_REMOVED = "insurance_policy.removed"

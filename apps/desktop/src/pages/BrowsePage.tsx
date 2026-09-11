@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import type { InvestmentRequest, Seeking } from '@viksitgaanw/shared';
+import type { InvestmentRequest, ProjectInvite, Seeking } from '@viksitgaanw/shared';
 import { REFERENCE } from '@viksitgaanw/shared';
 
 import { InterestDialog } from '../components/InterestDialog';
@@ -35,6 +35,11 @@ export function BrowsePage() {
     [stateCode, kind],
   );
 
+  // Projects farmers sent this investor, pinned at the top until answered.
+  const invites = useAsync((signal) => api.projectInvites(signal), [], {
+    enabled: profile !== null && profile.segment !== 'government',
+  });
+
   const stateOptions = useMemo(
     () => (states.data ?? []).map((unit) => ({ value: unit.code, label: unit.name, sublabel: unit.nameLocal })),
     [states.data],
@@ -47,7 +52,12 @@ export function BrowsePage() {
   if (!profile) return null;
   const government = profile.segment === 'government';
   const kinds = responderKinds(profile);
-  const rows = requests.data ?? [];
+  const inviteFor = new Map<string, ProjectInvite>(
+    (invites.data ?? []).filter((invite) => !invite.sentByMe).map((invite) => [invite.requestId, invite]),
+  );
+  const waiting = (request: InvestmentRequest) => inviteFor.get(request.id)?.status === 'sent';
+  // A stable sort keeps the best-fit order within each part.
+  const rows = [...(requests.data ?? [])].sort((a, b) => Number(waiting(b)) - Number(waiting(a)));
 
   return (
     <div className="page">
@@ -96,6 +106,12 @@ export function BrowsePage() {
       <div className="requests">
         {rows.map((request) => (
           <RequestCard key={request.id} request={request}>
+            {inviteFor.has(request.id) ? (
+              <InviteNote
+                invite={inviteFor.get(request.id)!}
+                onChanged={invites.reload}
+              />
+            ) : null}
             {government ? null : (
               <ResponderActions
                 request={request}
@@ -116,6 +132,7 @@ export function BrowsePage() {
           onSent={() => {
             setAnswering(null);
             requests.reload();
+            invites.reload();
           }}
         />
       ) : null}
@@ -222,6 +239,40 @@ export function ResponderActions({
           </button>
         ) : null}
       </div>
+    </div>
+  );
+}
+
+/** A farmer sent the investor this project: say so, and let them decline it. */
+function InviteNote({ invite, onChanged }: { invite: ProjectInvite; onChanged: () => void }) {
+  const { t } = useI18n();
+  const [busy, setBusy] = useState(false);
+  return (
+    <div className="invite-note">
+      <p>
+        <span className="badge badge--connected">📨 {t('invites.fromFarmer', { name: invite.farmer.displayName })}</span>
+      </p>
+      {invite.message ? <blockquote className="answer__message">{invite.message}</blockquote> : null}
+      {invite.status === 'sent' ? (
+        <button
+          type="button"
+          className="button button--ghost button--small"
+          disabled={busy}
+          onClick={async () => {
+            setBusy(true);
+            try {
+              await api.declineInvite(invite.id);
+              onChanged();
+            } finally {
+              setBusy(false);
+            }
+          }}
+        >
+          {t('invites.notInterested')}
+        </button>
+      ) : invite.status === 'declined' ? (
+        <span className="muted small">{t('invites.declined')}</span>
+      ) : null}
     </div>
   );
 }

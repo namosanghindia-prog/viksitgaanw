@@ -26,6 +26,7 @@ from ..schemas import (
     GroupRequestInput,
 )
 from . import insurance as cover
+from . import videos
 from .events import EventType, enqueue_sync, record_event
 from .hierarchy import location_error, resolve_location
 from .marketplace import make_listing, opportunity_summary
@@ -96,6 +97,7 @@ def serialise(session: Session, group: FarmerGroup, viewer: Profile) -> GroupOut
         name=group.name,
         kind=group.kind,
         description=group.description,
+        intro_video=videos.out(group.intro_video),
         state_code=group.state_code,
         district_code=group.district_code,
         subdistrict_code=group.subdistrict_code,

@@ -25,6 +25,14 @@ Privacy is enforced here, not trusted to clients:
 * When two people become connected, what each had already shared is sent to
   the other on their next pull.
 
+It is also where **video uploads** go through. Subscribers may upload a video
+file instead of linking one on YouTube; the file itself goes straight from the
+device to Mux, but only this server holds the Mux keys (``MUX_TOKEN_ID`` and
+``MUX_TOKEN_SECRET``, from the environment or ``apps/sync/.env``). It checks
+the subscription, asks Mux for a one-off upload address, and later tells the
+device the playback id. Subscriptions are set by hand for now, with
+``python apps/sync/admin.py`` -- there are no payments yet.
+
 > [!WARNING]
 > Development server. It is meant to run on a laptop or a LAN while the
 > platform is built. It has no rate limiting, no TLS of its own and no
@@ -39,8 +47,11 @@ import os
 import secrets
 import sqlite3
 import threading
+import urllib.error
+import urllib.request
+from base64 import b64encode
 from contextlib import contextmanager
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from pathlib import Path
 from typing import Any, Iterator
 
@@ -48,15 +59,35 @@ from fastapi import Depends, FastAPI, Header, HTTPException, Request
 from fastapi.responses import Response
 from pydantic import BaseModel, Field
 
+
+def _load_env_file(path: Path) -> None:
+    """KEY=VALUE lines from ``apps/sync/.env``, for keys not already set.
+
+    Keeps the Mux keys out of shell history on a Windows laptop. The file is
+    git-ignored; never commit it.
+    """
+    if not path.is_file():
+        return
+    for line in path.read_text(encoding="utf-8").splitlines():
+        line = line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, _, value = line.partition("=")
+        os.environ.setdefault(key.strip(), value.strip().strip('"').strip("'"))
+
+
+_load_env_file(Path(__file__).parent / ".env")
+
 DB_PATH = Path(os.environ.get("VG_SYNC_DB", Path(__file__).parent / "data" / "sync.db"))
 
 #: Records anyone in the audience may read.
 PUBLIC_TYPES = {"profile", "investment_request", "equipment_listing", "farmer_group", "rating", "insurance_policy"}
-#: Records only the parties named in them may read.
 #: Records only the owner's connections may read.
 CONNECTION_TYPES = {"land_share", "farm_update"}
+#: Records only the parties named in them may read.
 PRIVATE_TYPES = {
     "connection",
+    "project_invite",
     "investment_interest",
     "equipment_enquiry",
     "equipment_partnership",
@@ -136,6 +167,24 @@ def init() -> None:
                 meta TEXT NOT NULL DEFAULT '{}'
             );
             CREATE TABLE IF NOT EXISTS counters (name TEXT PRIMARY KEY, value INTEGER NOT NULL);
+            CREATE TABLE IF NOT EXISTS subscriptions (
+                profile_id TEXT PRIMARY KEY,
+                plan TEXT NOT NULL,
+                until TEXT,
+                created_at TEXT NOT NULL
+            );
+            CREATE TABLE IF NOT EXISTS video_uploads (
+                id TEXT PRIMARY KEY,
+                profile_id TEXT NOT NULL,
+                target TEXT NOT NULL,
+                entity_id TEXT NOT NULL,
+                asset_id TEXT,
+                playback_id TEXT,
+                status TEXT NOT NULL,
+                error TEXT,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            );
             INSERT OR IGNORE INTO counters VALUES ('rev', 0);
             """
         )
@@ -227,6 +276,9 @@ def _rules(con: sqlite3.Connection, entity_type: str, payload: dict[str, Any]) -
         return p["profile_id"], []
     if entity_type == "connection":
         return p["requester_profile_id"], [p["requester_profile_id"], p["addressee_profile_id"]]
+    if entity_type == "project_invite":
+        # The farmer sends it; the investor may only answer it.
+        return p["farmer_profile_id"], [p["farmer_profile_id"], p["investor_profile_id"]]
     if entity_type == "farmer_group":
         return p["owner_profile_id"], []
     if entity_type == "rating":
@@ -516,6 +568,164 @@ def get_media(media_id: str, me: Device = Depends(device)) -> Response:
         if owner_row is None or not _visible(con, owner_row, me):
             raise HTTPException(status_code=404, detail="Picture not found.")
     return Response(content=row["body"], media_type=row["mime"], headers={"X-Media-Meta": row["meta"]})
+
+
+# --------------------------------------------------------------------------- #
+# Subscriptions and video uploads
+# --------------------------------------------------------------------------- #
+
+#: Largest video a device may send, matching the app's own limit.
+MAX_VIDEO_BYTES = 2 * 1024 * 1024 * 1024
+#: How long Mux keeps an upload address open: a week, so a village upload cut
+#: off for days can still finish.
+UPLOAD_TIMEOUT_SECONDS = 7 * 24 * 60 * 60
+VIDEO_TARGETS = {"biodata", "listing", "land", "request", "machine", "group"}
+
+
+class MuxClient:
+    """The few Mux Video API calls direct uploads need.
+
+    https://www.mux.com/docs/guides/upload-files-directly
+    """
+
+    base = "https://api.mux.com"
+
+    def __init__(self) -> None:
+        self.token_id = os.environ.get("MUX_TOKEN_ID", "")
+        self.token_secret = os.environ.get("MUX_TOKEN_SECRET", "")
+
+    @property
+    def configured(self) -> bool:
+        return bool(self.token_id and self.token_secret)
+
+    def _call(self, method: str, path: str, body: dict | None = None) -> dict:
+        auth = b64encode(f"{self.token_id}:{self.token_secret}".encode()).decode()
+        request = urllib.request.Request(
+            self.base + path,
+            data=json.dumps(body).encode() if body is not None else None,
+            headers={"Authorization": f"Basic {auth}", "Content-Type": "application/json"},
+            method=method,
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=20) as response:
+                return json.loads(response.read())["data"]
+        except urllib.error.HTTPError as exc:
+            detail = exc.read().decode("utf-8", "replace")[:300]
+            raise HTTPException(status_code=502, detail=f"Mux said {exc.code}: {detail}") from exc
+        except (urllib.error.URLError, TimeoutError, OSError) as exc:
+            raise HTTPException(status_code=503, detail=f"Mux not reachable: {exc}") from exc
+
+    def create_upload(self, passthrough: str) -> dict:
+        return self._call("POST", "/video/v1/uploads", {
+            # The file comes from the villager's device, not from a web page.
+            "cors_origin": "*",
+            "timeout": UPLOAD_TIMEOUT_SECONDS,
+            "new_asset_settings": {
+                "playback_policy": ["public"],
+                "video_quality": "basic",
+                "passthrough": passthrough[:255],
+            },
+        })
+
+    def get_upload(self, upload_id: str) -> dict:
+        return self._call("GET", f"/video/v1/uploads/{upload_id}")
+
+    def get_asset(self, asset_id: str) -> dict:
+        return self._call("GET", f"/video/v1/assets/{asset_id}")
+
+
+#: Replaced in tests.
+mux = MuxClient()
+
+
+def subscription(con: sqlite3.Connection, profile_id: str) -> dict[str, Any] | None:
+    row = con.execute("SELECT * FROM subscriptions WHERE profile_id = ?", (profile_id,)).fetchone()
+    if row is None:
+        return None
+    active = row["until"] is None or date.fromisoformat(row["until"]) >= date.today()
+    return {"plan": row["plan"], "until": row["until"], "active": active}
+
+
+@app.get("/v1/me")
+def me_info(me: Device = Depends(device)) -> dict[str, Any]:
+    """What this device's owner may do here: their subscription, and whether uploads are on."""
+    with db() as con:
+        return {
+            "profileId": me.profile_id,
+            "subscription": subscription(con, me.profile_id),
+            "videoUploads": mux.configured,
+        }
+
+
+class VideoUploadIn(BaseModel):
+    target: str
+    entity_id: str = Field(min_length=1, max_length=36)
+    size: int = Field(ge=1)
+
+
+@app.post("/v1/videos/uploads")
+def create_video_upload(body: VideoUploadIn, me: Device = Depends(device)) -> dict[str, str]:
+    """A one-off address the device sends its video file to, for subscribers."""
+    if not mux.configured:
+        raise HTTPException(status_code=503, detail="Video uploads are not switched on on this server.")
+    if body.target not in VIDEO_TARGETS:
+        raise HTTPException(status_code=422, detail="Videos cannot be added there.")
+    if body.size > MAX_VIDEO_BYTES:
+        raise HTTPException(status_code=413, detail="Videos can be up to 2 GB.")
+    with db() as con:
+        plan = subscription(con, me.profile_id)
+    if not plan or not plan["active"]:
+        raise HTTPException(status_code=402, detail="Uploading videos directly is for subscribers.")
+    upload = mux.create_upload(f"{me.profile_id}:{body.target}:{body.entity_id}")
+    with db() as con:
+        con.execute(
+            "INSERT INTO video_uploads (id, profile_id, target, entity_id, status, created_at, updated_at) "
+            "VALUES (?, ?, ?, ?, 'waiting', ?, ?)",
+            (upload["id"], me.profile_id, body.target, body.entity_id, _now(), _now()),
+        )
+    return {"uploadId": upload["id"], "url": upload["url"]}
+
+
+@app.get("/v1/videos/uploads/{upload_id}")
+def video_upload_status(upload_id: str, me: Device = Depends(device)) -> dict[str, Any]:
+    """Where an upload has got to: waiting, processing, ready (with a playback id), errored or timed_out."""
+    with db() as con:
+        row = con.execute(
+            "SELECT * FROM video_uploads WHERE id = ? AND profile_id = ?", (upload_id, me.profile_id)
+        ).fetchone()
+    if row is None:
+        raise HTTPException(status_code=404, detail="Upload not found.")
+    if row["status"] in ("ready", "errored"):
+        return {"status": row["status"], "playbackId": row["playback_id"], "error": row["error"]}
+
+    status, asset_id, playback_id, error = "waiting", row["asset_id"], None, None
+    if not asset_id:
+        upload = mux.get_upload(upload_id)
+        asset_id = upload.get("asset_id")
+        if upload.get("status") in ("errored", "cancelled"):
+            status = "errored"
+            error = (upload.get("error") or {}).get("message")
+        elif upload.get("status") == "timed_out":
+            status = "timed_out"
+    if asset_id:
+        asset = mux.get_asset(asset_id)
+        if asset.get("status") == "ready":
+            playback_id = next(
+                (p["id"] for p in asset.get("playback_ids", []) if p.get("policy") == "public"), None
+            )
+            status = "ready" if playback_id else "errored"
+        elif asset.get("status") == "errored":
+            status = "errored"
+            error = "; ".join((asset.get("errors") or {}).get("messages", [])) or None
+        else:
+            status = "processing"
+    with db() as con:
+        con.execute(
+            "UPDATE video_uploads SET asset_id = ?, playback_id = ?, status = ?, error = ?, updated_at = ? "
+            "WHERE id = ?",
+            (asset_id, playback_id, status, error, _now(), upload_id),
+        )
+    return {"status": status, "playbackId": playback_id, "error": error}
 
 
 @app.get("/v1/health")

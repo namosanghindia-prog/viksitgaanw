@@ -23,7 +23,7 @@ from .. import reference
 from .. import segments as seg
 from ..models import EquipmentListing, Profile, State
 from ..schemas import ContactOut, ProfileCardOut, ProfileInput, ProfileOut
-from . import kyc, media
+from . import kyc, media, videos
 from .events import EventType, enqueue_sync, record_event
 from .farmers import get_or_create_default_farmer
 from .hierarchy import location_error, resolve_location
@@ -232,6 +232,7 @@ def card(session: Session, profile: Profile, *, reveal_contact: bool = False) ->
         kyc_status=profile.kyc_status,
         origin=profile.origin,
         photo_url=media.first_url(session, "profile", profile.id),
+        biodata_video=videos.out(profile.biodata_video),
         contact=(
             ContactOut(phone=profile.phone, email=profile.email) if reveal_contact else None
         ),
@@ -339,6 +340,8 @@ def serialise_owner(session: Session, profile: Profile) -> ProfileOut:
         kyc_methods=kyc.methods_for(profile.segment),
         farmer_id=profile.farmer_id,
         photo_url=media.first_url(session, "profile", profile.id),
+        biodata_video=videos.out(profile.biodata_video),
+        intro_video=videos.out(profile.intro_video),
         visibility=profile.visibility,
         shared_at=profile.shared_at,
         sync_state=profile.sync_state,

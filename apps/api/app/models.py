@@ -211,6 +211,9 @@ class LandParcel(Base):
     latitude: Mapped[float | None] = mapped_column(Float)
     longitude: Mapped[float | None] = mapped_column(Float)
     notes: Mapped[str | None] = mapped_column(Text)
+    #: An introduction video, shown on the plot's card once it is shared. See
+    #: services/videos.py for the shape: {"provider": "youtube"|"mux", "id": ...}.
+    intro_video: Mapped[dict | None] = mapped_column(JSON)
 
     sync_state: Mapped[str] = mapped_column(String(16), default="local_only", nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
@@ -359,6 +362,12 @@ class Profile(Base):
 
     about: Mapped[str | None] = mapped_column(Text)
     details: Mapped[dict] = mapped_column(JSON, default=dict)
+    #: A video of the person telling their own story -- their biodata. Anyone
+    #: who can see the profile card can play it.
+    biodata_video: Mapped[dict | None] = mapped_column(JSON)
+    #: For investors and partners who invest, a video introducing what they
+    #: fund: the profile is their listing under "Find investors".
+    intro_video: Mapped[dict | None] = mapped_column(JSON)
 
     # Identity verification. Aadhaar numbers are never stored here: eKYC goes
     # through a UIDAI-authorised KUA, which hands back a reference, and that
@@ -445,6 +454,7 @@ class InvestmentRequest(Base):
     open_to: Mapped[list[str]] = mapped_column(JSON, default=list)
 
     listing: Mapped[dict] = mapped_column(JSON, default=dict)
+    intro_video: Mapped[dict | None] = mapped_column(JSON)
 
     #: open | closed | withdrawn
     status: Mapped[str] = mapped_column(String(16), default="open", nullable=False, index=True)
@@ -651,6 +661,7 @@ class EquipmentListing(Base):
     district_code: Mapped[str | None] = mapped_column(String(8), index=True)
     subdistrict_code: Mapped[str | None] = mapped_column(String(8))
 
+    intro_video: Mapped[dict | None] = mapped_column(JSON)
     #: active | paused | sold
     status: Mapped[str] = mapped_column(String(16), default="active", nullable=False, index=True)
     visibility: Mapped[str] = mapped_column(
@@ -1129,6 +1140,7 @@ class FarmerGroup(Base):
     subdistrict_code: Mapped[str | None] = mapped_column(String(8))
     #: Crops the group grows or plans to, together.
     crops: Mapped[list[str]] = mapped_column(JSON, default=list)
+    intro_video: Mapped[dict | None] = mapped_column(JSON)
     visibility: Mapped[str] = mapped_column(String(16), default="offline", nullable=False)
     shared_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     origin: Mapped[str] = mapped_column(String(16), default="local", nullable=False)
@@ -1269,4 +1281,63 @@ class FarmUpdate(Base):
     origin: Mapped[str] = mapped_column(String(16), default="local", nullable=False)
     sync_state: Mapped[str] = mapped_column(String(16), default="local_only", nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, onupdate=_now)
+
+
+class VideoUpload(Base):
+    """A video a subscriber is uploading from this device, until it plays.
+
+    Stays on the device: other people only ever see the finished video, set on
+    the item itself once Mux has it ready. The file waits in the media folder
+    while it uploads, so an upload cut off by a dropped connection carries on
+    from where it stopped the next time the device is online.
+    """
+
+    __tablename__ = "video_uploads"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    #: What the video is for: a target in services/videos.py, and its row id.
+    target: Mapped[str] = mapped_column(String(32), nullable=False)
+    entity_id: Mapped[str] = mapped_column(String(36), nullable=False, index=True)
+    file_name: Mapped[str] = mapped_column(String(200), nullable=False)
+    mime_type: Mapped[str] = mapped_column(String(64), nullable=False)
+    size: Mapped[int] = mapped_column(Integer, nullable=False)
+    bytes_sent: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    #: queued | uploading | processing | ready | failed
+    status: Mapped[str] = mapped_column(String(16), default="queued", nullable=False, index=True)
+    mux_upload_id: Mapped[str | None] = mapped_column(String(64))
+    upload_url: Mapped[str | None] = mapped_column(Text)
+    playback_id: Mapped[str | None] = mapped_column(String(64))
+    error: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, onupdate=_now)
+
+
+class ProjectInvite(Base):
+    """A farmer asking one investor to look at their project request.
+
+    The other half of "Find investors": the investor already browses requests;
+    this lets a farmer who found an investor they like put a request in front
+    of them. The investor answers it the usual way, by sending an interest.
+    """
+
+    __tablename__ = "project_invites"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    request_id: Mapped[str] = mapped_column(
+        ForeignKey("investment_requests.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    farmer_profile_id: Mapped[str] = mapped_column(
+        ForeignKey("profiles.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    investor_profile_id: Mapped[str] = mapped_column(
+        ForeignKey("profiles.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    message: Mapped[str | None] = mapped_column(Text)
+    #: sent | declined | answered (the investor sent an interest)
+    status: Mapped[str] = mapped_column(String(16), default="sent", nullable=False)
+    origin: Mapped[str] = mapped_column(String(16), default="local", nullable=False)
+    sync_state: Mapped[str] = mapped_column(String(16), default="local_only", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    responded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, onupdate=_now)

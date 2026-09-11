@@ -56,6 +56,7 @@ from ..models import (
     Message,
     Milestone,
     Profile,
+    ProjectInvite,
     Rating,
     SyncQueueEntry,
     SyncSetting,
@@ -84,6 +85,7 @@ MODELS: dict[str, type] = {
     "connection": Connection,
     "land_share": LandShare,
     "farm_update": FarmUpdate,
+    "project_invite": ProjectInvite,
 }
 #: Records that leave the device only while their owner has them online.
 PUBLIC = {"profile", "investment_request", "equipment_listing", "farmer_group", "land_share", "farm_update"}
@@ -93,7 +95,7 @@ LOCAL_ONLY = {"sync_state", "is_device_owner", "origin", "farmer_id", "parcel_id
 APPLY_ORDER = [
     "profile", "connection", "land_share", "farm_update",
     "farmer_group", "group_member", "investment_request", "equipment_listing",
-    "insurance_policy", "investment_interest", "equipment_enquiry", "equipment_partnership",
+    "insurance_policy", "investment_interest", "project_invite", "equipment_enquiry", "equipment_partnership",
     "deal", "dispute", "rating", "message",
 ]
 #: On a record the owner created, the other side may only change these.
@@ -518,7 +520,7 @@ def _name(session: Session, profile_id: str | None) -> str:
 
 def _hooks(session: Session, entity_type: str, row: Any, before: dict | None, owner: Profile) -> None:
     """Turn what the other side did into a notification for the owner."""
-    from . import connections  # noqa: PLC0415
+    from . import connections, directory  # noqa: PLC0415
     from .groups import on_join_request  # noqa: PLC0415
     from .messages import receive  # noqa: PLC0415
     from .trust import on_incoming_deal  # noqa: PLC0415
@@ -526,6 +528,8 @@ def _hooks(session: Session, entity_type: str, row: Any, before: dict | None, ow
     was = (before or {}).get("status")
     if entity_type == "connection":
         connections.on_incoming(session, row, before, owner)
+    elif entity_type == "project_invite":
+        directory.on_incoming(session, row, before, owner)
     elif entity_type == "land_share" and row.visibility == "online" and row.profile_id != owner.id:
         if before is None or (before or {}).get("visibility") != "online":
             notify(session, owner.id, "land_shared",

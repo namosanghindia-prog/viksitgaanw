@@ -6,6 +6,7 @@ import { findItem } from '@viksitgaanw/shared';
 import { PhotoButton } from '../components/PhotoButton';
 import { ShareControl } from '../components/ShareControl';
 import { UpdateComposer } from '../components/SocialCards';
+import { VideoField } from '../components/Video';
 import { useI18n } from '../i18n';
 import { api } from '../lib/api';
 import { formatDate, formatLocationPath, formatNumber } from '../lib/format';
@@ -174,6 +175,14 @@ export function MyLandPage() {
               <p className="muted small">
                 {parcel.shareVisibility === 'online' ? t('land.sharedNote') : t('land.privateNote')}
               </p>
+              <VideoField
+                target="land"
+                entityId={parcel.id}
+                video={parcel.introVideo}
+                label={t('video.land')}
+                hint={t('video.landHint')}
+                onChanged={parcels.reload}
+              />
               {posting === parcel.id ? (
                 <UpdateComposer
                   lands={[parcel]}

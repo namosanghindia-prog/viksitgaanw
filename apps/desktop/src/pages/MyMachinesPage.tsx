@@ -7,6 +7,7 @@ import { PhotoButton } from '../components/PhotoButton';
 import { MessageLink } from '../components/MessageLink';
 import { ContactLine, PartyLine } from '../components/RequestCard';
 import { ShareControl } from '../components/ShareControl';
+import { VideoField } from '../components/Video';
 import { useI18n } from '../i18n';
 import { api } from '../lib/api';
 import { formatDate } from '../lib/format';
@@ -67,6 +68,14 @@ export function MyMachinesPage() {
               onShare={() => api.shareEquipment(item.id)}
               onUnshare={() => api.unshareEquipment(item.id)}
               onChanged={listings.reload}
+            />
+            <VideoField
+              target="machine"
+              entityId={item.id}
+              video={item.introVideo}
+              label={t('video.machine')}
+              onChanged={listings.reload}
+              showPlayer={false}
             />
             <div className="request__actions">
               <Link className="button button--small" to={`/machines/${item.id}/edit`}>

@@ -8,6 +8,7 @@ import { formatDate, formatNumber } from '../lib/format';
 import { PhotoButton } from './PhotoButton';
 import { ReadAloud } from './ReadAloud';
 import { PartyLine } from './RequestCard';
+import { VideoPlayer } from './Video';
 
 /** A plot a connection shared: where, how big, soil, water, crops, pictures. */
 export function LandShareCard({ land, children }: { land: LandShare; children?: React.ReactNode }) {
@@ -46,6 +47,7 @@ export function LandShareCard({ land, children }: { land: LandShare; children?: 
           ))}
         </div>
       ) : null}
+      {land.introVideo ? <VideoPlayer video={land.introVideo} title={land.label} compact /> : null}
       {facts.length ? <p className="land-card__facts">{facts.join(' · ')}</p> : null}
       {crops.length ? (
         <div className="request__tags">

@@ -40,6 +40,7 @@ from ..schemas import (
     InvestmentRequestUpdate,
 )
 from . import insurance as cover
+from . import videos
 from .events import EventType, enqueue_sync, record_event
 from .hierarchy import resolve_location
 from .profiles import card
@@ -308,6 +309,7 @@ def serialise_request(
         open_to=list(request.open_to or []),
         status=request.status,
         listing=request.listing or {},
+        intro_video=videos.out(request.intro_video),
         opportunity_code=request.opportunity_code,
         opportunity_kind=request.opportunity_kind,
         state_code=request.state_code,
@@ -589,6 +591,9 @@ def send_interest(
         entity_id=interest.id,
         operation="create" if created else "update",
     )
+    from .directory import mark_answered  # noqa: PLC0415 - directory imports this module
+
+    mark_answered(session, owner, request)
     return interest
 
 

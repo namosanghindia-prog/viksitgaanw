@@ -172,7 +172,15 @@ async function waitForBackend(timeoutMs = 60_000) {
  * renderer, and the desktop path is covered by the backend's /geo/locate,
  * which asks Windows directly and needs no key.
  */
-const ALLOWED_PERMISSIONS = new Set(['geolocation']);
+const ALLOWED_PERMISSIONS = new Set(['geolocation', 'fullscreen']);
+
+/**
+ * Who the app is, for YouTube. Since July 2025 YouTube refuses to play an
+ * embed that does not say which page it is on ("Error 153"), and a packaged
+ * build loads from file://, which sends no Referer at all. The convention for
+ * apps is the app's identifier as a URL.
+ */
+const APP_REFERER = 'https://in.viksitgaanw.desktop/';
 
 function applyPermissionPolicy() {
   session.defaultSession.setPermissionRequestHandler((_webContents, permission, callback) => {
@@ -180,6 +188,14 @@ function applyPermissionPolicy() {
   });
   session.defaultSession.setPermissionCheckHandler((_webContents, permission) =>
     ALLOWED_PERMISSIONS.has(permission),
+  );
+  session.defaultSession.webRequest.onBeforeSendHeaders(
+    { urls: ['https://www.youtube-nocookie.com/*'] },
+    (details, callback) => {
+      const headers = details.requestHeaders;
+      if (!headers.Referer && !headers.referer) headers.Referer = APP_REFERER;
+      callback({ requestHeaders: headers });
+    },
   );
 }
 
