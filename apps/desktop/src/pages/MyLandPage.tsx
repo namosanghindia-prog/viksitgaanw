@@ -211,6 +211,9 @@ export function MyLandPage() {
                 {parcel.syncState === 'synced' ? '☁' : '💾'} {t('review.saved')}
               </span>
               <span className="muted small">{formatDate(parcel.createdAt, lang)}</span>
+              <Link className="button button--small button--ghost" to={`/land/${parcel.id}/edit`}>
+                ✏️ {t('common.edit')}
+              </Link>
               <button
                 type="button"
                 className="button button--danger button--small"

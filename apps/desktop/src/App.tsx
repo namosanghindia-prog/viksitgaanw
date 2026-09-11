@@ -11,7 +11,7 @@ import { Avatar } from './components/Avatar';
 import { MoreMenu } from './components/MoreMenu';
 import type { MenuEntry } from './components/MoreMenu';
 import { isInvestor, isPartner, responderKinds } from './lib/segments';
-import { AddLandPage } from './pages/AddLandPage';
+import { AddLandPage, EditLandPage } from './pages/AddLandPage';
 import { BrowsePage } from './pages/BrowsePage';
 import { ConnectionsPage } from './pages/ConnectionsPage';
 import { DataPage } from './pages/DataPage';
@@ -243,6 +243,7 @@ export function App() {
               <>
                 <Route path="/" element={<MyLandPage />} />
                 <Route path="/land/new" element={<AddLandPage />} />
+                <Route path="/land/:parcelId/edit" element={<EditLandPage />} />
                 <Route path="/land/:parcelId/plan" element={<PlanPage />} />
                 <Route path="/land/:parcelId/invest" element={<RequestInvestmentPage />} />
                 <Route path="/land/:parcelId/insurance" element={<ParcelInsurancePage />} />

@@ -24,7 +24,14 @@ export function listingPlace(request: InvestmentRequest): string {
 }
 
 /** Who someone is, as one line: name, organisation, type, place, and whether checked. */
-export function PartyLine({ party }: { party: ProfileCard }) {
+export function PartyLine({
+  party,
+  onConnectionChanged,
+}: {
+  party: ProfileCard;
+  /** Called once the owner has asked to connect, or accepted. */
+  onConnectionChanged?: () => void;
+}) {
   const { t, rt } = useI18n();
   const type = typeItem(party.typeCode);
   return (
@@ -50,7 +57,7 @@ export function PartyLine({ party }: { party: ProfileCard }) {
       </span>
       <RatingBadge average={party.ratingAvg} count={party.ratingCount} />
       {party.origin === 'demo' ? <span className="badge badge--sample">{t('card.sample')}</span> : null}
-      <ConnectButton party={party} />
+      <ConnectButton party={party} onChanged={onConnectionChanged} />
     </div>
   );
 }
@@ -58,7 +65,8 @@ export function PartyLine({ party }: { party: ProfileCard }) {
 /** Phone and email, shown only once both sides are connected. */
 export function ContactLine({ party }: { party: ProfileCard }) {
   const { t } = useI18n();
-  if (!party.contact) return null;
+  // Both can still be redacted just after connecting, until the next sync.
+  if (!party.contact?.phone && !party.contact?.email) return null;
   return (
     <p className="contact">
       <strong>{t('card.contact')}:</strong>{' '}

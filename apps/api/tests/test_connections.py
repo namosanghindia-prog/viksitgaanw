@@ -171,6 +171,16 @@ def test_editing_shared_land_updates_the_card(client, parcel_id):
     make_owner(client, farmer_body())
     client.post(f"/api/v1/land-parcels/{parcel_id}/share")
 
+    # Until the card leaves the device nobody has seen it: a picture added
+    # straight after sharing is part of sharing it, not an update.
+    photo = client.post(f"/api/v1/land-parcels/{parcel_id}/photos", content=jpeg(), headers={"Content-Type": "image/jpeg"})
+    assert photo.status_code == 200 and len(photo.json()["photos"]) == 1
+    card = timeline(client, kind="land")[0]["land"]
+    assert card["changedAt"] is None and len(card["photos"]) == 1
+
+    with session_scope() as session:  # as a sync would leave it
+        session.get(LandShare, parcel_id).sync_state = "synced"
+
     # A private detail changes: connections see nothing new.
     client.patch(f"/api/v1/land-parcels/{parcel_id}", json={"surveyNumber": "999/1"})
     assert timeline(client, kind="land")[0]["land"]["changedAt"] is None
@@ -178,10 +188,6 @@ def test_editing_shared_land_updates_the_card(client, parcel_id):
     client.patch(f"/api/v1/land-parcels/{parcel_id}", json={"existingCrops": ["tomato"]})
     card = timeline(client, kind="land")[0]["land"]
     assert card["changedAt"] and card["existingCrops"] == ["tomato"]
-
-    photo = client.post(f"/api/v1/land-parcels/{parcel_id}/photos", content=jpeg(), headers={"Content-Type": "image/jpeg"})
-    assert photo.status_code == 200 and len(photo.json()["photos"]) == 1
-    assert len(timeline(client, kind="land")[0]["land"]["photos"]) == 1
 
     # Deleting the plot takes its card down.
     client.delete(f"/api/v1/land-parcels/{parcel_id}")

@@ -154,7 +154,7 @@ export function ConnectionsPage() {
           <ul className="answers__list">
             {data.suggestions.map((party) => (
               <li key={party.id} className="answer">
-                <PartyLine party={party} />
+                <PartyLine party={party} onConnectionChanged={state.reload} />
               </li>
             ))}
           </ul>

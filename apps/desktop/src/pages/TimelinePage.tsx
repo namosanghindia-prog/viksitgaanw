@@ -40,6 +40,8 @@ export function TimelinePage() {
       api.timeline({ kind: filter === 'all' ? undefined : filter, stateCode: stateCode ?? undefined }, signal),
     [filter, stateCode],
   );
+  // Whether an empty feed means "nobody has shared yet" or "sync is off".
+  const sync = useAsync((signal) => api.syncStatus(signal), []);
   // The owner's own plots shared with connections, to post an update about.
   const myLands = useAsync(
     async (signal) => (await api.listParcels(signal)).filter((parcel) => parcel.shareVisibility === 'online'),
@@ -98,8 +100,16 @@ export function TimelinePage() {
       {!items.loading && !items.error && rows.length === 0 ? (
         <div className="empty">
           <p className="empty__title">{t('timeline.empty')}</p>
-          <p className="empty__help">{t('browse.emptyHelp')}</p>
-          <code>python scripts/seed_demo_marketplace.py</code>
+          {sync.data?.enabled ? (
+            <p className="empty__help">
+              {t('timeline.emptySynced')} <Link to="/connections">{t('nav.connections')}</Link>
+            </p>
+          ) : (
+            <>
+              <p className="empty__help">{t('browse.emptyHelp')}</p>
+              <code>python scripts/seed_demo_marketplace.py</code>
+            </>
+          )}
         </div>
       ) : null}
 

@@ -105,6 +105,8 @@ def share_land(session: Session, owner: Profile, parcel: LandParcel) -> LandShar
     share.visibility = "online"
     share.shared_at = _now()
     share.changed_at = None
+    # Not yet seen by anyone: see _mark_changed.
+    share.sync_state = "local_only"
     session.flush()
     record_event(session, EventType.LAND_SHARED, entity_type=LAND, entity_id=share.id)
     enqueue_sync(session, entity_type=LAND, entity_id=share.id, operation="share")
@@ -121,6 +123,17 @@ def unshare_land(session: Session, owner: Profile, parcel: LandParcel) -> LandSh
     return share
 
 
+def _mark_changed(share: LandShare) -> None:
+    """Mark the card updated -- once connections may already have seen it.
+
+    Until the card has left the device, nobody else has seen it, so a picture
+    added straight after sharing is part of sharing it, not an update.
+    """
+    if share.sync_state != "local_only":
+        share.changed_at = _now()
+        share.sync_state = "queued"
+
+
 def refresh(session: Session, parcel: LandParcel) -> None:
     """The plot changed: bring its shared card up to date, marked as updated."""
     share = share_for(session, parcel.id)
@@ -131,7 +144,7 @@ def refresh(session: Session, parcel: LandParcel) -> None:
         # A change only in private fields (survey number, notes, pin).
         return
     share.snapshot = fresh
-    share.changed_at = _now()
+    _mark_changed(share)
     enqueue_sync(session, entity_type=LAND, entity_id=share.id, operation="update")
 
 
@@ -139,7 +152,7 @@ def touch(session: Session, parcel_id: str) -> None:
     """A picture was added or removed: connections see the plot as updated."""
     share = share_for(session, parcel_id)
     if share is not None and share.visibility == "online":
-        share.changed_at = _now()
+        _mark_changed(share)
         enqueue_sync(session, entity_type=LAND, entity_id=share.id, operation="update")
 
 

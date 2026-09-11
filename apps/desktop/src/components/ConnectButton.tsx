@@ -9,7 +9,7 @@ import { useSharing } from '../lib/sharing';
  * Where the owner stands with someone, and the one step they can take:
  * connect, accept, or nothing while a request waits.
  */
-export function ConnectButton({ party }: { party: ProfileCard }) {
+export function ConnectButton({ party, onChanged }: { party: ProfileCard; onChanged?: () => void }) {
   const { t } = useI18n();
   const { ensureOnline } = useSharing();
   const [state, setState] = useState<ConnectionState | null>(party.connection);
@@ -22,7 +22,9 @@ export function ConnectButton({ party }: { party: ProfileCard }) {
     setBusy(true);
     setError(null);
     try {
-      setState(await action());
+      const next = await action();
+      setState(next);
+      if (next.state !== state.state) onChanged?.();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : String(cause));
     } finally {
