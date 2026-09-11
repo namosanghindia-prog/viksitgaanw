@@ -42,6 +42,12 @@ checks the link -- and it counts exactly once, whichever comes first. Plans
 and their prices are set by whoever runs the server, with
 ``python apps/sync/admin.py``, which can also grant a subscription by hand.
 
+And it runs **identity checks** (identity.py). The villager signs in on
+DigiLocker in the browser and agrees; DigiLocker tells this server their name
+as registered, and a profile is verified while that name matches its own.
+This server alone sets a profile's KYC status -- whatever a device pushes is
+overwritten -- and keeps no Aadhaar number, date of birth or document.
+
 It runs on SQLite on a laptop and on PostgreSQL in production (storage.py),
 with rate limits, size limits, token rotation, device sign-out and profile
 suspension (admin.py). TLS is the host's job; see "Running the sync service
@@ -57,12 +63,14 @@ from __future__ import annotations
 import calendar
 import hashlib
 import hmac
+import html
 import json
 import os
 import secrets
 import threading
 import time
 import urllib.error
+import urllib.parse
 import urllib.request
 from base64 import b64encode
 from datetime import date, datetime, timezone
@@ -70,10 +78,11 @@ from pathlib import Path
 from typing import Any
 
 from fastapi import Depends, FastAPI, Header, HTTPException, Request
-from fastapi.responses import JSONResponse, Response
+from fastapi.responses import HTMLResponse, JSONResponse, Response
 from pydantic import BaseModel, Field
 
-from storage import Conn, Row, Store, database_url
+import identity
+from storage import Conn, IntegrityError, Row, Store, database_url
 
 
 def _load_env_file(path: Path) -> None:
@@ -514,10 +523,14 @@ def push(body: PushIn, me: Device = Depends(device)) -> dict[str, Any]:
                         "WHERE entity_type=? AND entity_id=?",
                         (_next_rev(con), me.id, _now(), record.entity_type, record.entity_id),
                     )
+                    if record.entity_type == "profile":
+                        _forget_kyc(con, record.entity_id)
                     accepted += 1
                     continue
 
                 payload = dict(record.payload)
+                if record.entity_type == "profile":
+                    payload = _with_kyc(con, payload)
                 owner, parties = _rules(con, record.entity_type, payload)
                 parties = [p for p in parties if p]
                 if existing is not None and existing["owner_profile_id"] != me.profile_id:
@@ -1072,6 +1085,332 @@ async def razorpay_webhook(request: Request) -> dict[str, str]:
                 "UPDATE payments SET status = ? WHERE id = ? AND status = 'created'", (kind.split(".")[1], row["id"])
             )
     return {"status": "ok"}
+
+
+# --------------------------------------------------------------------------- #
+# Identity checks
+# --------------------------------------------------------------------------- #
+
+#: How long someone has to finish signing in with the provider.
+KYC_SESSION_SECONDS = 15 * 60
+#: This server's address as browsers reach it. Unset, it is taken from each
+#: request -- right on a laptop, wrong behind a proxy that hides the host.
+PUBLIC_URL = os.environ.get("VG_SYNC_PUBLIC_URL", "").rstrip("/")
+#: Salts the fingerprint kept of each person's provider id. Set it once and
+#: never change it, or one person could verify two profiles.
+KYC_SALT = os.environ.get("VG_KYC_SALT", "")
+
+digilocker = identity.DigiLocker()
+sandbox = identity.Sandbox(os.environ.get("VG_KYC_SANDBOX", "") == "1")
+
+#: The checks this server can run for each kind of profile. Aadhaar eKYC, PAN,
+#: passport and organisation checks wait for an agreement with a provider;
+#: international profiles have no DigiLocker.
+KYC_METHODS: dict[str, tuple[str, ...]] = {
+    "farmer": ("digilocker",),
+    "investor_india": ("digilocker",),
+    "partner_national": ("digilocker",),
+}
+
+
+def _providers() -> dict[str, Any]:
+    return {provider.method: provider for provider in (digilocker, sandbox) if provider.configured}
+
+
+def _methods_for(segment: str) -> tuple[str, ...]:
+    return KYC_METHODS.get(segment, ()) + (("sandbox",) if sandbox.configured else ())
+
+
+def _verification(con: Conn, profile_id: str) -> Row | None:
+    return con.execute("SELECT * FROM verifications WHERE profile_id = ?", (profile_id,)).fetchone()
+
+
+def _kyc_fields(con: Conn, profile_id: str, display_name: str | None) -> dict[str, Any]:
+    """What everyone else is told about a profile's identity check.
+
+    Verified only while the registered name matches the profile's name: a
+    profile renamed to someone else loses the tick until checked again. To
+    others it is then simply not verified -- a misspelt name is not a failed
+    check, and only the owner is told why (``/v1/kyc``).
+    """
+    row = _verification(con, profile_id)
+    if row is None or not identity.names_match(row["registered_name"], display_name):
+        return {"kyc_status": "unverified", "kyc_method": None, "kyc_verified_at": None}
+    return {"kyc_status": "verified", "kyc_method": row["method"], "kyc_verified_at": row["verified_at"]}
+
+
+def _with_kyc(con: Conn, payload: dict[str, Any]) -> dict[str, Any]:
+    """A pushed profile with the server's own KYC fields, whatever the device said."""
+    out = {key: value for key, value in payload.items() if key != "kyc_reference"}
+    out.update(_kyc_fields(con, payload.get("id", ""), payload.get("display_name")))
+    return out
+
+
+def _stamp_profile(con: Conn, profile_id: str) -> None:
+    """Re-stamp a stored profile after a check, so every device pulls the new status."""
+    row = _stored(con, "profile", profile_id)
+    if row is None or row["deleted"]:
+        return
+    payload = _with_kyc(con, json.loads(row["payload"]))
+    con.execute(
+        "UPDATE records SET payload = ?, rev = ?, updated_at = ? WHERE entity_type = 'profile' AND entity_id = ?",
+        (json.dumps(payload), _next_rev(con), _now(), profile_id),
+    )
+
+
+def _forget_kyc(con: Conn, profile_id: str) -> None:
+    """A deleted profile keeps no registered name, and frees its identity for a new one."""
+    con.execute("DELETE FROM verifications WHERE profile_id = ?", (profile_id,))
+    con.execute("DELETE FROM kyc_sessions WHERE profile_id = ?", (profile_id,))
+
+
+def _display_name(con: Conn, profile_id: str) -> str | None:
+    row = _stored(con, "profile", profile_id)
+    if row is None or row["deleted"]:
+        return None
+    return json.loads(row["payload"]).get("display_name")
+
+
+@app.get("/v1/kyc")
+def kyc_status(me: Device = Depends(device)) -> dict[str, Any]:
+    """This profile's identity check, and which checks it can take here."""
+    providers = _providers()
+    with db() as con:
+        row = _verification(con, me.profile_id)
+        name = _display_name(con, me.profile_id)
+        fields = _kyc_fields(con, me.profile_id, name)
+        waiting = con.execute(
+            "SELECT 1 FROM kyc_sessions WHERE profile_id = ? AND status = 'waiting' AND expires_at > ?",
+            (me.profile_id, _now()),
+        ).fetchone()
+    matches = identity.names_match(row["registered_name"], name) if row else None
+    status = fields["kyc_status"]
+    if row is not None and not matches:
+        status = "rejected"  # to its owner only: the name needs fixing
+    elif status == "unverified" and waiting:
+        status = "pending"
+    return {
+        "status": status,
+        "method": row["method"] if row else None,
+        "verifiedAt": row["verified_at"] if row else None,
+        # The registered name is the owner's to see, so they can fix a mismatch.
+        "registeredName": row["registered_name"] if row else None,
+        "nameMatches": matches,
+        "aadhaarBacked": bool(row["aadhaar_backed"]) if row else None,
+        "methods": [{"code": method, "available": method in providers} for method in _methods_for(me.segment)],
+        "sandbox": sandbox.configured,
+    }
+
+
+class KycStartIn(BaseModel):
+    method: str = Field(min_length=1, max_length=32)
+
+
+def _public_url(request: Request) -> str:
+    return PUBLIC_URL or str(request.base_url).rstrip("/")
+
+
+@app.post("/v1/kyc/start")
+def kyc_start(body: KycStartIn, request: Request, me: Device = Depends(device)) -> dict[str, str]:
+    """An address to open in the browser, where the person signs in and agrees.
+
+    It is this server's own page first (``/v1/kyc/go``), which says whose
+    profile is being checked before sending the browser on to the provider.
+    """
+    if body.method not in _methods_for(me.segment):
+        raise HTTPException(status_code=422, detail="That check does not apply to this profile.")
+    if body.method not in _providers():
+        raise HTTPException(status_code=503, detail="This identity check is not switched on on this server yet.")
+    if body.method != "sandbox" and not KYC_SALT:
+        raise HTTPException(status_code=503, detail="The server's operator must set VG_KYC_SALT first.")
+    with db() as con:
+        if _display_name(con, me.profile_id) is None:
+            raise HTTPException(status_code=409, detail="Share your profile online first, then check your identity.")
+        # Attempts are kept a day past their end, to see what went wrong; then dropped.
+        day_ago = datetime.fromtimestamp(time.time() - 86400, timezone.utc).isoformat()
+        con.execute("DELETE FROM kyc_sessions WHERE expires_at < ?", (day_ago,))
+        # One attempt at a time: starting again cancels the last one's link.
+        con.execute(
+            "UPDATE kyc_sessions SET status = 'failed', error = 'replaced' WHERE profile_id = ? AND status = 'waiting'",
+            (me.profile_id,),
+        )
+        state = secrets.token_urlsafe(24)
+        expires = datetime.fromtimestamp(time.time() + KYC_SESSION_SECONDS, timezone.utc).isoformat()
+        con.execute(
+            "INSERT INTO kyc_sessions (state, profile_id, method, verifier, status, created_at, expires_at) "
+            "VALUES (?, ?, ?, ?, 'waiting', ?, ?)",
+            (state, me.profile_id, body.method, identity.pkce_verifier(), _now(), expires),
+        )
+    return {"url": f"{_public_url(request)}/v1/kyc/go?" + urllib.parse.urlencode({"state": state}),
+            "expiresAt": expires}
+
+
+def _html(title: str, body: str, status: int = 200) -> HTMLResponse:
+    """A short page for a browser, in Hindi as well as English. ``body`` must already be escaped."""
+    return HTMLResponse(
+        "<!doctype html><html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width'>"
+        f"<title>{html.escape(title)}</title></head><body style='font-family:system-ui,sans-serif;"
+        f"max-width:560px;margin:40px auto;padding:0 16px;line-height:1.6'>{body}</body></html>",
+        status_code=status,
+    )
+
+
+def _page(title: str, english: str, hindi: str, ok: bool) -> HTMLResponse:
+    """Where the browser ends up: what happened, and to go back to the app."""
+    colour = "#2f7d4f" if ok else "#b3261e"
+    return _html(
+        title,
+        f"<h1 style='color:{colour}'>{html.escape(title)}</h1>"
+        f"<p>{html.escape(english)}</p><p lang='hi'>{html.escape(hindi)}</p>",
+        200 if ok else 400,
+    )
+
+
+def _expired() -> HTMLResponse:
+    return _page("Link expired", "This check has expired or was already used. Start again from the app.",
+                 "यह जाँच पुरानी हो गई या पहले ही इस्तेमाल हो चुकी। ऐप से फिर शुरू करें।", ok=False)
+
+
+def _waiting_session(con: Conn, state: str, method: str | None = None) -> Row | None:
+    session = con.execute("SELECT * FROM kyc_sessions WHERE state = ?", (state,)).fetchone()
+    if session is None or session["status"] != "waiting" or session["expires_at"] <= _now():
+        return None
+    if method is not None and session["method"] != method:
+        return None
+    return session
+
+
+@app.get("/v1/kyc/go", response_class=HTMLResponse)
+def kyc_go(state: str = "") -> HTMLResponse:
+    """Say whose profile is about to be checked, then go on to the provider.
+
+    Anyone could start a check for their own profile and send the link to
+    someone else, hoping they sign in and lend it their identity. This page
+    names the profile and tells them to stop unless they started it
+    themselves, on their own device, just now.
+    """
+    with db() as con:
+        session = _waiting_session(con, state)
+        name = _display_name(con, session["profile_id"]) if session else None
+    provider = _providers().get(session["method"]) if session else None
+    if session is None or provider is None:
+        return _expired()
+    target = provider.authorize_url(state, identity.pkce_challenge(session["verifier"]))
+    label = "a sandbox test (nothing is checked)" if session["method"] == "sandbox" else "DigiLocker"
+    who = html.escape(name or "")
+    return _html(
+        "Check your identity",
+        "<h1>Check your identity</h1>"
+        f"<p>You are about to confirm that the ViksitGaanw profile <strong>{who}</strong> is you, through "
+        f"{html.escape(label)}. Only your name, and whether the account is linked to Aadhaar, will be kept -- "
+        "not your Aadhaar number, date of birth or documents.</p>"
+        f"<p lang='hi'>आप पुष्टि करने जा रहे हैं कि विकसितगाँव प्रोफ़ाइल <strong>{who}</strong> आपकी है। "
+        "सिर्फ़ आपका नाम और यह कि खाता आधार से जुड़ा है या नहीं, रखा जाएगा — आधार नंबर, जन्मतिथि या दस्तावेज़ नहीं।</p>"
+        "<p style='background:#fff4e5;padding:12px;border-radius:8px'><strong>Continue only if you pressed the "
+        "button in your own ViksitGaanw app just now.</strong> If someone sent you this link, close this page.<br>"
+        "<span lang='hi'><strong>आगे तभी बढ़ें जब आपने अभी अपने विकसितगाँव ऐप में बटन दबाया हो।</strong> "
+        "अगर यह लिंक किसी ने आपको भेजा है, तो यह पेज बंद कर दें।</span></p>"
+        f"<p><a href='{html.escape(target)}' style='display:inline-block;background:#2f7d4f;color:#fff;"
+        "padding:12px 20px;border-radius:8px;text-decoration:none'>Continue · आगे बढ़ें</a></p>",
+    )
+
+
+def _fail_session(state: str, error: str) -> None:
+    with db() as con:
+        con.execute("UPDATE kyc_sessions SET status = 'failed', error = ? WHERE state = ?", (error[:300], state))
+
+
+def _finish(method: str, state: str, code: str, error: str) -> HTMLResponse:
+    """The provider sent the person back, with a one-time code: find out who they are."""
+    with db() as con:
+        session = _waiting_session(con, state, method)
+    if session is None:
+        return _expired()
+    if error or not code:
+        _fail_session(state, error or "no code")
+        return _page("Not verified", "You did not agree, so nothing was checked. You can try again from the app.",
+                     "आपने सहमति नहीं दी, इसलिए कुछ नहीं जाँचा गया। ऐप से फिर कोशिश कर सकते हैं।", ok=False)
+    provider = _providers().get(method)
+    if provider is None:
+        return _page("Not available", "This check is not switched on on this server.",
+                     "यह जाँच इस सर्वर पर चालू नहीं है।", ok=False)
+    try:
+        person = provider.exchange(code, session["verifier"])
+    except identity.IdentityError as exc:
+        _fail_session(state, str(exc))
+        return _page("Could not check", "The identity service did not answer properly. Try again later.",
+                     "पहचान सेवा ने ठीक से जवाब नहीं दिया। थोड़ी देर बाद फिर कोशिश करें।", ok=False)
+
+    fingerprint = identity.reference(KYC_SALT or "sandbox", f"{method}:{person['id']}")
+    already_used = _page("Already used", "This identity already verifies another profile.",
+                         "यह पहचान पहले से किसी दूसरी प्रोफ़ाइल की पुष्टि करती है।", ok=False)
+    try:
+        with db() as con:
+            # The code is spent either way; a second visit to this page finds nothing.
+            if con.execute("UPDATE kyc_sessions SET status = 'done' WHERE state = ? AND status = 'waiting'",
+                           (state,)).rowcount == 0:
+                return _expired()
+            # One person vouches for one profile: the same identity cannot verify two.
+            other = con.execute(
+                "SELECT profile_id FROM verifications WHERE reference = ? AND profile_id <> ?",
+                (fingerprint, session["profile_id"]),
+            ).fetchone()
+            if other is not None:
+                con.execute("UPDATE kyc_sessions SET status = 'failed', error = 'identity used by another profile' "
+                            "WHERE state = ?", (state,))
+                return already_used
+            con.execute(
+                "INSERT INTO verifications (profile_id, method, reference, registered_name, aadhaar_backed, "
+                "verified_at) VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT (profile_id) DO UPDATE SET "
+                "method = excluded.method, reference = excluded.reference, "
+                "registered_name = excluded.registered_name, aadhaar_backed = excluded.aadhaar_backed, "
+                "verified_at = excluded.verified_at",
+                (session["profile_id"], method, fingerprint, person["name"], int(person["aadhaar_backed"]), _now()),
+            )
+            _stamp_profile(con, session["profile_id"])
+            matches = identity.names_match(person["name"], _display_name(con, session["profile_id"]))
+    except IntegrityError:
+        # Another profile took the same identity a moment ago (the unique index caught it).
+        _fail_session(state, "identity used by another profile")
+        return already_used
+    if not matches:
+        return _page("Name does not match",
+                     "The name registered there is not the name on your profile. Go back to the app to see it, "
+                     "change your profile name to match, and the tick will show.",
+                     "वहाँ पंजीकृत नाम आपकी प्रोफ़ाइल के नाम से नहीं मिलता। ऐप में देखें, प्रोफ़ाइल का नाम उसके जैसा "
+                     "कर दें, तो सत्यापन दिखेगा।",
+                     ok=False)
+    return _page("Verified", "Your identity is checked. Go back to the app; it will show the tick.",
+                 "आपकी पहचान की जाँच हो गई। ऐप में वापस जाएँ; वहाँ सत्यापित दिखेगा।", ok=True)
+
+
+@app.get("/v1/kyc/digilocker/callback", response_class=HTMLResponse)
+def kyc_digilocker_callback(state: str = "", code: str = "", error: str = "") -> HTMLResponse:
+    """Where DigiLocker sends the person back. Register exactly this address on its partner portal."""
+    return _finish("digilocker", state, code, error)
+
+
+@app.get("/v1/kyc/sandbox/authorize", response_class=HTMLResponse)
+def kyc_sandbox_page(state: str = "") -> HTMLResponse:
+    """The pretend provider's sign-in page, for development only."""
+    if not sandbox.configured:
+        raise HTTPException(status_code=404, detail="Not found.")
+    return _html(
+        "Sandbox identity check",
+        "<h1>Sandbox identity check</h1><p><strong>For testing only. Nothing is checked.</strong></p>"
+        "<form action='/v1/kyc/sandbox/callback' method='get'>"
+        f"<input type='hidden' name='state' value='{html.escape(state)}'>"
+        "<label>Name as it would be registered<br><input name='name' required></label> "
+        "<button name='code' value='sandbox'>Approve</button> "
+        "<button name='error' value='declined' formnovalidate>Decline</button></form>",
+    )
+
+
+@app.get("/v1/kyc/sandbox/callback", response_class=HTMLResponse)
+def kyc_sandbox_callback(state: str = "", name: str = "", code: str = "", error: str = "") -> HTMLResponse:
+    if not sandbox.configured:
+        raise HTTPException(status_code=404, detail="Not found.")
+    return _finish("sandbox", state, f"sandbox:{urllib.parse.quote(name)}" if code else "", error)
 
 
 @app.get("/v1/health")

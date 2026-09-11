@@ -299,6 +299,22 @@ export const en = {
   'kyc.organisation': 'registration documents',
   'kyc.official': 'official email and department',
   'kyc.police': 'police verification',
+  'kyc.sandbox': 'a sandbox test',
+  'kyc.intro':
+    'Investors and partners trust a verified profile more. You sign in on {method} in your browser and agree to share your name. Nothing else is kept: not your Aadhaar number, date of birth or documents.',
+  'kyc.verifyWith': 'Verify with {method}',
+  'kyc.waiting': 'Finish in the browser: sign in and agree, then come back here. The page stays open for 15 minutes.',
+  'kyc.checkNow': 'Check now',
+  'kyc.openAgain': 'Open the page again',
+  'kyc.notYet': 'Not finished yet. Complete the steps in the browser first.',
+  'kyc.verifiedWith': 'Verified with {method} on {date}.',
+  'kyc.aadhaarBacked': 'The account is linked to Aadhaar.',
+  'kyc.nameMismatch':
+    'Your name registered with {method} is “{name}”. It does not match the name on your profile, so others do not see the tick. Change your profile name to match it.',
+  'kyc.shareFirst': 'Share your profile online first; then you can check your identity.',
+  'kyc.syncOff': 'Identity checks go through the sync server. Switch sync on first.',
+  'kyc.offline': 'The sync server cannot be reached now. Try again when you are online.',
+  'kyc.sandboxNote': 'This sync server is in test mode: a sandbox check does not prove who you are.',
 
   'request.title': 'Ask for investment or a partner',
   'request.lede':
@@ -1445,6 +1461,22 @@ export const hi: Record<StringKey, string> = {
   'kyc.organisation': 'पंजीकरण दस्तावेज़',
   'kyc.official': 'आधिकारिक ईमेल और विभाग',
   'kyc.police': 'पुलिस सत्यापन',
+  'kyc.sandbox': 'सैंडबॉक्स जाँच',
+  'kyc.intro':
+    'निवेशक और साझेदार सत्यापित प्रोफ़ाइल पर ज़्यादा भरोसा करते हैं। आप ब्राउज़र में {method} पर साइन इन करके अपना नाम साझा करने की सहमति देते हैं। और कुछ नहीं रखा जाता: न आधार नंबर, न जन्मतिथि, न दस्तावेज़।',
+  'kyc.verifyWith': '{method} से सत्यापित करें',
+  'kyc.waiting': 'ब्राउज़र में साइन इन करके सहमति दें, फिर यहाँ लौटें। पेज 15 मिनट तक खुला रहता है।',
+  'kyc.checkNow': 'अभी जाँचें',
+  'kyc.openAgain': 'पेज फिर खोलें',
+  'kyc.notYet': 'अभी पूरा नहीं हुआ। पहले ब्राउज़र में सारे चरण पूरे करें।',
+  'kyc.verifiedWith': '{method} से {date} को सत्यापित।',
+  'kyc.aadhaarBacked': 'खाता आधार से जुड़ा है।',
+  'kyc.nameMismatch':
+    '{method} में आपका पंजीकृत नाम “{name}” है। यह आपकी प्रोफ़ाइल के नाम से नहीं मिलता, इसलिए दूसरों को सत्यापन का निशान नहीं दिखता। प्रोफ़ाइल का नाम उसके जैसा कर दें।',
+  'kyc.shareFirst': 'पहले अपनी प्रोफ़ाइल ऑनलाइन साझा करें; फिर पहचान की जाँच कर सकते हैं।',
+  'kyc.syncOff': 'पहचान की जाँच सिंक सर्वर से होती है। पहले सिंक चालू करें।',
+  'kyc.offline': 'अभी सिंक सर्वर से संपर्क नहीं हो रहा। इंटरनेट मिलने पर फिर कोशिश करें।',
+  'kyc.sandboxNote': 'यह सिंक सर्वर परीक्षण मोड में है: सैंडबॉक्स जाँच से आपकी पहचान साबित नहीं होती।',
 
   'request.title': 'निवेश या साझेदार के लिए अनुरोध',
   'request.lede':

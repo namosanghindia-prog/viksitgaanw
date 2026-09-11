@@ -82,6 +82,10 @@ class EventType:
     SUBSCRIPTION_CHECKOUT = "subscription.checkout_started"
     #: A subscription payment went through: revenue, with the amount in paise.
     SUBSCRIPTION_PAID = "subscription.paid"
+    #: The owner opened an identity check (DigiLocker) in the browser.
+    KYC_STARTED = "kyc.started"
+    #: The sync server confirmed the owner's identity: trust before money moves.
+    KYC_VERIFIED = "kyc.verified"
     #: A farmer put a project in front of an investor they found.
     INVITE_SENT = "project_invite.sent"
     INVITE_DECLINED = "project_invite.declined"

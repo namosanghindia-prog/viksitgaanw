@@ -13,6 +13,8 @@ import type {
   FarmUpdate,
   FarmerListing,
   InvestorListing,
+  KycStart,
+  KycState,
   LandShare,
   ProjectInvite,
   Subscription,
@@ -591,6 +593,10 @@ export const api = {
     request<SubscriptionPayment>('/subscription/checkout', { method: 'POST', body: { plan } }),
   checkPayment: (id: string) =>
     request<SubscriptionPayment>(`/subscription/payments/${id}/check`, { method: 'POST' }),
+
+  /* Checking the owner's identity */
+  kyc: (signal?: AbortSignal) => request<KycState>('/kyc', { signal }),
+  startKyc: (method: string) => request<KycStart>('/kyc/start', { method: 'POST', body: { method } }),
 
   /* Finding investors and farmers */
   findInvestors: (stateCode?: string | null, signal?: AbortSignal) =>

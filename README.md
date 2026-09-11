@@ -17,8 +17,9 @@ mandi prices, government-scheme checks, backups and an opt-in sync. See
 
 > [!WARNING]
 > **Development build — not for public release.** Nothing here should be
-> published online or put in front of real users yet: there is no identity
-> verification (every profile shows as unverified); sync works only against the
+> published online or put in front of real users yet: identity verification
+> works only through DigiLocker, and only once the sync server's operator is a
+> registered DigiLocker partner (Aadhaar eKYC awaits a KUA contract); sync works only against the
 > sync server in `apps/sync`, which now runs on PostgreSQL with rate limits and
 > abuse controls but has not been security-reviewed or hosted, so run it only on
 > your own machine or network for now; the deal and
@@ -454,12 +455,13 @@ are exchanged only when a farmer accepts an interest. International and
 government visibility are both opt-in, and a request a viewer may not see
 returns 404 rather than 403.
 
-**Identity.** Aadhaar numbers are never collected or stored.
-`apps/api/app/services/kyc.py` fixes which verification route applies to which
-segment (Aadhaar eKYC and DigiLocker for farmers, passport checks abroad,
-registration documents for organisations, official email for government) and
-refuses plainly until a UIDAI-authorised KUA is contracted. Every profile is
-shown as "not verified" until then.
+**Identity.** Aadhaar numbers are never collected or stored. Farmers, Indian
+investors and national partners can verify through DigiLocker, run by the sync
+server (see [Identity checks](#identity-checks)); a profile shows the tick only
+while the name registered there matches its own. The other routes —
+Aadhaar eKYC, PAN, passport checks abroad, registration documents for
+organisations, official email for government — are fixed per segment in
+`apps/api/app/services/kyc.py` and wait for an agreement with a provider.
 
 **Foreign investment.** Foreign nationals, NRIs and OCIs cannot buy or lease
 Indian farmland, and FDI in farming is permitted only for some activities.
@@ -725,6 +727,49 @@ keeps a receipt of each payment (`subscription_payments`, never synced) and
 records `subscription.checkout_started` and `subscription.paid` — the second
 with the amount in paise — in `app_events`: the revenue line for metering.
 
+### Identity checks
+
+A villager verifies by signing in on DigiLocker — a free government service,
+with no commercial contract — in the browser, and agreeing to share their
+name. DigiLocker hands the sync server their DigiLocker id, their name as
+registered and whether the account is linked to Aadhaar. The server keeps a
+salted fingerprint of the id (so one identity verifies one profile), the name
+(shown only to its owner) and the Aadhaar flag — never the Aadhaar number,
+date of birth, gender or any document. Only the server sets a profile's KYC
+status; whatever a device pushes is overwritten.
+
+1. Register as a partner on DigiLocker's partner portal, with the redirect
+   address `https://<server>/v1/kyc/digilocker/callback`, and put on the sync
+   server, in the environment or `apps/sync/.env`:
+
+   ```
+   VG_KYC_DIGILOCKER_CLIENT_ID=...
+   VG_KYC_DIGILOCKER_CLIENT_SECRET=...
+   VG_KYC_DIGILOCKER_REDIRECT_URI=https://<server>/v1/kyc/digilocker/callback
+   VG_KYC_SALT=<a long random string; set once, never change it>
+   VG_SYNC_PUBLIC_URL=https://<server>   # when a proxy hides the host
+   ```
+
+2. In the app, **Profile → Identity check → Verify with DigiLocker** opens the
+   server's own page first. It names the profile being checked and warns the
+   reader to stop unless they pressed the button themselves just now — so
+   nobody can send someone a link and borrow their identity — then goes on to
+   DigiLocker. The app asks every few seconds until the check is done, and
+   every sync asks while one is open.
+
+3. A profile is verified while its name matches the registered one: every word
+   of the shorter name in the longer, at least two words (so "Ramesh Yadav"
+   matches "RAMESH KUMAR YADAV", and "Yadav" alone matches nobody). To others a
+   mismatch reads as not verified; its owner is told the registered name so
+   they can correct their profile. Deleting a profile forgets its check and
+   frees the identity; `python apps/sync/admin.py unverify <profile-id>` takes
+   a tick away by hand.
+
+For development, `VG_KYC_SANDBOX=1` adds a pretend provider that walks the same
+pages but checks nothing; everything it verifies is marked `sandbox`, and the
+app says the server is in test mode. Never set it where real people sign up.
+The device records `kyc.started` and `kyc.verified` in `app_events`.
+
 ---
 
 ## Design notes
@@ -761,16 +806,18 @@ server, introduction and biodata videos with Mux uploads for subscribers,
 farmers and investors finding each other, and prepaid subscriptions paid
 through Razorpay (switched off until keys and prices are set). The sync service
 now runs on PostgreSQL with rate limits, size limits, token rotation, device
-sign-out and suspension. Phase 2, next: KYC through an authorised provider,
-hosting the sync service after a security review, and legal review of the deal
-and dispute terms.
+sign-out and suspension, and runs identity checks through DigiLocker (switched
+off until the operator registers as a partner). Phase 2, next: Aadhaar eKYC
+through an authorised KUA, hosting the sync service after a security review,
+and legal review of the deal and dispute terms.
 
 Phase 3: self-hosted map and geocoding infrastructure, scheme application
 assistance beyond tracking, partnership-based verification tier, voice input,
 more languages in the app itself (reports already cover 22).
 
-Integration points already stubbed: `services/kyc.py` and the `Profile.kyc_*`
-columns for Aadhaar eKYC, DigiLocker and the later police-verification tier;
+Integration points already stubbed: a `Provider` in `apps/sync/identity.py`
+for Aadhaar eKYC, PAN and passport checks, and the later police-verification
+tier;
 `sync_queue` for cloud sync; `LandParcel.latitude/longitude` for Leaflet plot
 mapping.
 
@@ -859,4 +906,10 @@ Every setting takes a `VG_`-prefixed environment variable.
 | `RAZORPAY_KEY_ID`   | none (sync server only)            | Razorpay key for payments      |
 | `RAZORPAY_KEY_SECRET` | none (sync server only)          | Its secret; or `apps/sync/.env`|
 | `RAZORPAY_WEBHOOK_SECRET` | none (sync server only)      | Verifies Razorpay's webhook    |
+| `VG_KYC_DIGILOCKER_CLIENT_ID` | none (sync server only)  | DigiLocker partner client id   |
+| `VG_KYC_DIGILOCKER_CLIENT_SECRET` | none (sync server only) | Its secret                  |
+| `VG_KYC_DIGILOCKER_REDIRECT_URI` | none (sync server only) | Callback registered with it  |
+| `VG_KYC_SALT`       | none (sync server only)            | Salts identity fingerprints    |
+| `VG_KYC_SANDBOX`    | off                                | Pretend provider, testing only |
+| `VG_SYNC_PUBLIC_URL` | taken from each request           | Server's address for browsers  |
 | `VG_ALLOW_NETWORK`  | `true`                             | Permit the two online lookups  |

@@ -1405,6 +1405,41 @@ export interface Subscription {
 }
 
 /* ------------------------------------------------------------------ *
+ * Identity checks
+ * ------------------------------------------------------------------ */
+
+export interface KycMethodOption {
+  code: string;
+  /** Whether the sync server has this check switched on. */
+  available: boolean;
+}
+
+/** The owner's identity check, as the sync server sees it. */
+export interface KycState {
+  status: KycStatus;
+  method: string | null;
+  verifiedAt: string | null;
+  /** The name registered with the provider: the owner's to see, to fix a mismatch. */
+  registeredName: string | null;
+  nameMatches: boolean | null;
+  aadhaarBacked: boolean | null;
+  /** The checks this server offers this kind of profile. */
+  methods: KycMethodOption[];
+  /** Every route planned for this kind of profile, switched on or not. */
+  planned: string[];
+  /** The server runs a pretend provider for testing. */
+  sandbox: boolean;
+  /** sync_off | offline, or null. */
+  reason: string | null;
+}
+
+export interface KycStart {
+  /** Open in the browser: the server's own page, then the provider's. */
+  url: string;
+  expiresAt: string;
+}
+
+/* ------------------------------------------------------------------ *
  * Finding investors and farmers
  * ------------------------------------------------------------------ */
 

@@ -43,6 +43,7 @@ from sqlalchemy import (
     text,
 )
 from sqlalchemy.engine import Connection, CursorResult, Engine
+from sqlalchemy.exc import IntegrityError  # noqa: F401 - the server catches it from here
 
 metadata = MetaData()
 
@@ -134,6 +135,36 @@ Table(
     Index("ix_payments_profile", "profile_id"),
 )
 Table("webhook_events", metadata, Column("id", Text, primary_key=True), Column("received_at", Text, nullable=False))
+#: A profile's identity check, as this server did it. The server is the only
+#: source of a profile's KYC status: whatever a device claims is overwritten.
+#: No Aadhaar number, date of birth or document is ever kept (see identity.py).
+Table(
+    "verifications", metadata,
+    Column("profile_id", Text, primary_key=True),
+    Column("method", Text, nullable=False),
+    #: Salted hash of the provider's id for the person.
+    Column("reference", Text, nullable=False),
+    #: The name as registered with the provider; shown only to its owner.
+    Column("registered_name", Text, nullable=False),
+    Column("aadhaar_backed", Integer, nullable=False, server_default="0"),
+    Column("verified_at", Text, nullable=False),
+    #: One identity vouches for one profile, even when two check at once.
+    Index("ix_verifications_reference", "reference", unique=True),
+)
+#: One attempt: the PKCE verifier and state waiting for the provider's callback.
+Table(
+    "kyc_sessions", metadata,
+    Column("state", Text, primary_key=True),
+    Column("profile_id", Text, nullable=False),
+    Column("method", Text, nullable=False),
+    Column("verifier", Text, nullable=False),
+    #: waiting | done | failed
+    Column("status", Text, nullable=False),
+    Column("error", Text),
+    Column("created_at", Text, nullable=False),
+    Column("expires_at", Text, nullable=False),
+    Index("ix_kyc_sessions_profile", "profile_id"),
+)
 #: Profiles the operator has suspended for abuse: their devices are refused and
 #: what they shared stops reaching anyone.
 Table(

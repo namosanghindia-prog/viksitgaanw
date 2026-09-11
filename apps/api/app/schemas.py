@@ -2442,6 +2442,48 @@ class CheckoutInput(ApiModel):
 
 
 # --------------------------------------------------------------------------- #
+# Identity checks
+# --------------------------------------------------------------------------- #
+
+
+class KycMethodOut(ApiModel):
+    code: str
+    #: Whether the sync server has this check switched on.
+    available: bool
+
+
+class KycOut(ApiModel):
+    """The owner's identity check, as the sync server sees it."""
+
+    status: Literal["unverified", "pending", "verified", "rejected"]
+    method: str | None = None
+    verified_at: datetime | None = None
+    #: The name as registered with the provider -- the owner's to see, so a
+    #: mismatch with the profile name can be put right.
+    registered_name: str | None = None
+    name_matches: bool | None = None
+    aadhaar_backed: bool | None = None
+    #: The checks the sync server offers this kind of profile.
+    methods: list[KycMethodOut] = Field(default_factory=list)
+    #: Every route planned for this kind of profile, switched on or not.
+    planned: list[str] = Field(default_factory=list)
+    #: The server runs a pretend provider: nothing it verifies is real.
+    sandbox: bool = False
+    #: Why the server was not asked: sync_off | offline | None.
+    reason: str | None = None
+
+
+class KycStartInput(ApiModel):
+    method: str = Field(min_length=1, max_length=32)
+
+
+class KycStartOut(ApiModel):
+    #: Open in the browser: the server's own page first, then the provider's.
+    url: str
+    expires_at: datetime
+
+
+# --------------------------------------------------------------------------- #
 # Finding investors and farmers
 # --------------------------------------------------------------------------- #
 

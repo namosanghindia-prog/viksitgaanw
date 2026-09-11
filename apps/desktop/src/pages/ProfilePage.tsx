@@ -5,6 +5,7 @@ import { findItem } from '@viksitgaanw/shared';
 
 import { Avatar } from '../components/Avatar';
 import { InsuranceManager } from '../components/InsuranceManager';
+import { KycCard } from '../components/KycCard';
 import { PhotoButton } from '../components/PhotoButton';
 import { ProfileForm } from '../components/ProfileForm';
 import { ReviewList } from '../components/Stars';
@@ -219,21 +220,7 @@ export function ProfilePage() {
         </section>
       ) : null}
 
-      <section className="card">
-        <h3 className="card__title">{t('profile.kycTitle')}</h3>
-        <p>
-          <span className={`badge ${profile.kycStatus === 'verified' ? '' : 'badge--muted'}`}>
-            {t(`kyc.${profile.kycStatus}`)}
-          </span>
-        </p>
-        {profile.kycStatus !== 'verified' ? (
-          <p className="card__help">
-            {t('profile.kycSoon', {
-              methods: profile.kycMethods.map((method) => kycLabel(method, t)).join(' / '),
-            })}
-          </p>
-        ) : null}
-      </section>
+      <KycCard profile={profile} onChanged={reload} />
 
       <div className="actions">
         <span />
@@ -247,11 +234,6 @@ export function ProfilePage() {
 
 type Translate = ReturnType<typeof useI18n>['t'];
 type LabelReference = ReturnType<typeof useI18n>['rt'];
-
-function kycLabel(method: string, t: Translate): string {
-  const key = `kyc.${method}` as Parameters<Translate>[0];
-  return t(key);
-}
 
 /** The profile as label/value rows, in the order a reader would want them. */
 function profileRows(

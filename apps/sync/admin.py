@@ -12,6 +12,7 @@
     python apps/sync/admin.py release <profile-id>
     python apps/sync/admin.py suspend <profile-id> --reason "Fake investment offers"
     python apps/sync/admin.py unsuspend <profile-id>
+    python apps/sync/admin.py unverify <profile-id>
 
 A subscription lets its profile upload videos directly (through Mux) instead
 of linking them on YouTube. People buy one from the app once a plan is on
@@ -23,7 +24,9 @@ When a phone is lost or stolen, ``sign-out`` stops its token at once; the
 profile then cannot register another device until ``release`` -- so a thief
 cannot sign back in, and the owner's new phone can once you have checked it
 is them. ``suspend`` refuses every device of a profile that abuses others,
-and stops what it shared reaching anyone.
+and stops what it shared reaching anyone. ``unverify`` takes a profile's
+identity tick away -- say someone lent it their DigiLocker -- and frees that
+identity to verify its rightful profile.
 
 It works on the same database as the server (``VG_SYNC_DATABASE_URL`` or
 ``VG_SYNC_DB``), so run it where the server runs. Profile ids are listed by
@@ -68,6 +71,8 @@ def list_profiles() -> None:
         )
     print(f"\nMux uploads: {'on' if server.mux.configured else 'off (set MUX_TOKEN_ID and MUX_TOKEN_SECRET)'}")
     print(f"Razorpay payments: {'on' if server.razorpay.configured else 'off (set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET)'}")
+    kyc = "on" if server.digilocker.configured and server.KYC_SALT else "off (see apps/sync/identity.py)"
+    print(f"DigiLocker identity checks: {kyc}" + ("; SANDBOX ON -- test only" if server.sandbox.configured else ""))
 
 
 def _rupees(paise: int) -> str:
@@ -205,6 +210,14 @@ def unsuspend(profile_id: str) -> None:
     print(f"{profile_id}: no longer suspended")
 
 
+def unverify(profile_id: str) -> None:
+    with server.db() as con:
+        if con.execute("DELETE FROM verifications WHERE profile_id = ?", (profile_id,)).rowcount == 0:
+            sys.exit(f"{profile_id} is not verified.")
+        server._stamp_profile(con, profile_id)
+    print(f"{profile_id}: no longer verified; its identity may now verify another profile")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     commands = parser.add_subparsers(dest="command", required=True)
@@ -236,6 +249,8 @@ def main() -> None:
     sus.add_argument("--reason", required=True)
     uns = commands.add_parser("unsuspend", help="lift a suspension")
     uns.add_argument("profile_id")
+    unv = commands.add_parser("unverify", help="take away a profile's identity check")
+    unv.add_argument("profile_id")
     args = parser.parse_args()
 
     if args.command == "list":
@@ -260,6 +275,8 @@ def main() -> None:
         release(args.profile_id)
     elif args.command == "suspend":
         suspend(args.profile_id, args.reason)
+    elif args.command == "unverify":
+        unverify(args.profile_id)
     else:
         unsuspend(args.profile_id)
 
