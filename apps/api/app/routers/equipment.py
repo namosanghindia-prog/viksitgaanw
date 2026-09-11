@@ -307,7 +307,8 @@ def respond_to_partnership(
 
 @router.get("/timeline", response_model=list[TimelineItemOut], tags=["timeline"])
 def get_timeline(
-    kind: Literal["project", "equipment"] | None = Query(default=None),
+    #: "updates" is land and updates from connections, together.
+    kind: Literal["project", "equipment", "land", "updates"] | None = Query(default=None),
     state_code: str | None = Query(default=None, alias="stateCode"),
     limit: int = Query(default=100, ge=1, le=500),
     session: Session = Depends(get_session),

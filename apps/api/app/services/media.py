@@ -27,9 +27,9 @@ from ..models import MediaFile
 #: Largest upload accepted, before re-encoding.
 MAX_UPLOAD_BYTES = 8 * 1024 * 1024
 #: Longest side after resizing. A profile photo never shows larger than a card.
-MAX_SIDE = {"profile": 512, "equipment": 1280, "milestone": 1280, "diary": 1280}
+MAX_SIDE = {"profile": 512, "equipment": 1280, "milestone": 1280, "diary": 1280, "land": 1280, "update": 1280}
 #: Pictures each kind of thing may carry. Milestone photos are evidence.
-MAX_PER_ENTITY = {"profile": 1, "equipment": 4, "milestone": 6, "diary": 4}
+MAX_PER_ENTITY = {"profile": 1, "equipment": 4, "milestone": 6, "diary": 4, "land": 4, "update": 2}
 ACCEPTED_TYPES = {"image/jpeg", "image/png", "image/webp"}
 
 

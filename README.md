@@ -68,7 +68,7 @@ The download is ~10 MB and the import takes about a minute, producing a
 ```bash
 npm run api          # local FastAPI backend on 127.0.0.1:8756 (docs at /docs)
 npm run dev:web      # Vite dev server on 127.0.0.1:5273, in a normal browser
-cd apps/api && python -m pytest    # API test suite (394 tests)
+cd apps/api && python -m pytest    # API test suite (409 tests)
 npm run typecheck    # TypeScript
 npm run build        # production frontend build
 python scripts/check_translations.py   # report translation coverage
@@ -177,6 +177,15 @@ python scripts/import_mandi_prices.py --fetch --api-key <key>   # data.gov.in
   machines and groups, for the owner's block, district, state or all of India.
 - **Read aloud** — a "Listen" button on requests, notifications, messages,
   schemes, weather and deals, using the device's own voices.
+- **Connections, shared land and farm updates** — people connect when both
+  agree (a request, accepted), and people who already work together — a deal,
+  an accepted offer or rental, a machinery partnership, the same group — are
+  connected without asking. A farmer can share a plot with their connections:
+  it appears on their timeline with place, size, soil, water, crops and
+  pictures, never the survey number or exact pin, and moves back up marked
+  *Updated* whenever the plot changes. Short farm updates with a picture go to
+  the same people. Connected people can message each other and see each
+  other's phone number.
 - **Opt-in sync** — see [Sync](#sync).
 
 ---
@@ -489,7 +498,10 @@ data & sync**. Then, every five minutes and on "Sync now":
 - **Contact details are redacted** — phone numbers, emails and policy numbers
   are removed from what other devices pull until the two people are connected
   (an accepted interest, enquiry or partnership, or a deal).
-- **Requests reach only their chosen audiences.**
+- **Requests reach only their chosen audiences; shared land and farm updates
+  only the owner's connections.** When two people connect, the server sends
+  each what the other had already shared (and the phone number the connection
+  now reveals); when they disconnect, the other device drops it.
 - What arrives is written locally and turned into notifications on the
   receiving device.
 

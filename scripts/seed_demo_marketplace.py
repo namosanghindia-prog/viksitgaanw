@@ -18,7 +18,10 @@ arrive. This script stands in for sync. It adds:
   device belongs to a seller -- sample rent and buy enquiries on its shared
   machines and a sample farmer asking to become its partner;
 * an inbox notification for each sample interest, enquiry and partner
-  request, the way one appears when sync delivers it.
+  request, the way one appears when sync delivers it;
+* a sample neighbour already connected to the owner, with a plot shared on
+  the timeline and two farm updates, and a sample connection request waiting
+  for an answer.
 
 Sample items are shared online, as anything arriving by sync would be.
 
@@ -30,6 +33,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+import uuid
 from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 
@@ -41,13 +45,16 @@ from sqlalchemy.orm import Session  # noqa: E402
 
 from app.db import init_db, session_scope  # noqa: E402
 from app.models import (  # noqa: E402
+    Connection,
     District,
     EquipmentEnquiry,
     EquipmentListing,
     EquipmentPartnership,
+    FarmUpdate,
     InsurancePolicy,
     InvestmentInterest,
     InvestmentRequest,
+    LandShare,
     Notification,
     Profile,
     State,
@@ -499,14 +506,114 @@ def _add_seller_activity(session: Session, owner: Profile) -> tuple[int, int]:
     return enquiries, 1
 
 
+def _add_connections(session: Session, owner: Profile) -> tuple[int, int]:
+    """A connected neighbour with shared land and updates, and a request to answer."""
+    neighbour = Profile(
+        segment="farmer",
+        display_name="Sita Ram (sample)",
+        phone="+919000000300",
+        country_code="IN",
+        state_code=owner.state_code,
+        district_code=owner.district_code,
+        is_device_owner=False,
+        origin=DEMO,
+        visibility="online",
+        shared_at=_shared_at(),
+        details={"needs": ["market_linkage"]},
+    )
+    asker = Profile(
+        segment="partner_national",
+        display_name="Kavita Joshi",
+        organisation_name="Kisan Beej Bhandar (sample)",
+        phone="+919000000301",
+        country_code="IN",
+        state_code=owner.state_code,
+        district_code=owner.district_code,
+        is_device_owner=False,
+        origin=DEMO,
+        visibility="online",
+        details={"organisation_type": "input_supplier", "partnership_types": ["input_supply"]},
+    )
+    session.add_all([neighbour, asker])
+    session.flush()
+
+    session.add(
+        Connection(
+            requester_profile_id=neighbour.id,
+            addressee_profile_id=owner.id,
+            status="accepted",
+            message="Namaste, we farm next to each other.",
+            responded_at=datetime.now(timezone.utc),
+            origin=DEMO,
+        )
+    )
+    place = None
+    if owner.district_code:
+        district = session.get(District, owner.district_code)
+        state = session.get(State, owner.state_code) if owner.state_code else None
+        place = ", ".join(unit.name for unit in (district, state) if unit is not None) or None
+    share = LandShare(
+        id=str(uuid.uuid4()),
+        profile_id=neighbour.id,
+        snapshot={
+            "label": "Sita Ram's river field",
+            "place": place,
+            "state_code": owner.state_code,
+            "area_value": 3,
+            "area_unit": "bigha",
+            "area_hectares": 0.5,
+            "soil_type": "alluvial",
+            "water_sources": ["borewell"],
+            "water_type": "sweet",
+            "irrigation_type": "drip",
+            "existing_crops": ["tomato", "chilli"],
+        },
+        visibility="online",
+        shared_at=_shared_at(),
+        origin=DEMO,
+    )
+    session.add(share)
+    session.flush()
+    updates = [
+        FarmUpdate(profile_id=neighbour.id, land_share_id=share.id, origin=DEMO,
+                   body="Drip lines laid on the whole field. Tomato seedlings go in on Sunday.",
+                   created_at=datetime.now(timezone.utc) - timedelta(hours=5)),
+        FarmUpdate(profile_id=neighbour.id, origin=DEMO,
+                   body="Buying neem cake together brings the price down. Anyone in for 20 bags?",
+                   created_at=datetime.now(timezone.utc) - timedelta(hours=2)),
+    ]
+    session.add_all(updates)
+    request = Connection(
+        requester_profile_id=asker.id,
+        addressee_profile_id=owner.id,
+        status="requested",
+        message="We supply seed and fertiliser in your block. Happy to connect.",
+        origin=DEMO,
+    )
+    session.add(request)
+    session.flush()
+
+    name = neighbour.display_name
+    notify(session, owner.id, "land_shared", params={"name": name, "plot": share.snapshot["label"]},
+           link="/timeline", entity_type="land_share", entity_id=share.id)
+    notify(session, owner.id, "update_posted", params={"name": name, "text": updates[1].body[:80]},
+           link="/timeline", entity_type="farm_update", entity_id=updates[1].id)
+    notify(session, owner.id, "connection_requested", params={"name": asker.organisation_name},
+           link="/connections", entity_type="connection", entity_id=request.id)
+    return 1, 1
+
+
 def remove(session: Session) -> int:
     counts = 0
     # Notifications have no origin of their own: they go with what they are about.
-    for model in (InvestmentInterest, EquipmentEnquiry, EquipmentPartnership):
+    for model in (InvestmentInterest, EquipmentEnquiry, EquipmentPartnership, Connection, LandShare, FarmUpdate):
         demo_ids = select(model.id).where(model.origin == DEMO)
         result = session.execute(delete(Notification).where(Notification.entity_id.in_(demo_ids)))
         counts += result.rowcount or 0
     for model in (
+        FarmUpdate,
+        LandShare,
+        Connection,
         InsurancePolicy,
         InvestmentInterest,
         InvestmentRequest,
@@ -568,6 +675,13 @@ def main(argv: list[str] | None = None) -> int:
             )
         elif owner is None:
             print("No profile on this device yet: set one up in the app, then run this again.")
+
+        if owner is not None:
+            connected, waiting = _add_connections(session, owner)
+            print(
+                f"Added {connected} sample connection with a shared plot and updates, "
+                f"and {waiting} connection request to answer."
+            )
 
     print("Run with --remove to take the sample data out again.")
     return 0

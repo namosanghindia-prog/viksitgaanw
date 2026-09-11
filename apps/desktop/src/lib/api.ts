@@ -8,6 +8,10 @@
 import type {
   AdminUnit,
   AppNotification,
+  Connection,
+  Connections,
+  FarmUpdate,
+  LandShare,
   Backup,
   Conversation,
   Deal,
@@ -387,7 +391,10 @@ export const api = {
   unshareRequest: (id: string) =>
     request<InvestmentRequest>(`/investment-requests/${id}/unshare`, { method: 'POST' }),
 
-  timeline: (query: { kind?: 'project' | 'equipment'; stateCode?: string }, signal?: AbortSignal) =>
+  timeline: (
+    query: { kind?: 'project' | 'equipment' | 'land' | 'updates'; stateCode?: string },
+    signal?: AbortSignal,
+  ) =>
     request<TimelineItem[]>('/timeline', { params: query, signal }),
 
   browseEquipment: (
@@ -535,4 +542,26 @@ export const api = {
   configureSync: (serverUrl: string | null) =>
     request<SyncStatus>('/sync/config', { method: 'PUT', body: { serverUrl } }),
   runSync: () => request<SyncRun>('/sync/run', { method: 'POST' }),
+
+  /* Connections */
+  connections: (signal?: AbortSignal) => request<Connections>('/connections', { signal }),
+  askToConnect: (profileId: string, message?: string | null) =>
+    request<Connection>('/connections', { method: 'POST', body: { profileId, message: message ?? null } }),
+  answerConnection: (id: string, status: 'accepted' | 'declined') =>
+    request<Connection>(`/connections/${id}`, { method: 'PATCH', body: { status } }),
+  removeConnection: (id: string) => request<void>(`/connections/${id}`, { method: 'DELETE' }),
+
+  /* Shared land and farm updates */
+  shareParcel: (id: string) => request<LandParcel>(`/land-parcels/${id}/share`, { method: 'POST' }),
+  unshareParcel: (id: string) => request<LandParcel>(`/land-parcels/${id}/unshare`, { method: 'POST' }),
+  addParcelPhoto: (id: string, file: Blob) => upload<LandParcel>(`/land-parcels/${id}/photos`, file, 'POST'),
+  deleteParcelPhoto: (id: string, mediaId: string) =>
+    request<LandParcel>(`/land-parcels/${id}/photos/${mediaId}`, { method: 'DELETE' }),
+  landShare: (id: string, signal?: AbortSignal) => request<LandShare>(`/land-shares/${id}`, { signal }),
+  updates: (landShareId?: string, signal?: AbortSignal) =>
+    request<FarmUpdate[]>('/updates', { params: { landShareId }, signal }),
+  postUpdate: (body: string, landShareId?: string | null) =>
+    request<FarmUpdate>('/updates', { method: 'POST', body: { body, landShareId: landShareId ?? null } }),
+  addUpdatePhoto: (id: string, file: Blob) => upload<FarmUpdate>(`/updates/${id}/photos`, file, 'POST'),
+  deleteUpdate: (id: string) => request<void>(`/updates/${id}`, { method: 'DELETE' }),
 };

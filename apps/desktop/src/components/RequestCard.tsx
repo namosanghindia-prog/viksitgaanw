@@ -9,6 +9,7 @@ import { approxForeign, useFxRates, viewerCurrency } from '../lib/fx';
 import { useProfile } from '../lib/profile';
 import { typeItem } from '../lib/segments';
 import { Avatar } from './Avatar';
+import { ConnectButton } from './ConnectButton';
 import { InsuranceRow } from './InsuranceRow';
 import { ReadAloud } from './ReadAloud';
 import { RatingBadge } from './Stars';
@@ -49,6 +50,7 @@ export function PartyLine({ party }: { party: ProfileCard }) {
       </span>
       <RatingBadge average={party.ratingAvg} count={party.ratingCount} />
       {party.origin === 'demo' ? <span className="badge badge--sample">{t('card.sample')}</span> : null}
+      <ConnectButton party={party} />
     </div>
   );
 }

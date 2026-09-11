@@ -1184,3 +1184,89 @@ class SyncSetting(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=_now, onupdate=_now
     )
+
+
+# --------------------------------------------------------------------------- #
+# Connections, shared land and updates
+# --------------------------------------------------------------------------- #
+
+
+class Connection(Base):
+    """Two people who have agreed to follow each other's farm news.
+
+    One row per pair: whoever asked first is the requester. People who already
+    work together (an accepted offer, a rental, a partnership, a deal, the same
+    group) count as connected without a row here -- see services/connections.
+    """
+
+    __tablename__ = "connections"
+    __table_args__ = (
+        UniqueConstraint("requester_profile_id", "addressee_profile_id", name="uq_connection_pair"),
+        CheckConstraint("requester_profile_id <> addressee_profile_id", name="ck_connection_not_self"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    requester_profile_id: Mapped[str] = mapped_column(
+        ForeignKey("profiles.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    addressee_profile_id: Mapped[str] = mapped_column(
+        ForeignKey("profiles.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    message: Mapped[str | None] = mapped_column(Text)
+    #: requested | accepted | declined | removed
+    status: Mapped[str] = mapped_column(String(16), default="requested", nullable=False)
+    origin: Mapped[str] = mapped_column(String(16), default="local", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    responded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, onupdate=_now)
+
+
+class LandShare(Base):
+    """A plot shown to the owner's connections on the timeline.
+
+    It carries a *snapshot* of the plot -- place names, size, soil, water,
+    crops -- never the survey number or the exact pin, and it is refreshed
+    whenever the owner edits a shared plot. The id is the plot's own id, so the
+    plot's pictures (media entity ``land``) belong to both. On other devices
+    there is no plot, only this card.
+    """
+
+    __tablename__ = "land_shares"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    profile_id: Mapped[str] = mapped_column(
+        ForeignKey("profiles.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    #: The plot on this device, for the owner's own shares only.
+    parcel_id: Mapped[str | None] = mapped_column(ForeignKey("land_parcels.id", ondelete="SET NULL"))
+    snapshot: Mapped[dict] = mapped_column(JSON, default=dict)
+    #: offline | online (online = visible to connections)
+    visibility: Mapped[str] = mapped_column(String(16), default="offline", nullable=False)
+    shared_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    #: When the plot's details last changed while shared.
+    changed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    origin: Mapped[str] = mapped_column(String(16), default="local", nullable=False)
+    sync_state: Mapped[str] = mapped_column(String(16), default="local_only", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+    profile: Mapped[Profile] = relationship()
+
+
+class FarmUpdate(Base):
+    """A short post -- "sowing done", "first harvest" -- for the owner's connections."""
+
+    __tablename__ = "farm_updates"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    profile_id: Mapped[str] = mapped_column(
+        ForeignKey("profiles.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    #: The shared plot this is about, if any (a LandShare id).
+    land_share_id: Mapped[str | None] = mapped_column(String(36), index=True)
+    body: Mapped[str] = mapped_column(Text, nullable=False)
+    #: online while it is shown; offline once taken down.
+    visibility: Mapped[str] = mapped_column(String(16), default="online", nullable=False)
+    origin: Mapped[str] = mapped_column(String(16), default="local", nullable=False)
+    sync_state: Mapped[str] = mapped_column(String(16), default="local_only", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, onupdate=_now)

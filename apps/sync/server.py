@@ -4,21 +4,26 @@
 
 Every device keeps its own database and works offline. When online, its sync
 worker pushes what the owner has *shared* and pulls what the owner may *see*.
-This server holds only that: shared profiles, projects, machines and groups,
-and the private records two parties exchange (interests, enquiries,
-partnerships, messages, deals, disputes, ratings). Land parcels, diaries,
-reports and anything still offline never arrive here.
+This server holds only that: shared profiles, projects, machines and groups;
+cards of plots shared with connections, and farm updates; and the private
+records two parties exchange (connection requests, interests, enquiries,
+partnerships, messages, deals, disputes, ratings). The land parcels
+themselves, diaries, reports and anything still offline never arrive here.
 
 Privacy is enforced here, not trusted to clients:
 
 * Each record has an **audience**: public items go to the kinds of profile
-  their owner chose; private items go only to the parties named in them.
+  their owner chose; shared land and farm updates go only to the owner's
+  connections; private items go only to the parties named in them.
 * A device may only write records its owner is entitled to write. The other
   party to an interest, an enquiry or a partnership may change its status and
   nothing else.
 * Phone numbers, email addresses and insurance policy numbers are removed
   from what a device pulls unless its owner is actually connected to that
-  person -- an accepted interest or enquiry, an active partnership, a deal.
+  person -- an accepted connection request, interest or enquiry, an active
+  partnership, a deal, the same group.
+* When two people become connected, what each had already shared is sent to
+  the other on their next pull.
 
 > [!WARNING]
 > Development server. It is meant to run on a laptop or a LAN while the
@@ -48,7 +53,10 @@ DB_PATH = Path(os.environ.get("VG_SYNC_DB", Path(__file__).parent / "data" / "sy
 #: Records anyone in the audience may read.
 PUBLIC_TYPES = {"profile", "investment_request", "equipment_listing", "farmer_group", "rating", "insurance_policy"}
 #: Records only the parties named in them may read.
+#: Records only the owner's connections may read.
+CONNECTION_TYPES = {"land_share", "farm_update"}
 PRIVATE_TYPES = {
+    "connection",
     "investment_interest",
     "equipment_enquiry",
     "equipment_partnership",
@@ -57,7 +65,18 @@ PRIVATE_TYPES = {
     "dispute",
     "group_member",
 }
-KNOWN_TYPES = PUBLIC_TYPES | PRIVATE_TYPES
+KNOWN_TYPES = PUBLIC_TYPES | PRIVATE_TYPES | CONNECTION_TYPES
+#: Records that link two people, and the statuses at which they do.
+LINKS = {
+    "connection": {"accepted"},
+    "investment_interest": {"accepted"},
+    "equipment_enquiry": {"accepted"},
+    "equipment_partnership": {"active"},
+    "group_member": {"active"},
+    "deal": {"drafting", "active", "disputed", "completed"},
+}
+#: What a newly connected person should now receive from the other.
+RESEND_ON_CONNECT = ("profile", "land_share", "farm_update", "insurance_policy")
 #: Fields the counterparty may change on a record someone else created.
 COUNTERPARTY_FIELDS = {"status", "responded_at", "updated_at"}
 
@@ -204,8 +223,10 @@ def _rules(con: sqlite3.Connection, entity_type: str, payload: dict[str, Any]) -
     p = payload
     if entity_type == "profile":
         return p["id"], []
-    if entity_type in ("investment_request", "equipment_listing"):
+    if entity_type in ("investment_request", "equipment_listing", "land_share", "farm_update"):
         return p["profile_id"], []
+    if entity_type == "connection":
+        return p["requester_profile_id"], [p["requester_profile_id"], p["addressee_profile_id"]]
     if entity_type == "farmer_group":
         return p["owner_profile_id"], []
     if entity_type == "rating":
@@ -236,24 +257,58 @@ def _rules(con: sqlite3.Connection, entity_type: str, payload: dict[str, Any]) -
     raise HTTPException(status_code=422, detail=f"Unknown record type {entity_type}.")
 
 
-def _connected(con: sqlite3.Connection, a: str, b: str) -> bool:
-    """Whether profiles a and b have an accepted, active or agreed link."""
-    if a == b:
-        return True
+def _links(con: sqlite3.Connection, a: str) -> set[str]:
+    """Everyone profile a is connected to: agreed, or working together."""
+    out: set[str] = set()
+    active_groups: set[str] = set()
+    members: list[tuple[str, set[str]]] = []
+    placeholders = ",".join("?" * len(LINKS))
     for row in con.execute(
-        "SELECT entity_type, payload, parties FROM records WHERE deleted = 0 AND entity_type IN "
-        "('investment_interest','equipment_enquiry','equipment_partnership','deal')"
+        f"SELECT entity_type, payload, parties FROM records WHERE deleted = 0 AND entity_type IN ({placeholders})",
+        tuple(LINKS),
     ):
         parties = set(json.loads(row["parties"]))
-        if {a, b} <= parties:
-            status = json.loads(row["payload"]).get("status")
-            if (row["entity_type"], status) in {
-                ("investment_interest", "accepted"),
-                ("equipment_enquiry", "accepted"),
-                ("equipment_partnership", "active"),
-            } or row["entity_type"] == "deal":
-                return True
-    return False
+        payload = json.loads(row["payload"])
+        linked = payload.get("status") in LINKS[row["entity_type"]]
+        if row["entity_type"] == "group_member" and linked:
+            members.append((payload.get("group_id"), parties))
+            if a in parties:
+                active_groups.add(payload.get("group_id"))
+        if a in parties and linked:
+            out |= parties
+    # Members of the same group are connected to each other, not only to its organiser.
+    for group_id, parties in members:
+        if group_id in active_groups:
+            out |= parties
+    out.discard("")
+    out.discard(a)
+    return out
+
+
+def _connected(con: sqlite3.Connection, a: str, b: str) -> bool:
+    """Whether profiles a and b are connected."""
+    return a == b or b in _links(con, a)
+
+
+def _resend(con: sqlite3.Connection, parties: list[str]) -> None:
+    """Two people just connected: put what each shared back in the feed.
+
+    Pull is incremental, so a plot shared last month would otherwise never
+    reach someone who connected today -- nor would the phone number the
+    connection now reveals.
+    """
+    placeholders = ",".join("?" * len(RESEND_ON_CONNECT))
+    for owner in parties:
+        rows = con.execute(
+            f"SELECT entity_type, entity_id FROM records WHERE owner_profile_id = ? AND deleted = 0 "
+            f"AND entity_type IN ({placeholders})",
+            (owner, *RESEND_ON_CONNECT),
+        ).fetchall()
+        for row in rows:
+            con.execute(
+                "UPDATE records SET rev = ? WHERE entity_type = ? AND entity_id = ?",
+                (_next_rev(con), row["entity_type"], row["entity_id"]),
+            )
 
 
 def _visible(con: sqlite3.Connection, row: sqlite3.Row, puller: Device) -> bool:
@@ -267,6 +322,8 @@ def _visible(con: sqlite3.Connection, row: sqlite3.Row, puller: Device) -> bool:
     if row["entity_type"] == "insurance_policy":
         request = _stored(con, "investment_request", payload.get("request_id"))
         return bool(request) and _visible(con, request, puller)
+    if row["entity_type"] in CONNECTION_TYPES:
+        return _connected(con, puller.profile_id, row["owner_profile_id"])
     return True
 
 
@@ -344,8 +401,14 @@ def push(body: PushIn, me: Device = Depends(device)) -> dict[str, Any]:
                     payload, owner = merged, existing["owner_profile_id"]
                 elif existing is None and owner != me.profile_id and me.profile_id not in parties:
                     raise HTTPException(status_code=403, detail="not yours to create")
-                elif existing is None and record.entity_type in PUBLIC_TYPES and owner != me.profile_id:
+                elif (
+                    existing is None
+                    and record.entity_type in PUBLIC_TYPES | CONNECTION_TYPES
+                    and owner != me.profile_id
+                ):
                     raise HTTPException(status_code=403, detail="not yours to create")
+
+                was = json.loads(existing["payload"]).get("status") if existing is not None else None
 
                 con.execute(
                     "INSERT INTO records (entity_type, entity_id, owner_profile_id, parties, payload, deleted, "
@@ -364,6 +427,9 @@ def push(body: PushIn, me: Device = Depends(device)) -> dict[str, Any]:
                         _now(),
                     ),
                 )
+                status = payload.get("status")
+                if record.entity_type in LINKS and status in LINKS[record.entity_type] and status != was:
+                    _resend(con, parties)
                 accepted += 1
             except HTTPException as exc:
                 rejected.append({"entityType": record.entity_type, "entityId": record.entity_id, "reason": exc.detail})
@@ -434,7 +500,13 @@ def get_media(media_id: str, me: Device = Depends(device)) -> Response:
         row = con.execute("SELECT * FROM media WHERE id = ?", (media_id,)).fetchone()
         if row is None:
             raise HTTPException(status_code=404, detail="Picture not found.")
-        record_type = {"profile": "profile", "equipment": "equipment_listing", "milestone": "deal"}.get(row["entity_type"])
+        record_type = {
+            "profile": "profile",
+            "equipment": "equipment_listing",
+            "milestone": "deal",
+            "land": "land_share",
+            "update": "farm_update",
+        }.get(row["entity_type"])
         if record_type == "deal":
             owner_row = con.execute(
                 "SELECT * FROM records WHERE entity_type='deal' AND payload LIKE ?", (f'%{row["entity_id"]}%',)

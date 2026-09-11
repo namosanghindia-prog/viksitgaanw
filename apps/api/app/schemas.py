@@ -200,6 +200,10 @@ class LandParcelOut(LandParcelBase):
     sync_state: SyncState
     created_at: datetime
     updated_at: datetime
+    #: offline, or online = shown to the owner's connections on the timeline.
+    share_visibility: Visibility = "offline"
+    shared_at: datetime | None = None
+    photos: list["MediaOut"] = Field(default_factory=list)
 
 
 # --------------------------------------------------------------------------- #
@@ -712,6 +716,17 @@ class ProfileCardOut(ApiModel):
     rating_avg: float | None = None
     rating_count: int = 0
     contact: ContactOut | None = None
+    #: Where the device owner stands with this person; None on the owner's own card.
+    connection: "ConnectionStateOut | None" = None
+
+
+class ConnectionStateOut(ApiModel):
+    #: none | requested_by_me | requested_by_them | connected
+    state: Literal["none", "requested_by_me", "requested_by_them", "connected"]
+    #: How a connection came about: an accepted request, or working together.
+    via: Literal["request", "work"] | None = None
+    #: The connection request, when there is one.
+    id: str | None = None
 
 
 # --------------------------------------------------------------------------- #
@@ -1297,14 +1312,65 @@ class PartnershipOut(ApiModel):
 # --------------------------------------------------------------------------- #
 
 
-class TimelineItemOut(ApiModel):
-    """One thing someone shared online: a farm project or a machine."""
+class LandShareOut(ApiModel):
+    """A plot as the owner's connections see it."""
 
-    type: Literal["project", "equipment"]
+    id: str
+    owner: ProfileCardOut
+    is_mine: bool
+    label: str
+    place: str | None = None
+    state_code: str | None = None
+    area_value: float | None = None
+    area_unit: str | None = None
+    area_hectares: float | None = None
+    soil_type: str | None = None
+    water_sources: list[str] = Field(default_factory=list)
+    water_type: str | None = None
+    irrigation_type: str | None = None
+    existing_crops: list[str] = Field(default_factory=list)
+    photos: list[MediaOut] = Field(default_factory=list)
+    visibility: Visibility
+    shared_at: datetime | None = None
+    #: Set when the plot's details changed after it was first shared.
+    changed_at: datetime | None = None
+    updates: int = 0
+    origin: str
+
+
+class FarmUpdateInput(ApiModel):
+    body: str = Field(min_length=1, max_length=2000)
+    #: A plot of the owner's that is shared with connections.
+    land_share_id: str | None = Field(default=None, max_length=36)
+
+    @field_validator("body", mode="before")
+    @classmethod
+    def _strip(cls, value: Any) -> Any:
+        return value.strip() if isinstance(value, str) else value
+
+
+class FarmUpdateOut(ApiModel):
+    id: str
+    owner: ProfileCardOut
+    is_mine: bool
+    body: str
+    land_share_id: str | None = None
+    land_label: str | None = None
+    photos: list[MediaOut] = Field(default_factory=list)
+    created_at: datetime
+    origin: str
+
+
+class TimelineItemOut(ApiModel):
+    """One thing someone shared: a farm project, a machine, a plot or an update."""
+
+    type: Literal["project", "equipment", "land", "update"]
     id: str
     shared_at: datetime | None = None
     project: InvestmentRequestOut | None = None
     equipment: EquipmentOut | None = None
+    land: LandShareOut | None = None
+    update: FarmUpdateOut | None = None
 
 
 EquipmentOut.model_rebuild()
@@ -2200,3 +2266,48 @@ class ProjectReportOut(ApiModel):
     net_per_year: float
     created_at: datetime
     download_path: str
+
+
+# --------------------------------------------------------------------------- #
+# Connections
+# --------------------------------------------------------------------------- #
+
+
+class ConnectionInput(ApiModel):
+    profile_id: str = Field(min_length=1, max_length=36)
+    message: str | None = Field(default=None, max_length=500)
+
+    @field_validator("message", mode="before")
+    @classmethod
+    def _blank(cls, value: Any) -> Any:
+        return _blank_to_none(value)
+
+
+class ConnectionAnswer(ApiModel):
+    status: Literal["accepted", "declined"]
+
+
+class ConnectionOut(ApiModel):
+    id: str | None = None
+    other: ProfileCardOut
+    #: requested | accepted -- work links show as accepted with via=work.
+    status: str
+    via: Literal["request", "work"]
+    #: For a request: whether the device owner sent it.
+    sent_by_me: bool = False
+    message: str | None = None
+    #: What links two people who work together, e.g. ["deal", "partnership"].
+    links: list[str] = Field(default_factory=list)
+    created_at: datetime | None = None
+
+
+class ConnectionsOut(ApiModel):
+    connected: list[ConnectionOut]
+    incoming: list[ConnectionOut]
+    outgoing: list[ConnectionOut]
+    #: Profiles shared online the owner is not yet connected to.
+    suggestions: list[ProfileCardOut]
+
+
+ProfileCardOut.model_rebuild()
+LandParcelOut.model_rebuild()

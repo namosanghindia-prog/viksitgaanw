@@ -6,13 +6,17 @@ drops an entry in the sync outbox. Nothing blocks on the network.
 
 from __future__ import annotations
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Request, status
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..db import get_session
-from ..models import LandParcel
-from ..schemas import LandParcelCreate, LandParcelOut, LandParcelUpdate
+from ..models import LandParcel, MediaFile
+from ..schemas import LandParcelCreate, LandParcelOut, LandParcelUpdate, MediaOut
+from ..services import landshare, media
+from ..services.landshare import ShareError
+from ..services.profiles import get_owner
+from ..services.sharing import SharingError
 from ..services.area import UnknownAreaUnitError, hectares_to_acres, to_hectares
 from ..services.depth import UnknownDepthUnitError
 from ..services.depth import to_metres as depth_to_metres
@@ -26,7 +30,14 @@ ENTITY = "land_parcel"
 
 
 def _serialise(session: Session, parcel: LandParcel) -> LandParcelOut:
+    share = landshare.share_for(session, parcel.id)
     return LandParcelOut(
+        share_visibility=share.visibility if share else "offline",
+        shared_at=share.shared_at if share else None,
+        photos=[
+            MediaOut(id=f.id, url=media.url_for(f), width=f.width, height=f.height, position=f.position)
+            for f in media.for_entity(session, "land", parcel.id)
+        ],
         id=parcel.id,
         farmer_id=parcel.farmer_id,
         label=parcel.label,
@@ -221,6 +232,8 @@ def update_parcel(
         payload={"fields": sorted(changes.keys())},
     )
     enqueue_sync(session, entity_type=ENTITY, entity_id=parcel.id, operation="update")
+    session.flush()
+    landshare.refresh(session, parcel)
     session.commit()
     session.refresh(parcel)
     return _serialise(session, parcel)
@@ -242,5 +255,69 @@ def delete_parcel(parcel_id: str, session: Session = Depends(get_session)) -> No
         entity_id=parcel.id,
         payload={"label": parcel.label},
     )
+    landshare.forget_parcel(session, parcel.id)
     session.delete(parcel)
     session.commit()
+
+
+# --------------------------------------------------------------------------- #
+# Sharing with connections, and pictures of the plot
+# --------------------------------------------------------------------------- #
+
+
+def _owned(session: Session, parcel_id: str) -> LandParcel:
+    owner = get_owner(session)
+    if owner is None:
+        raise HTTPException(status_code=409, detail="Set up your profile first.")
+    try:
+        return landshare.owned_parcel(session, owner, parcel_id)
+    except ShareError as exc:
+        raise HTTPException(status_code=exc.status, detail=str(exc)) from exc
+
+
+@router.post("/{parcel_id}/share", response_model=LandParcelOut)
+def share_parcel(parcel_id: str, session: Session = Depends(get_session)) -> LandParcelOut:
+    """Show this plot to the owner's connections on the timeline."""
+    parcel = _owned(session, parcel_id)
+    try:
+        landshare.share_land(session, get_owner(session), parcel)
+    except (ShareError, SharingError) as exc:
+        raise HTTPException(status_code=exc.status, detail=str(exc)) from exc
+    session.commit()
+    return _serialise(session, parcel)
+
+
+@router.post("/{parcel_id}/unshare", response_model=LandParcelOut)
+def unshare_parcel(parcel_id: str, session: Session = Depends(get_session)) -> LandParcelOut:
+    parcel = _owned(session, parcel_id)
+    landshare.unshare_land(session, get_owner(session), parcel)
+    session.commit()
+    return _serialise(session, parcel)
+
+
+@router.post("/{parcel_id}/photos", response_model=LandParcelOut)
+async def add_parcel_photo(parcel_id: str, request: Request, session: Session = Depends(get_session)) -> LandParcelOut:
+    """A picture of the plot, shown on its card to connections once shared."""
+    parcel = _owned(session, parcel_id)
+    try:
+        media.save(
+            session, entity_type="land", entity_id=parcel.id,
+            data=await request.body(), content_type=request.headers.get("content-type"),
+        )
+    except media.MediaError as exc:
+        raise HTTPException(status_code=exc.status, detail=str(exc)) from exc
+    landshare.touch(session, parcel.id)
+    session.commit()
+    return _serialise(session, parcel)
+
+
+@router.delete("/{parcel_id}/photos/{media_id}", response_model=LandParcelOut)
+def delete_parcel_photo(parcel_id: str, media_id: str, session: Session = Depends(get_session)) -> LandParcelOut:
+    parcel = _owned(session, parcel_id)
+    file = session.get(MediaFile, media_id)
+    if file is None or file.entity_type != "land" or file.entity_id != parcel.id:
+        raise HTTPException(status_code=404, detail="Picture not found.")
+    media.remove(session, file)
+    landshare.touch(session, parcel.id)
+    session.commit()
+    return _serialise(session, parcel)

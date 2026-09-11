@@ -33,17 +33,20 @@ from sqlalchemy.orm import Session
 from ..config import get_settings
 from ..models import (
     AppEvent,
+    Connection,
     Deal,
     DiaryEntry,
     EquipmentEnquiry,
     EquipmentListing,
     EquipmentPartnership,
+    FarmUpdate,
     Farmer,
     FarmerGroup,
     InsurancePolicy,
     InvestmentInterest,
     InvestmentRequest,
     LandParcel,
+    LandShare,
     Message,
     Milestone,
     Notification,
@@ -261,6 +264,11 @@ def export(session: Session, owner: Profile) -> dict[str, Any]:
         "ratings_received": rows(Rating, Rating.rated_profile_id == owner.id),
         "scheme_applications": rows(SchemeApplication, SchemeApplication.profile_id == owner.id),
         "notifications": rows(Notification, Notification.profile_id == owner.id),
+        "connections": rows(
+            Connection, Connection.requester_profile_id == owner.id, Connection.addressee_profile_id == owner.id
+        ),
+        "shared_land": rows(LandShare, LandShare.profile_id == owner.id),
+        "farm_updates": rows(FarmUpdate, FarmUpdate.profile_id == owner.id),
     }
     record_event(session, EventType.DATA_EXPORTED, entity_type="profile", entity_id=owner.id)
     return data
@@ -279,8 +287,21 @@ def erase(session: Session, owner: Profile, confirm: str) -> dict[str, int]:
     diary_ids = list(session.scalars(select(DiaryEntry.id).where(DiaryEntry.parcel_id.in_(parcel_ids)))) if parcel_ids else []
     deal_ids = list(session.scalars(select(Deal.id).where(or_(Deal.farmer_profile_id == owner.id, Deal.investor_profile_id == owner.id))))
 
+    update_ids = list(session.scalars(select(FarmUpdate.id).where(FarmUpdate.profile_id == owner.id)))
+    # The cards of shared plots, and updates, are taken down everywhere.
+    for share_id in session.scalars(select(LandShare.id).where(LandShare.profile_id == owner.id)):
+        enqueue_sync(session, entity_type="land_share", entity_id=share_id, operation="delete")
+    for update_id in update_ids:
+        enqueue_sync(session, entity_type="farm_update", entity_id=update_id, operation="delete")
+
     # Pictures and PDFs live on disk, not in the rows the cascade removes.
-    for entity_type, ids in (("profile", [owner.id]), ("equipment", listing_ids), ("diary", diary_ids)):
+    for entity_type, ids in (
+        ("profile", [owner.id]),
+        ("equipment", listing_ids),
+        ("diary", diary_ids),
+        ("land", parcel_ids),
+        ("update", update_ids),
+    ):
         for entity_id in ids:
             media.remove_all(session, entity_type, entity_id)
     milestone_ids = (

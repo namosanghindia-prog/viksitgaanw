@@ -25,15 +25,19 @@ export function useSharing() {
     return true;
   }, [profile, reload, t]);
 
-  /** Share an item, and the profile with it if that is still offline. */
+  /**
+   * Share an item, and the profile with it if that is still offline. Land
+   * says who sees it in its own words: connections, not everyone.
+   */
   const shareItem = useCallback(
-    async (share: () => Promise<unknown>): Promise<boolean> => {
+    async (share: () => Promise<unknown>, audience: 'everyone' | 'connections' = 'everyone'): Promise<boolean> => {
       if (!profile) return false;
+      const connections = audience === 'connections';
       if (profile.visibility !== 'online') {
-        if (!window.confirm(t('share.confirmItemAndProfile'))) return false;
+        if (!window.confirm(t(connections ? 'share.confirmLandAndProfile' : 'share.confirmItemAndProfile'))) return false;
         await api.shareProfile();
         reload();
-      } else if (!window.confirm(t('share.confirmItem'))) {
+      } else if (!window.confirm(t(connections ? 'share.confirmLand' : 'share.confirmItem'))) {
         return false;
       }
       await share();

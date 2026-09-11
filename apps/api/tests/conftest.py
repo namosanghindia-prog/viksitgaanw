@@ -32,6 +32,7 @@ from app.db import init_db, session_scope  # noqa: E402
 from app.main import app  # noqa: E402
 from app.models import (  # noqa: E402
     AppEvent,
+    Connection,
     Deal,
     DiaryEntry,
     Dispute,
@@ -40,6 +41,7 @@ from app.models import (  # noqa: E402
     EquipmentPartnership,
     Farmer,
     FarmerGroup,
+    FarmUpdate,
     FxRate,
     InsurancePolicy,
     MandiPrice,
@@ -53,6 +55,7 @@ from app.models import (  # noqa: E402
     InvestmentInterest,
     InvestmentRequest,
     LandParcel,
+    LandShare,
     Profile,
     ProjectReport,
     SyncQueueEntry,
@@ -77,6 +80,9 @@ def clean_user_data() -> None:
         session.execute(delete(AppEvent))
         # Newer platform tables first: they point at everything else.
         for model in (
+            Connection,
+            FarmUpdate,
+            LandShare,
             Message,
             Notification,
             Dispute,

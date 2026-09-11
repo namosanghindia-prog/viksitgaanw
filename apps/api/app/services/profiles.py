@@ -209,10 +209,17 @@ def type_code(profile: Profile) -> str | None:
 
 
 def card(session: Session, profile: Profile, *, reveal_contact: bool = False) -> ProfileCardOut:
+    from . import connections  # noqa: PLC0415 - connections imports this module
     from .trust import rating_stats  # noqa: PLC0415 - trust imports this module
 
     rating_avg, rating_count = rating_stats(session, profile.id)
+    owner_id = session.scalar(select(Profile.id).where(Profile.is_device_owner.is_(True)))
+    connection = connections.state(session, owner_id, profile.id)
+    if connection is not None and connection.state == "connected" and connection.via == "request":
+        # Two people who both agreed to connect see each other's number.
+        reveal_contact = True
     return ProfileCardOut(
+        connection=connection,
         rating_avg=rating_avg,
         rating_count=rating_count,
         id=profile.id,
@@ -287,7 +294,10 @@ def unshare_owner(session: Session) -> Profile:
 
     profile = require_owner(session)
     if profile.visibility == "online":
+        from .landshare import unshare_everything  # noqa: PLC0415
+
         unshare_all_items(session, profile)
+        unshare_everything(session, profile)
         profile.visibility = "offline"
         record_event(
             session,

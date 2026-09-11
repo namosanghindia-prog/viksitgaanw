@@ -1,11 +1,13 @@
-"""The common timeline: everything people have chosen to share online.
+"""The common timeline: everything people have chosen to share.
 
-One feed, newest first, of farm projects and machines. It is "common" in that
-every kind of user reads the same feed, but each still sees only what they are
-allowed to: a project appears only for the kinds of profile its farmer chose
-(and, for government, only in the officer's own area), while machines are
-open to everyone. Your own shared items appear too, so you can see what others
-see.
+One feed, newest first, of farm projects, machines, land and farm updates. It
+is "common" in that every kind of user reads the same feed, but each still sees
+only what they are allowed to: a project appears only for the kinds of profile
+its farmer chose (and, for government, only in the officer's own area);
+machines are open to everyone; land and updates only to the owner's
+connections. Your own shared items appear too, so you can see what others see.
+
+A shared plot that changes moves back up the feed, marked as updated.
 """
 
 from __future__ import annotations
@@ -17,7 +19,7 @@ from sqlalchemy.orm import Session
 
 from ..models import EquipmentListing, InvestmentRequest, Profile
 from ..schemas import TimelineItemOut
-from . import equipment, marketplace
+from . import connections, equipment, landshare, marketplace
 
 _EPOCH = datetime(1970, 1, 1, tzinfo=timezone.utc)
 
@@ -71,6 +73,32 @@ def feed(
                     equipment=equipment.serialise(session, listing, viewer),
                 )
             )
+
+    # "land" is shared plots only; "updates" is everything from connections.
+    if kind in (None, "land", "updates"):
+        connected = connections.connected_ids(session, viewer.id)
+        for share in landshare.visible_lands(session, viewer, connected):
+            if state_code and (share.snapshot or {}).get("state_code") != state_code:
+                continue
+            items.append(
+                TimelineItemOut(
+                    type="land",
+                    id=share.id,
+                    # An edit brings the plot back to the top.
+                    shared_at=max(_when(share.shared_at), _when(share.changed_at)),
+                    land=landshare.serialise_land(session, share, viewer),
+                )
+            )
+        if kind != "land":
+            for update in landshare.visible_updates(session, viewer, connected):
+                items.append(
+                    TimelineItemOut(
+                        type="update",
+                        id=update.id,
+                        shared_at=update.created_at,
+                        update=landshare.serialise_update(session, update, viewer),
+                    )
+                )
 
     items.sort(key=lambda item: _when(item.shared_at), reverse=True)
     return items[:limit]

@@ -35,7 +35,7 @@ def test_seed_gives_an_investor_something_to_browse(client):
     machines = client.get("/api/v1/equipment").json()
     assert machines and all(machine["origin"] == "demo" for machine in machines)
     kinds = {item["type"] for item in client.get("/api/v1/timeline").json()}
-    assert kinds == {"project", "equipment"}
+    assert kinds == {"project", "equipment", "land", "update"}
 
     # Re-running replaces the sample rather than doubling it.
     before = _count(InvestmentRequest)
@@ -92,3 +92,25 @@ def test_seed_answers_a_farmers_own_request_and_removes_cleanly(client, parcel_i
     # The farmer's own profile and request are untouched.
     assert _count(Profile, is_device_owner=True) == 1
     assert _count(InvestmentRequest, origin="local") == 1
+
+
+def test_seed_connects_the_owner_to_a_neighbour_with_shared_land(client):
+    import seed_demo_marketplace
+
+    from app.models import Connection, FarmUpdate, LandShare, Notification
+
+    client.post("/api/v1/profile", json=farmer_body())
+    seed_demo_marketplace.main([])
+
+    overview = client.get("/api/v1/connections").json()
+    assert [c["other"]["displayName"] for c in overview["connected"]] == ["Sita Ram (sample)"]
+    assert len(overview["incoming"]) == 1
+    feed = client.get("/api/v1/timeline", params={"kind": "updates"}).json()
+    assert sorted(item["type"] for item in feed) == ["land", "update", "update"]
+    kinds = {n["kind"] for n in client.get("/api/v1/notifications").json()}
+    assert {"land_shared", "update_posted", "connection_requested"} <= kinds
+
+    seed_demo_marketplace.main(["--remove"])
+    for model in (Connection, LandShare, FarmUpdate):
+        assert _count(model) == 0
+    assert not {n["kind"] for n in client.get("/api/v1/notifications").json()} & kinds

@@ -119,6 +119,12 @@ export interface LandParcel extends LandParcelInput {
   // them to empty arrays rather than omitting them.
   waterSources: string[];
   existingCrops: string[];
+
+  /** online = shown to the owner's connections on the timeline. */
+  shareVisibility: Visibility;
+  sharedAt: string | null;
+  /** Pictures of the plot, shown on its card once shared. */
+  photos: MediaFile[];
 }
 
 export type SyncState = 'local_only' | 'queued' | 'synced' | 'conflict';
@@ -505,6 +511,15 @@ export interface ProfileCard {
   /** Average stars from completed deals and rentals; null before any. */
   ratingAvg: number | null;
   ratingCount: number;
+  /** Where the device owner stands with this person; null on the owner's own card. */
+  connection: ConnectionState | null;
+}
+
+export interface ConnectionState {
+  state: 'none' | 'requested_by_me' | 'requested_by_them' | 'connected';
+  /** An accepted request, or working together (a deal, an accepted offer, ...). */
+  via: 'request' | 'work' | null;
+  id: string | null;
 }
 
 /* ------------------------------------------------------------------ *
@@ -812,11 +827,74 @@ export interface PartnershipAsk {
  * ------------------------------------------------------------------ */
 
 export interface TimelineItem {
-  type: 'project' | 'equipment';
+  type: 'project' | 'equipment' | 'land' | 'update';
   id: string;
   sharedAt: string | null;
   project: InvestmentRequest | null;
   equipment: Equipment | null;
+  land: LandShare | null;
+  update: FarmUpdate | null;
+}
+
+/* ------------------------------------------------------------------ *
+ * Connections, shared land and farm updates
+ * ------------------------------------------------------------------ */
+
+export type WorkLink = 'deal' | 'interest' | 'enquiry' | 'partnership' | 'group';
+
+export interface Connection {
+  id: string | null;
+  other: ProfileCard;
+  status: 'requested' | 'accepted' | 'declined' | 'removed';
+  via: 'request' | 'work';
+  sentByMe: boolean;
+  message: string | null;
+  links: WorkLink[];
+  createdAt: string | null;
+}
+
+export interface Connections {
+  connected: Connection[];
+  incoming: Connection[];
+  outgoing: Connection[];
+  suggestions: ProfileCard[];
+}
+
+/** A plot as the owner's connections see it: no survey number, no exact pin. */
+export interface LandShare {
+  id: string;
+  owner: ProfileCard;
+  isMine: boolean;
+  label: string;
+  place: string | null;
+  stateCode: string | null;
+  areaValue: number | null;
+  areaUnit: string | null;
+  areaHectares: number | null;
+  soilType: string | null;
+  waterSources: string[];
+  waterType: string | null;
+  irrigationType: string | null;
+  existingCrops: string[];
+  photos: MediaFile[];
+  visibility: Visibility;
+  sharedAt: string | null;
+  /** Set when the plot changed after it was first shared. */
+  changedAt: string | null;
+  updates: number;
+  origin: string;
+}
+
+export interface FarmUpdate {
+  id: string;
+  owner: ProfileCard;
+  isMine: boolean;
+  body: string;
+  landShareId: string | null;
+  landLabel: string | null;
+  photos: MediaFile[];
+  createdAt: string;
+  origin: string;
 }
 
 /* ------------------------------------------------------------------ *

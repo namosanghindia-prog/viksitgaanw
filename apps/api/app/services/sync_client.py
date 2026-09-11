@@ -9,11 +9,14 @@ case: a synced request is browsed like any other.
 What leaves the device, and what does not:
 
 * **Pushed:** the owner's profile, projects, machines and groups *while they
-  are shared online*, and the records they exchange with others -- interests,
-  enquiries, partnerships, messages, deals, disputes, ratings.
-* **Never pushed:** land parcels, the farm diary, project reports, scheme
-  applications, notifications -- and anything still offline. Their queue
-  entries are marked ``held`` and stay on the device.
+  are shared online*; the card of a plot shared with connections, and farm
+  updates (the server shows both only to connections); and the records they
+  exchange with others -- connection requests, interests, enquiries,
+  partnerships, messages, deals, disputes, ratings.
+* **Never pushed:** the land parcels themselves (survey number, pin, notes),
+  the farm diary, project reports, scheme applications, notifications -- and
+  anything still offline. Their queue entries are marked ``held`` and stay on
+  the device.
 
 Sync is off until a server address is set, and only runs when asked (the app
 asks every few minutes while it is on).
@@ -36,16 +39,19 @@ from sqlalchemy.orm import Session
 
 from ..config import get_settings
 from ..models import (
+    Connection,
     Deal,
     Dispute,
     EquipmentEnquiry,
     EquipmentListing,
     EquipmentPartnership,
     FarmerGroup,
+    FarmUpdate,
     GroupMember,
     InsurancePolicy,
     InvestmentInterest,
     InvestmentRequest,
+    LandShare,
     MediaFile,
     Message,
     Milestone,
@@ -75,19 +81,24 @@ MODELS: dict[str, type] = {
     "rating": Rating,
     "farmer_group": FarmerGroup,
     "group_member": GroupMember,
+    "connection": Connection,
+    "land_share": LandShare,
+    "farm_update": FarmUpdate,
 }
-PUBLIC = {"profile", "investment_request", "equipment_listing", "farmer_group"}
+#: Records that leave the device only while their owner has them online.
+PUBLIC = {"profile", "investment_request", "equipment_listing", "farmer_group", "land_share", "farm_update"}
 #: Columns that describe this device, not the record.
 LOCAL_ONLY = {"sync_state", "is_device_owner", "origin", "farmer_id", "parcel_id", "report_id"}
 #: Order to apply a pulled page in, parents before children.
 APPLY_ORDER = [
-    "profile", "farmer_group", "group_member", "investment_request", "equipment_listing",
+    "profile", "connection", "land_share", "farm_update",
+    "farmer_group", "group_member", "investment_request", "equipment_listing",
     "insurance_policy", "investment_interest", "equipment_enquiry", "equipment_partnership",
     "deal", "dispute", "rating", "message",
 ]
 #: On a record the owner created, the other side may only change these.
 COUNTERPARTY_FIELDS = ("status", "responded_at")
-MEDIA_ENTITY = {"profile": "profile", "equipment_listing": "equipment"}
+MEDIA_ENTITY = {"profile": "profile", "equipment_listing": "equipment", "land_share": "land", "farm_update": "update"}
 
 
 class SyncError(Exception):
@@ -444,6 +455,8 @@ def _apply_one(session: Session, entity_type: str, entity_id: str, payload: dict
         row.sync_state = "synced"
     if entity_type == "profile":
         row.is_device_owner = False
+    if entity_type == "land_share":
+        row.parcel_id = None
     if entity_type == "deal":
         _apply_milestones(session, row, payload.get("milestones", []))
     session.flush()
@@ -470,6 +483,12 @@ def _apply_milestones(session: Session, deal: Deal, items: list[dict]) -> None:
 
 
 def _fetch_media(session: Session, transport: Transport, token: str, entity_type: str, payload: dict) -> None:
+    if entity_type in MEDIA_ENTITY and "media" in payload and payload.get("id"):
+        # Pictures the owner has since removed go here too.
+        keep = {item["id"] for item in payload["media"]}
+        for file in media_service.for_entity(session, MEDIA_ENTITY[entity_type], payload["id"]):
+            if file.origin != "local" and file.id not in keep:
+                media_service.remove(session, file)
     items = list(payload.get("media", []))
     for milestone in payload.get("milestones", []):
         items += milestone.get("media", [])
@@ -499,12 +518,24 @@ def _name(session: Session, profile_id: str | None) -> str:
 
 def _hooks(session: Session, entity_type: str, row: Any, before: dict | None, owner: Profile) -> None:
     """Turn what the other side did into a notification for the owner."""
+    from . import connections  # noqa: PLC0415
     from .groups import on_join_request  # noqa: PLC0415
     from .messages import receive  # noqa: PLC0415
     from .trust import on_incoming_deal  # noqa: PLC0415
 
     was = (before or {}).get("status")
-    if entity_type == "investment_interest":
+    if entity_type == "connection":
+        connections.on_incoming(session, row, before, owner)
+    elif entity_type == "land_share" and row.visibility == "online" and row.profile_id != owner.id:
+        if before is None or (before or {}).get("visibility") != "online":
+            notify(session, owner.id, "land_shared",
+                   params={"name": _name(session, row.profile_id), "plot": (row.snapshot or {}).get("label", "")},
+                   link="/timeline", entity_type=entity_type, entity_id=row.id)
+    elif entity_type == "farm_update" and before is None and row.profile_id != owner.id:
+        notify(session, owner.id, "update_posted",
+               params={"name": _name(session, row.profile_id), "text": row.body[:80]},
+               link="/timeline", entity_type=entity_type, entity_id=row.id)
+    elif entity_type == "investment_interest":
         request = session.get(InvestmentRequest, row.request_id)
         if before is None and request and request.profile_id == owner.id:
             notify(session, owner.id, "interest_received",

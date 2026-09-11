@@ -30,6 +30,10 @@ const KNOWN = new Set([
   'message_received',
   'weather_alert',
   'insurance_expiring',
+  'connection_requested',
+  'connection_accepted',
+  'land_shared',
+  'update_posted',
 ]);
 
 export const NOTE_ICON: Record<string, string> = {
@@ -45,6 +49,10 @@ export const NOTE_ICON: Record<string, string> = {
   dispute_updated: '⚠️',
   group_join_requested: '👥',
   group_join_answered: '👥',
+  connection_requested: '🤝',
+  connection_accepted: '🤝',
+  land_shared: '🌾',
+  update_posted: '📣',
 };
 
 /**

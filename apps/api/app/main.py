@@ -26,12 +26,13 @@ from .routers import (
     insurance,
     land,
     locations,
-    markets,
     marketplace,
+    markets,
     media,
     opportunities,
     profiles,
     reports,
+    social,
     sync,
     tiles,
     trust,
@@ -87,6 +88,7 @@ def create_app() -> FastAPI:
     app.include_router(groups.router, prefix=API_PREFIX)
     app.include_router(data.router, prefix=API_PREFIX)
     app.include_router(sync.router, prefix=API_PREFIX)
+    app.include_router(social.router, prefix=API_PREFIX)
 
     @app.get("/", include_in_schema=False)
     def root() -> dict[str, str]:

@@ -8,6 +8,7 @@ import { EquipmentCard } from '../components/EquipmentCard';
 import { InterestDialog } from '../components/InterestDialog';
 import { Picker } from '../components/Picker';
 import { RequestCard } from '../components/RequestCard';
+import { LandShareCard, UpdateCard, UpdateComposer } from '../components/SocialCards';
 import { useI18n } from '../i18n';
 import { api } from '../lib/api';
 import { formatDate } from '../lib/format';
@@ -16,13 +17,16 @@ import { useProfile } from '../lib/profile';
 import { responderKinds } from '../lib/segments';
 import { ResponderActions } from './BrowsePage';
 
-type Filter = 'all' | 'project' | 'equipment';
+type Filter = 'all' | 'project' | 'equipment' | 'updates';
 
 /**
  * The common timeline: farm projects and machines people have shared online,
- * newest first, with the same actions as their own pages so nobody has to go
- * looking elsewhere to answer something they have just read.
+ * and the land and farm updates of the owner's connections, newest first --
+ * with the same actions as their own pages so nobody has to go looking
+ * elsewhere to answer something they have just read.
  */
+const ICON: Record<string, string> = { project: '🌱', equipment: '🚜', land: '🌾', update: '📣' };
+
 export function TimelinePage() {
   const { t, lang } = useI18n();
   const { profile } = useProfile();
@@ -36,6 +40,12 @@ export function TimelinePage() {
       api.timeline({ kind: filter === 'all' ? undefined : filter, stateCode: stateCode ?? undefined }, signal),
     [filter, stateCode],
   );
+  // The owner's own plots shared with connections, to post an update about.
+  const myLands = useAsync(
+    async (signal) => (await api.listParcels(signal)).filter((parcel) => parcel.shareVisibility === 'online'),
+    [],
+    { enabled: profile?.segment === 'farmer' },
+  );
 
   const filterItems = useMemo<ReferenceItem[]>(
     () =>
@@ -44,6 +54,7 @@ export function TimelinePage() {
           ['all', 'timeline.all'],
           ['project', 'timeline.projects'],
           ['equipment', 'timeline.machines'],
+          ['updates', 'timeline.connections'],
         ] as const
       ).map(([code, key]) => ({ code, label: { en: t(key), hi: t(key) } })),
     [t],
@@ -72,6 +83,10 @@ export function TimelinePage() {
         </p>
       ) : null}
 
+      {profile.visibility === 'online' ? (
+        <UpdateComposer lands={myLands.data ?? []} onPosted={items.reload} />
+      ) : null}
+
       <div className="filters">
         <ChoiceGroup label="" items={filterItems} value={filter} onChange={(value) => setFilter((value as Filter) ?? 'all')} />
         <Picker label={t('location.state')} placeholder={t('browse.allStates')} options={stateOptions} value={stateCode} onChange={setStateCode} loading={states.loading} allowClear />
@@ -92,9 +107,10 @@ export function TimelinePage() {
         {rows.map((item) => (
           <div key={`${item.type}-${item.id}`} className="timeline__item">
             <p className="timeline__when">
-              {item.type === 'project' ? '🌱' : '🚜'}{' '}
+              {ICON[item.type]}{' '}
               {item.sharedAt ? t('timeline.sharedOn', { date: formatDate(item.sharedAt, lang) }) : null}
-              {(item.project?.isMine || item.equipment?.isMine) ? (
+              {item.land ? <span className="badge badge--connected">🤝 {t('timeline.forConnections')}</span> : null}
+              {(item.project?.isMine || item.equipment?.isMine || item.land?.isMine || item.update?.isMine) ? (
                 <span className="badge badge--status-accepted"> {t('timeline.yours')}</span>
               ) : null}
             </p>
@@ -125,6 +141,16 @@ export function TimelinePage() {
                 )}
               </EquipmentCard>
             ) : null}
+            {item.land ? (
+              <LandShareCard land={item.land}>
+                {item.land.isMine ? (
+                  <Link className="button button--small" to="/">
+                    {t('nav.myLand')}
+                  </Link>
+                ) : null}
+              </LandShareCard>
+            ) : null}
+            {item.update ? <UpdateCard update={item.update} onDeleted={items.reload} /> : null}
           </div>
         ))}
       </div>

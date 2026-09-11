@@ -15,6 +15,7 @@ from sqlalchemy import and_, or_, select
 from sqlalchemy.orm import Session
 
 from ..models import (
+    Connection,
     Deal,
     EquipmentEnquiry,
     EquipmentListing,
@@ -78,7 +79,16 @@ def related(session: Session, a: str, b: str) -> bool:
         .where(pair(GroupMember.profile_id, FarmerGroup.owner_profile_id))
         .limit(1)
     )
-    return bool(member)
+    if member:
+        return True
+    # People who agreed to connect may talk, too.
+    connection = session.scalar(
+        select(Connection.id)
+        .where(Connection.status == "accepted")
+        .where(pair(Connection.requester_profile_id, Connection.addressee_profile_id))
+        .limit(1)
+    )
+    return bool(connection)
 
 
 def serialise(message: Message, owner: Profile) -> MessageOut:

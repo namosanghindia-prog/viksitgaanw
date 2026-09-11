@@ -11,6 +11,8 @@ interface ShareControlProps {
   onShare: () => Promise<unknown>;
   onUnshare: () => Promise<unknown>;
   onChanged: () => void;
+  /** Who sees the item once shared; land goes to connections only. */
+  audience?: 'everyone' | 'connections';
 }
 
 /**
@@ -18,7 +20,14 @@ interface ShareControlProps {
  * the one button that moves it. The confirmation questions live in
  * useSharing, so every item asks them the same way.
  */
-export function ShareControl({ visibility, sharedAt, onShare, onUnshare, onChanged }: ShareControlProps) {
+export function ShareControl({
+  visibility,
+  sharedAt,
+  onShare,
+  onUnshare,
+  onChanged,
+  audience = 'everyone',
+}: ShareControlProps) {
   const { t, lang } = useI18n();
   const { shareItem, unshareItem } = useSharing();
   const [busy, setBusy] = useState(false);
@@ -40,7 +49,8 @@ export function ShareControl({ visibility, sharedAt, onShare, onUnshare, onChang
   return (
     <div className="share">
       <span className={`share__state ${online ? 'share__state--online' : ''}`}>
-        {online ? '🌐' : '📱'} {online ? t('share.online') : t('share.offline')}
+        {online ? (audience === 'connections' ? '🤝' : '🌐') : '📱'}{' '}
+        {online ? (audience === 'connections' ? t('share.withConnections') : t('share.online')) : t('share.offline')}
         {online && sharedAt ? <span className="muted small"> · {formatDate(sharedAt, lang)}</span> : null}
       </span>
       {online ? (
@@ -57,9 +67,9 @@ export function ShareControl({ visibility, sharedAt, onShare, onUnshare, onChang
           type="button"
           className="button button--primary button--small"
           disabled={busy}
-          onClick={() => run(() => shareItem(onShare))}
+          onClick={() => run(() => shareItem(onShare, audience))}
         >
-          🌐 {t('share.button')}
+          {audience === 'connections' ? `🤝 ${t('share.toConnections')}` : `🌐 ${t('share.button')}`}
         </button>
       )}
       {error ? <p className="field__error">{error}</p> : null}

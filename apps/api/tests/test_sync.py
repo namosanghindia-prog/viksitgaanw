@@ -7,6 +7,7 @@ sync server directly, the way another phone's sync worker would.
 from __future__ import annotations
 
 import importlib
+import json
 import os
 import sys
 import tempfile
@@ -223,3 +224,91 @@ def test_requests_reach_only_the_audiences_chosen(client, server, parcel_id):
 
 def teardown_module(_module):
     os.environ.pop("VG_SYNC_DB", None)
+
+
+def test_land_and_updates_travel_only_to_connections(client, server, parcel_id):
+    transport = ServerTransport(server)
+    farmer = make_owner(client, farmer_body())
+    client.put("/api/v1/sync/config", json={"serverUrl": "http://sync.test"})
+
+    # Shared before anyone is connected: it waits on the server.
+    client.post(f"/api/v1/land-parcels/{parcel_id}/share")
+    client.post("/api/v1/updates", json={"body": "Wheat sown on the Ganga side plot.", "landShareId": parcel_id})
+    run(transport)
+
+    investor = OtherDevice(server, INVESTOR)
+    investor.push({"entity_type": "profile", "entity_id": INVESTOR["id"], "payload": INVESTOR})
+    stranger = OtherDevice(server, dict(INVESTOR, id="d0000000-0000-0000-0000-000000000004", display_name="Stranger"))
+    assert not {r["entityType"] for r in investor.pull()} & {"land_share", "farm_update"}
+
+    # The investor asks to connect; the farmer's device hears of it.
+    connection_id = "e0000000-0000-0000-0000-000000000005"
+    answer = investor.push({
+        "entity_type": "connection", "entity_id": connection_id,
+        "payload": {"id": connection_id, "requester_profile_id": INVESTOR["id"],
+                    "addressee_profile_id": farmer["id"], "status": "requested", "message": "Saw your plot",
+                    "created_at": "2026-09-10T08:00:00+00:00", "updated_at": "2026-09-10T08:00:00+00:00"},
+    })
+    assert answer["accepted"] == 1, answer
+    run(transport)
+    with session_scope() as session:
+        assert "connection_requested" in list(session.scalars(select(Notification.kind)))
+
+    # Accepted: the land and update shared last week now reach the investor,
+    # with the farmer's phone number -- and still not the stranger.
+    assert client.patch(f"/api/v1/connections/{connection_id}", json={"status": "accepted"}).status_code == 200
+    run(transport)
+    received = investor.pull()
+    by_type = {r["entityType"]: r for r in received}
+    assert {"land_share", "farm_update", "connection"} <= set(by_type)
+    card = by_type["land_share"]["payload"]
+    assert card["snapshot"]["label"] == "Ganga side plot"
+    assert "survey_number" not in json.dumps(card) and "123/4" not in json.dumps(card)
+    assert by_type["profile"]["payload"]["phone"] == "+919876543210"
+    assert not {r["entityType"] for r in stranger.pull()} & {"land_share", "farm_update"}
+
+    # The plot itself never left the farmer's device.
+    with session_scope() as session:
+        held = session.scalars(select(SyncQueueEntry.entity_type).where(SyncQueueEntry.status == "held")).all()
+    assert "land_parcel" in held
+
+
+def test_a_connections_land_arrives_and_leaves(client, server):
+    transport = ServerTransport(server)
+    me = make_owner(client, farmer_body())
+    client.put("/api/v1/sync/config", json={"serverUrl": "http://sync.test"})
+    run(transport)
+
+    neighbour = dict(INVESTOR, id="f0000000-0000-0000-0000-000000000006", segment="farmer",
+                     display_name="Mohan Lal", organisation_name=None, details={})
+    device = OtherDevice(server, neighbour)
+    device.push({"entity_type": "profile", "entity_id": neighbour["id"], "payload": neighbour})
+    connection = {"id": "c1000000-0000-0000-0000-000000000007", "requester_profile_id": neighbour["id"],
+                  "addressee_profile_id": me["id"], "status": "accepted", "message": None,
+                  "created_at": "2026-09-10T08:00:00+00:00", "updated_at": "2026-09-10T08:00:00+00:00"}
+    share = {"id": "b1000000-0000-0000-0000-000000000008", "profile_id": neighbour["id"], "visibility": "online",
+             "snapshot": {"label": "Mohan's field", "place": "Pindra, Varanasi, Uttar Pradesh", "existing_crops": ["tomato"]},
+             "shared_at": "2026-09-10T08:00:00+00:00", "changed_at": None, "created_at": "2026-09-10T08:00:00+00:00"}
+    update = {"id": "b2000000-0000-0000-0000-000000000009", "profile_id": neighbour["id"],
+              "land_share_id": share["id"], "body": "Tomato flowering well.", "visibility": "online",
+              "created_at": "2026-09-10T09:00:00+00:00", "updated_at": "2026-09-10T09:00:00+00:00"}
+    answer = device.push(
+        {"entity_type": "connection", "entity_id": connection["id"], "payload": connection},
+        {"entity_type": "land_share", "entity_id": share["id"], "payload": share},
+        {"entity_type": "farm_update", "entity_id": update["id"], "payload": update},
+    )
+    assert answer["accepted"] == 3, answer
+
+    run(transport)
+    feed = client.get("/api/v1/timeline", params={"kind": "updates"}).json()
+    assert {i["type"] for i in feed} == {"land", "update"}
+    land = next(i["land"] for i in feed if i["type"] == "land")
+    assert land["label"] == "Mohan's field" and not land["isMine"] and land["updates"] == 1
+    with session_scope() as session:
+        kinds = set(session.scalars(select(Notification.kind)))
+    assert {"land_shared", "update_posted"} <= kinds
+
+    # They end the connection: their land and updates leave this device.
+    device.push({"entity_type": "connection", "entity_id": connection["id"], "payload": dict(connection, status="removed")})
+    run(transport)
+    assert client.get("/api/v1/timeline", params={"kind": "updates"}).json() == []

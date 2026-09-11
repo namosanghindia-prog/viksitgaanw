@@ -2460,3 +2460,113 @@ code {
     max-width: 90%;
   }
 }
+
+/* ------------------------------------------------------------------ *
+ * Connections, shared land, farm updates
+ * ------------------------------------------------------------------ */
+
+.badge--connected {
+  background: #e3f0fa;
+  color: var(--sky);
+}
+
+.connect {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.land-card {
+  border-left-color: var(--leaf);
+}
+
+.update-card {
+  border-left-color: var(--warn);
+}
+
+.land-card p,
+.update-card p {
+  margin: 0;
+}
+
+.land-card__facts {
+  font-weight: 600;
+}
+
+.land-card__photos {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  gap: 8px;
+}
+
+.land-card__photos img {
+  width: 100%;
+  aspect-ratio: 4 / 3;
+  object-fit: cover;
+  border-radius: var(--radius);
+  display: block;
+}
+
+.land-card__photos--small {
+  grid-template-columns: repeat(auto-fill, minmax(96px, 120px));
+  margin-top: 10px;
+}
+
+.update-card__body {
+  font-size: 1.05rem;
+  white-space: pre-wrap;
+}
+
+.composer-card {
+  background: var(--white);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: var(--shadow);
+}
+
+.composer-card__foot {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.composer-card__land {
+  width: auto;
+  max-width: 260px;
+}
+
+.composer-card__who {
+  margin-left: auto;
+}
+
+.parcel__share {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.photo-thumb {
+  position: relative;
+  display: block;
+}
+
+.photo-thumb__remove {
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  border: 0;
+  border-radius: 999px;
+  width: 26px;
+  height: 26px;
+  background: rgba(0, 0, 0, 0.55);
+  color: var(--white);
+  cursor: pointer;
+  font-size: 0.8rem;
+}

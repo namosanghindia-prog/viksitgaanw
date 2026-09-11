@@ -13,6 +13,7 @@ import type { MenuEntry } from './components/MoreMenu';
 import { isInvestor, isPartner, responderKinds } from './lib/segments';
 import { AddLandPage } from './pages/AddLandPage';
 import { BrowsePage } from './pages/BrowsePage';
+import { ConnectionsPage } from './pages/ConnectionsPage';
 import { DataPage } from './pages/DataPage';
 import { DealPage } from './pages/DealPage';
 import { DealPlanPage, DealsPage } from './pages/DealsPage';
@@ -83,7 +84,7 @@ const seesSchemes = (profile: Profile) => !isInvestor(profile.segment);
 
 /** Second-line pages, behind "More". */
 function moreFor(profile: Profile): MenuEntry[] {
-  const entries: MenuEntry[] = [];
+  const entries: MenuEntry[] = [{ to: '/connections', label: 'nav.connections', icon: '🤝' }];
   if (makesDeals(profile)) entries.push({ to: '/deals', label: 'nav.deals', icon: '📜' });
   if (seesGroups(profile)) entries.push({ to: '/groups', label: 'nav.groups', icon: '👥' });
   entries.push({ to: '/prices', label: 'nav.prices', icon: '📈' });
@@ -201,6 +202,7 @@ export function App() {
             <Route path="/profile" element={<ProfilePage />} />
             <Route path="/timeline" element={<TimelinePage />} />
             <Route path="/inbox" element={<InboxPage />} />
+            <Route path="/connections" element={<ConnectionsPage />} />
             <Route path="/messages" element={<MessagesPage />} />
             <Route path="/messages/:profileId" element={<ThreadPage />} />
             <Route path="/prices" element={<PricesPage />} />
