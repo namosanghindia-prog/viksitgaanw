@@ -139,6 +139,22 @@ def opportunity_sector(item: dict[str, Any]) -> str:
     return item.get("sector") or kind_index()[item["kind"]]["sector"]
 
 
+def business_crops(item: dict[str, Any]) -> frozenset[str]:
+    """The crops a non-farming project works with, as crop codes.
+
+    For a processing unit they are its raw material; for a service, what its
+    customers grow. The knowledge base may name a whole category ("pulse")
+    rather than every crop in it, so categories are expanded here.
+    """
+    from . import reference  # noqa: PLC0415 - knowledge loads before reference in some scripts
+
+    wanted = set((item.get("business") or {}).get("crops") or [])
+    crops = reference.get_list("crops")["items"]
+    return frozenset(
+        crop["code"] for crop in crops if crop["code"] in wanted or crop.get("category") in wanted
+    )
+
+
 @lru_cache(maxsize=1)
 def region_states() -> dict[str, frozenset[str]]:
     """Region name -> the LGD state codes in it. An empty set means all-India."""

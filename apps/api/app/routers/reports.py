@@ -156,7 +156,7 @@ def create_report(
         )
 
     labels = planning.label_resolver(session, translator)
-    profile = planning.land_profile(parcel)
+    profile = planning.land_profile(parcel, session)
     assessment = assess(opportunity, profile, labels=labels)
 
     terms = financials_service.LoanTerms(

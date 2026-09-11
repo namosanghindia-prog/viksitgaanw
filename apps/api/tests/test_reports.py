@@ -234,6 +234,21 @@ def test_reports_are_listed_newest_first(client, parcel_id, report_request):
     assert [entry["opportunityCode"] for entry in listed] == ["acid_lime", "guava_meadow"]
 
 
+@pytest.mark.parametrize(
+    "code",
+    ["atta_chakki", "mini_rice_mill", "jaggery_unit", "village_bakery", "milk_collection_centre", "agri_input_centre"],
+)
+def test_every_village_business_makes_a_report(client, parcel_id, report_request, code):
+    """The newer non-farming projects print, with their schemes, in Hindi too."""
+    for language in ("en", "hi"):
+        response = client.post(
+            f"/api/v1/land-parcels/{parcel_id}/reports",
+            json={**report_request, "opportunityCode": code, "language": language},
+        )
+        assert response.status_code == 201, response.text
+        assert response.json()["fileSize"] > 10_000
+
+
 def test_deleting_a_report_removes_the_file_too(client, parcel_id, report_request):
     from pathlib import Path
 

@@ -12,7 +12,11 @@ The engine answers three questions in order:
    tolerate, land far below the minimum viable size, soil the crop will not
    grow in -- marks the option unsuitable and it drops to the bottom.
 2. **How well does it fit?** Weighted signals over soil, region, area, water,
-   irrigation and the farmer's own experience produce a score out of 100.
+   irrigation and the farmer's own experience produce a score out of 100. A
+   non-farming project -- a mill, a cold room, a hiring centre -- is scored on
+   what decides whether *it* pays instead: raw material or customers in the
+   family's own fields and on farms nearby, and how many villages are within
+   reach. Soil and water say nothing about a dal mill.
 3. **What would it actually earn on *this* plot?** The knowledge base holds
    per-hectare or per-unit ranges; this scales them to the recorded area and
    returns rupee figures for this specific piece of land.
@@ -75,11 +79,14 @@ RELATED_CROPS: dict[str, frozenset[str]] = {
         {"rice", "wheat", "maize", "chana", "moong", "mustard", "soybean"}
     ),
     "fodder_and_silage": frozenset({"berseem", "napier", "maize", "jowar", "bajra"}),
-    "oil_expeller_unit": frozenset({"mustard", "groundnut", "sesame", "sunflower"}),
-    "mini_dal_mill": frozenset({"tur", "chana", "moong", "urad", "masoor"}),
-    "spice_grinding_unit": frozenset({"turmeric", "chilli", "coriander", "cumin"}),
     "makhana_foxnut": frozenset({"rice"}),
 }
+# Non-farming projects name the crops they work with in the knowledge base
+# ("business": {"crops": [...]}) -- see _business_signals.
+
+#: A non-farming project on a holding smaller than this is flagged as a way to
+#: earn beyond what the land alone can.
+SMALL_HOLDING_HA = 1.0
 
 
 @dataclass(frozen=True)
@@ -164,6 +171,20 @@ class LandProfile:
     water_depth_metres: float | None = None
     irrigation_type: str | None = None
     existing_crops: tuple[str, ...] = ()
+    #: Crops on all of the family's plots. A mill or a hiring centre is the
+    #: household's business, fed by every one of its fields, not just this one.
+    household_crops: tuple[str, ...] = ()
+    #: What other farms near this plot grow: one set of crops per farm or
+    #: farmer group in the same district that this device knows about.
+    nearby_farms: tuple[frozenset[str], ...] = ()
+    #: The tehsil (sub-district) and how many villages it has -- the catchment
+    #: a village business draws its customers and its raw material from.
+    subdistrict_name: str | None = None
+    catchment_villages: int | None = None
+
+    @property
+    def own_crops(self) -> frozenset[str]:
+        return frozenset(self.existing_crops) | frozenset(self.household_crops)
 
     @property
     def is_irrigated(self) -> bool:
@@ -334,39 +355,10 @@ def _serves_state(fit: dict[str, Any], state_code: str) -> bool:
     return state_code in set(fit.get("alsoStates") or [])
 
 
-def assess(opportunity: dict[str, Any], land: LandProfile, *, labels) -> Assessment:
-    """Score one option against one plot.
-
-    ``labels`` is a callable ``(list_key, code) -> str`` used only to put
-    readable names into reason variables, so this module never has to know
-    which language the caller wants.
-    """
+def _land_signals(opportunity: dict[str, Any], land: LandProfile, *, add, reasons: list[Signal],
+                  cautions: list[Signal], blockers: list[Signal], labels) -> None:
+    """How well a crop, an orchard or an animal unit suits this soil and water."""
     fit = opportunity["fit"]
-    sizing = compute_sizing(opportunity, land)
-    economics = compute_economics(opportunity, sizing)
-
-    reasons: list[Signal] = []
-    cautions: list[Signal] = []
-    blockers: list[Signal] = []
-    raw = 0
-
-    def add(bucket: list[Signal], key: str, weight: int, **variables: str) -> None:
-        nonlocal raw
-        bucket.append(Signal(key=key, variables=variables, weight=weight))
-        raw += weight
-
-    # -- Region ------------------------------------------------------------ #
-    state_name = labels("states", land.state_code)
-    if land.state_code in set(fit.get("excludeStates") or []):
-        blockers.append(
-            Signal("fit.regionExcluded", {"state": state_name}, -40)
-        )
-    elif not (fit.get("regions") or []) or "all_india" in (fit.get("regions") or []):
-        add(reasons, "fit.regionAnywhere", 8)
-    elif _serves_state(fit, land.state_code):
-        add(reasons, "fit.regionMatch", 18, state=state_name)
-    else:
-        add(cautions, "fit.regionOutside", -10, state=state_name)
 
     # -- Soil -------------------------------------------------------------- #
     soil_name = labels("soil_types", land.soil_type)
@@ -380,33 +372,6 @@ def assess(opportunity: dict[str, Any], land: LandProfile, *, labels) -> Assessm
         add(reasons, "fit.soilMatch", 16, soil=soil_name)
     else:
         add(cautions, "fit.soilWeak", -8, soil=soil_name)
-
-    # -- Area -------------------------------------------------------------- #
-    area_text = f"{land.area_hectares:.2f}"
-    if fit.get("landless"):
-        add(reasons, "fit.landless", 10)
-    elif opportunity["sizing"]["mode"] == "area":
-        min_ha = float(opportunity["sizing"].get("minHa") or 0)
-        if land.area_hectares < min_ha:
-            blockers.append(
-                Signal(
-                    "fit.areaTooSmall",
-                    {"min": f"{min_ha:.2f}", "area": area_text},
-                    -40,
-                )
-            )
-        else:
-            add(reasons, "fit.areaFits", 12, area=area_text)
-            if sizing.capped:
-                add(cautions, "fit.areaCapped", -4, area=f"{sizing.hectares:.2f}")
-    elif opportunity["sizing"].get("unitsFromLand"):
-        add(reasons, "fit.unitScale", 8, units=f"{sizing.units:g}")
-        if sizing.capped:
-            add(cautions, "fit.areaCapped", -4, area=f"{sizing.hectares:.2f}")
-    else:
-        # Scale here is set by capital and by the market, not by the holding,
-        # so say that plainly rather than implying more land means more units.
-        add(reasons, "fit.unitStandalone", 6, unit=f"{sizing.units:g}")
 
     # -- Water and irrigation ---------------------------------------------- #
     if fit.get("requiresIrrigation") and not land.is_irrigated:
@@ -504,6 +469,129 @@ def assess(opportunity: dict[str, Any], land: LandProfile, *, labels) -> Assessm
             9,
             crops=labels("crops", sorted(familiar)[0]),
         )
+
+
+def _crop_names(crops: frozenset[str] | set[str], labels, limit: int = 2) -> str:
+    return ", ".join(labels("crops", code) for code in sorted(crops)[:limit])
+
+
+def _business_signals(opportunity: dict[str, Any], land: LandProfile, *, add, reasons: list[Signal],
+                      cautions: list[Signal], labels) -> None:
+    """How well a non-farming project suits this place.
+
+    A processing unit lives on a steady supply of what it processes; a service
+    lives on farms around it that grow what it serves; both need enough
+    villages within reach. None of that depends on this plot's soil or water.
+    Each point here rests on something the device actually knows: the
+    family's own crops, other farms in the district it can see, and the
+    village directory.
+    """
+    crops = knowledge.business_crops(opportunity)
+    # A processing unit buys its crops; a service sells to the farms that grow them.
+    word = "Feedstock" if opportunity["kind"] == "processing" else "Customers"
+
+    if opportunity["fit"].get("landless") and land.area_hectares < SMALL_HOLDING_HA:
+        add(reasons, "fit.smallHoldingBusiness", 6)
+
+    if crops:
+        own = crops & land.own_crops
+        growers = [farm & crops for farm in land.nearby_farms if farm & crops]
+        if own:
+            # Raw material in hand is the one fact a processing unit stands or
+            # falls on -- worth what soil and water together are to a crop. For
+            # a service it is weaker evidence: most farmers grow something it serves.
+            add(reasons, f"fit.own{word}", 22 if word == "Feedstock" else 18, crops=_crop_names(own, labels))
+        if growers:
+            counts: dict[str, int] = {}
+            for farm in growers:
+                for code in farm:
+                    counts[code] = counts.get(code, 0) + 1
+            common = min(counts, key=lambda code: (-counts[code], code))
+            # One neighbour is a hint; several are a supply.
+            add(reasons, f"fit.nearby{word}", min(16, 6 + 2 * len(growers)),
+                n=str(len(growers)), crops=labels("crops", common))
+        if word == "Feedstock" and not own and not growers:
+            add(cautions, "fit.buyFeedstock", -3, crops=_crop_names(crops, labels, limit=3))
+
+    need = (opportunity.get("business") or {}).get("catchmentVillages")
+    if need and land.catchment_villages is not None:
+        tehsil = land.subdistrict_name or ""
+        if land.catchment_villages >= need:
+            add(reasons, "fit.catchmentLarge", 14, n=str(land.catchment_villages), tehsil=tehsil)
+        elif land.catchment_villages * 2 < need:
+            add(cautions, "fit.catchmentSmall", -8, n=str(land.catchment_villages), tehsil=tehsil)
+
+
+def assess(opportunity: dict[str, Any], land: LandProfile, *, labels) -> Assessment:
+    """Score one option against one plot.
+
+    ``labels`` is a callable ``(list_key, code) -> str`` used only to put
+    readable names into reason variables, so this module never has to know
+    which language the caller wants.
+    """
+    fit = opportunity["fit"]
+    sizing = compute_sizing(opportunity, land)
+    economics = compute_economics(opportunity, sizing)
+
+    reasons: list[Signal] = []
+    cautions: list[Signal] = []
+    blockers: list[Signal] = []
+    raw = 0
+
+    def add(bucket: list[Signal], key: str, weight: int, **variables: str) -> None:
+        nonlocal raw
+        bucket.append(Signal(key=key, variables=variables, weight=weight))
+        raw += weight
+
+    # -- Region ------------------------------------------------------------ #
+    state_name = labels("states", land.state_code)
+    if land.state_code in set(fit.get("excludeStates") or []):
+        blockers.append(
+            Signal("fit.regionExcluded", {"state": state_name}, -40)
+        )
+    elif not (fit.get("regions") or []) or "all_india" in (fit.get("regions") or []):
+        add(reasons, "fit.regionAnywhere", 8)
+    elif _serves_state(fit, land.state_code):
+        add(reasons, "fit.regionMatch", 18, state=state_name)
+    else:
+        add(cautions, "fit.regionOutside", -10, state=state_name)
+
+    # -- Area -------------------------------------------------------------- #
+    area_text = f"{land.area_hectares:.2f}"
+    if fit.get("landless"):
+        add(reasons, "fit.landless", 10)
+    elif opportunity["sizing"]["mode"] == "area":
+        min_ha = float(opportunity["sizing"].get("minHa") or 0)
+        if land.area_hectares < min_ha:
+            blockers.append(
+                Signal(
+                    "fit.areaTooSmall",
+                    {"min": f"{min_ha:.2f}", "area": area_text},
+                    -40,
+                )
+            )
+        else:
+            add(reasons, "fit.areaFits", 12, area=area_text)
+            if sizing.capped:
+                add(cautions, "fit.areaCapped", -4, area=f"{sizing.hectares:.2f}")
+    elif opportunity["sizing"].get("unitsFromLand"):
+        add(reasons, "fit.unitScale", 8, units=f"{sizing.units:g}")
+        if sizing.capped:
+            add(cautions, "fit.areaCapped", -4, area=f"{sizing.hectares:.2f}")
+    else:
+        # Scale here is set by capital and by the market, not by the holding,
+        # so say that plainly rather than implying more land means more units.
+        add(reasons, "fit.unitStandalone", 6, unit=f"{sizing.units:g}")
+
+    # -- The land itself, or the business --------------------------------- #
+    # Soil and water say whether something will grow; they say nothing about
+    # whether a dal mill or a hiring centre will pay. A non-farming project is
+    # judged instead on its raw material, its customers and its catchment.
+    if knowledge.opportunity_sector(opportunity) == "nonfarm":
+        _business_signals(opportunity, land, add=add, reasons=reasons, cautions=cautions, labels=labels)
+    else:
+        _land_signals(opportunity, land, add=add, reasons=reasons, cautions=cautions, blockers=blockers,
+                      labels=labels)
 
     # -- Money and time ----------------------------------------------------- #
     risk = economics.risk_level

@@ -294,6 +294,110 @@ def test_the_options_endpoint_answers_for_a_saved_parcel(client, parcel_id):
     assert sum(body["counts"].values()) == len(body["items"])
 
 
+# --------------------------------------------------------------------------- #
+# Non-farming projects: raw material, customers and catchment, not soil
+# --------------------------------------------------------------------------- #
+
+
+def _keys(assessment) -> set[str]:
+    return {s.key for s in assessment.reasons + assessment.cautions + assessment.blockers}
+
+
+def test_a_mill_is_judged_on_its_raw_material_not_the_soil(land_profile, labels):
+    mill = _opportunity("mini_dal_mill")
+    strong = assess(
+        mill,
+        land_profile(
+            existing_crops=("chana", "wheat"),
+            subdistrict_name="Pindra",
+            catchment_villages=180,
+            nearby_farms=(frozenset({"tur"}), frozenset({"moong", "rice"})),
+        ),
+        labels=labels,
+    )
+    keys = _keys(strong)
+    assert {"fit.ownFeedstock", "fit.nearbyFeedstock", "fit.catchmentLarge"} <= keys
+    assert not {k for k in keys if k.startswith(("fit.soil", "fit.irrigation", "fit.water", "fit.rainfed"))}, keys
+    assert strong.verdict == "recommended", strong.score
+    own = next(s for s in strong.reasons if s.key == "fit.ownFeedstock")
+    assert own.variables["crops"] == "chana"
+
+    # The same mill with nothing to go on: it has to buy everything in.
+    weak = assess(mill, land_profile(existing_crops=("wheat",)), labels=labels)
+    assert "fit.buyFeedstock" in _keys(weak)
+    assert weak.verdict == "possible" and weak.score < strong.score
+
+
+def test_an_unknown_soil_says_nothing_about_a_business(land_profile, labels):
+    """'Get a soil test' is advice for a crop, not for a cold room."""
+    result = assess(_opportunity("modular_cold_room"), land_profile(soil_type=None, water_type="salty"), labels=labels)
+    assert result.verdict != "unsuitable"
+    assert "fit.soilUnknown" not in _keys(result)
+    assert "fit.soilUnknown" in _keys(assess(_opportunity("guava_meadow"), land_profile(soil_type=None), labels=labels))
+
+
+def test_crops_on_the_family_s_other_plots_count_for_a_business(land_profile, labels):
+    result = assess(
+        _opportunity("oil_expeller_unit"),
+        land_profile(existing_crops=("rice",), household_crops=("rice", "mustard")),
+        labels=labels,
+    )
+    assert "fit.ownFeedstock" in _keys(result)
+
+
+def test_farms_nearby_that_grow_it_are_a_supply(land_profile, labels):
+    result = assess(
+        _opportunity("mini_dal_mill"),
+        land_profile(existing_crops=(), nearby_farms=(frozenset({"chana"}), frozenset({"tur", "wheat"}), frozenset({"rice"}))),
+        labels=labels,
+    )
+    nearby = next(s for s in result.reasons if s.key == "fit.nearbyFeedstock")
+    assert nearby.variables["n"] == "2", "only farms growing pulses count"
+    assert "fit.buyFeedstock" not in _keys(result)
+
+
+def test_a_service_s_crops_are_its_customers(land_profile, labels):
+    result = assess(_opportunity("custom_hiring_centre"), land_profile(existing_crops=("wheat",)), labels=labels)
+    assert "fit.ownCustomers" in _keys(result)
+    assert "fit.buyFeedstock" not in _keys(result), "a hiring centre buys no raw material"
+
+
+def test_a_small_catchment_is_a_caution(land_profile, labels):
+    result = assess(
+        _opportunity("drone_spraying_service"),
+        land_profile(subdistrict_name="Tiny", catchment_villages=12),
+        labels=labels,
+    )
+    small = next(s for s in result.cautions if s.key == "fit.catchmentSmall")
+    assert small.variables == {"n": "12", "tehsil": "Tiny"}
+
+
+def test_a_business_can_earn_beyond_a_small_holding(land_profile, labels):
+    small = assess(_opportunity("village_bakery"), land_profile(area_hectares=0.3), labels=labels)
+    large = assess(_opportunity("village_bakery"), land_profile(area_hectares=3.0), labels=labels)
+    assert "fit.smallHoldingBusiness" in _keys(small)
+    assert "fit.smallHoldingBusiness" not in _keys(large)
+
+
+def test_the_plan_page_sees_the_district_and_the_tehsil(client, parcel_id):
+    """Other farmers' projects in the district, and the village directory, reach the reasons."""
+    from .test_marketplace import insert_profile, insert_request
+
+    for name in ("Ramesh", "Suresh"):
+        insert_request(insert_profile("farmer", display_name=name))  # grows grapes and onion
+    # Sample data is not evidence of anything.
+    insert_request(insert_profile("farmer", display_name="Sample", origin="demo"), origin="demo")
+    items = {
+        item["code"]: item
+        for item in client.get(f"/api/v1/land-parcels/{parcel_id}/opportunities", params={"lang": "en"}).json()["items"]
+    }
+    dryer = items["solar_dehydration_unit"]
+    texts = " ".join(s["text"] for s in dryer["reasons"] + dryer["cautions"])
+    # Grapes and onion both feed a dryer; with two farms each, the tie goes alphabetically.
+    assert "Farms near you grow Grapes: 2 in your district" in texts, texts
+    assert "Pindra tehsil has" in texts, texts
+
+
 def test_every_option_says_whether_it_is_farming_or_not(client, parcel_id):
     """The plan page puts farming and non-farming projects in two columns."""
     body = client.get(

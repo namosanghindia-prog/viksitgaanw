@@ -104,6 +104,26 @@
       "code": "apeda_taf",
       "label": { "en": "APEDA – transport and market development assistance", "hi": "एपीडा – परिवहन एवं बाज़ार विकास सहायता" },
       "url": "https://apeda.gov.in/"
+    },
+    {
+      "code": "pmegp",
+      "label": { "en": "PMEGP – Prime Minister's Employment Generation Programme (subsidised loan for new enterprises)", "hi": "पीएमईजीपी – प्रधानमंत्री रोज़गार सृजन कार्यक्रम (नए उद्यम के लिए अनुदानित ऋण)" },
+      "url": "https://www.kviconline.gov.in/pmegpeportal/"
+    },
+    {
+      "code": "mudra",
+      "label": { "en": "PM Mudra Yojana – collateral-free business loans", "hi": "पीएम मुद्रा योजना – बिना गिरवी व्यवसाय ऋण" },
+      "url": "https://www.mudra.org.in/"
+    },
+    {
+      "code": "acabc",
+      "label": { "en": "ACABC – Agri-Clinics and Agri-Business Centres (training and subsidy)", "hi": "एसीएबीसी – एग्री-क्लिनिक एवं एग्री-बिज़नेस केंद्र (प्रशिक्षण और अनुदान)" },
+      "url": "https://www.agriclinics.net/"
+    },
+    {
+      "code": "npdd",
+      "label": { "en": "NPDD – National Programme for Dairy Development (milk collection and chilling)", "hi": "एनपीडीडी – राष्ट्रीय डेयरी विकास कार्यक्रम (दूध संग्रह और शीतलन)" },
+      "url": "https://dahd.gov.in/"
     }
   ]
 }

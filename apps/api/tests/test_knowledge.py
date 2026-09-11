@@ -54,7 +54,25 @@ def test_every_option_is_farming_or_non_farming(options):
     for item in options:
         counts[knowledge.opportunity_sector(item)] += 1
     # Someone with no land still needs a real choice of non-farming projects.
-    assert counts["nonfarm"] >= 5 and counts["farm"] >= 20, counts
+    assert counts["nonfarm"] >= 12 and counts["farm"] >= 20, counts
+
+
+def test_every_non_farming_project_says_what_it_works_with(options):
+    """A mistyped crop would silently drop the raw-material signal for everyone."""
+    crops = reference.get_list("crops")
+    known = {item["code"] for item in crops["items"]} | {
+        c["code"] if isinstance(c, dict) else c for c in crops["categories"]
+    }
+    for item in options:
+        if knowledge.opportunity_sector(item) != "nonfarm":
+            assert "business" not in item, f"{item['code']} is farming; business applies to non-farming only"
+            continue
+        business = item.get("business")
+        assert business, f"{item['code']} needs a business block"
+        assert isinstance(business.get("catchmentVillages"), int) and business["catchmentVillages"] > 0, item["code"]
+        for code in business.get("crops", []):
+            assert code in known, f"{item['code']} -> {code}"
+    assert knowledge.business_crops(knowledge.get_opportunity("mini_dal_mill")) >= {"tur", "chana", "masoor"}
 
 
 def test_every_scheme_reference_resolves(options):

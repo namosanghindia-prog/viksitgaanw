@@ -53,7 +53,7 @@ def parcel_opportunities(
         raise HTTPException(status_code=404, detail="Land parcel not found.")
 
     translator = _translator(language)
-    profile = planning.land_profile(parcel)
+    profile = planning.land_profile(parcel, session)
     labels = planning.label_resolver(session, translator)
 
     assessments = rank(profile, labels=labels, include_unsuitable=include_unsuitable)

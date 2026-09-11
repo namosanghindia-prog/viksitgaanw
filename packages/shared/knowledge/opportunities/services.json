@@ -2,6 +2,7 @@
   {
     "code": "custom_hiring_centre",
     "kind": "service",
+    "business": {"crops": ["cereal", "pulse", "oilseed", "sugarcane", "cotton"], "catchmentVillages": 60},
     "label": { "en": "Custom hiring centre for farm machinery", "hi": "कृषि यंत्रों का कस्टम हायरिंग केंद्र" },
     "summary": {
       "en": "Own the tractor, rotavator, seed drill, thresher and sprayer that your neighbours cannot afford, and hire them out by the hour. Income comes from other people's fields, so a bad season on your own land does not stop it.",
@@ -45,6 +46,7 @@
   {
     "code": "vermicompost_unit",
     "kind": "service",
+    "business": {"crops": ["fruit", "vegetable", "plantation"], "catchmentVillages": 40},
     "label": { "en": "Vermicompost production unit", "hi": "वर्मी कम्पोस्ट उत्पादन इकाई" },
     "summary": {
       "en": "Cattle dung and crop waste you already have become a bagged product that sells all year to nurseries, orchards and organic growers. It needs shade and water rather than land, and it is the lowest-cost business on this list to start.",
@@ -132,6 +134,7 @@
   {
     "code": "drone_spraying_service",
     "kind": "service",
+    "business": {"crops": ["rice", "wheat", "maize", "cotton", "sugarcane", "soybean", "vegetable"], "catchmentVillages": 100},
     "label": { "en": "Drone spraying service", "hi": "ड्रोन छिड़काव सेवा" },
     "summary": {
       "en": "A licensed agri-drone sprays an acre in about eight minutes and covers hundreds of acres in a season for farmers who currently spray by knapsack. It needs a pilot certificate and steady bookings, and subsidy support is unusually generous.",
@@ -170,6 +173,94 @@
     "resources": [
       { "label": { "en": "SMAM – drone subsidy norms", "hi": "एसएमएएम – ड्रोन अनुदान मानक" }, "url": "https://agrimachinery.nic.in/" },
       { "label": { "en": "DGCA Digital Sky – drone pilot licensing", "hi": "डीजीसीए डिजिटल स्काई – ड्रोन पायलट लाइसेंस" }, "url": "https://digitalsky.dgca.gov.in/" }
+    ]
+  },
+  {
+    "code": "milk_collection_centre",
+    "kind": "service",
+    "business": {"crops": ["fodder"], "catchmentVillages": 30},
+    "label": { "en": "Village milk collection centre with bulk cooler", "hi": "बल्क कूलर सहित गाँव का दूध संग्रह केंद्र" },
+    "summary": {
+      "en": "Families with two or three animals lose money selling milk to a middleman who tests nothing. A collection centre with a bulk cooler and a fat-testing machine pays each of them by quality at the dairy's rate, and earns a margin on every litre. It only works with a firm agreement from a cooperative or private dairy to lift the milk every day.",
+      "hi": "दो-तीन पशुओं वाले परिवार बिना जाँच करने वाले बिचौलिए को दूध बेचकर घाटा उठाते हैं। बल्क कूलर और फ़ैट जाँच मशीन वाला संग्रह केंद्र हर परिवार को डेयरी के भाव पर गुणवत्ता के हिसाब से भुगतान करता है, और हर लीटर पर मार्जिन कमाता है। यह तभी चलता है जब कोई सहकारी या निजी डेयरी रोज़ दूध उठाने का पक्का समझौता करे।"
+    },
+    "fit": {
+      "soilTypes": [],
+      "regions": ["all_india"],
+      "waterNeed": "low",
+      "salinityTolerance": "high",
+      "requiresIrrigation": false,
+      "preferredIrrigation": [],
+      "landless": true,
+      "maxWaterDepthMetres": 400
+    },
+    "sizing": {
+      "mode": "unit",
+      "unitsFromLand": false,
+      "unitLabel": { "en": "2,000-litre bulk milk cooler with automatic milk testing and backup power", "hi": "स्वचालित दूध जाँच और बैकअप बिजली सहित 2,000 लीटर का बल्क मिल्क कूलर" },
+      "landHaPerUnit": 0.01,
+      "minUnits": 1,
+      "maxUnits": 2
+    },
+    "economics": {
+      "capex": { "low": 1200000, "high": 2200000 },
+      "opexPerYear": { "low": 400000, "high": 800000 },
+      "revenuePerYear": { "low": 700000, "high": 1500000 },
+      "gestationMonths": 2,
+      "fullYieldYear": 2,
+      "projectLifeYears": 12,
+      "riskLevel": "medium",
+      "labourDaysPerYear": 730
+    },
+    "export": { "potential": "none", "commodity": "milk" },
+    "schemes": ["npdd", "ahidf", "kcc"],
+    "resources": [
+      { "label": { "en": "NDDB – village dairy cooperatives and milk collection", "hi": "एनडीडीबी – गाँव की डेयरी सहकारी समितियाँ और दूध संग्रह" }, "url": "https://www.nddb.coop/" },
+      { "label": { "en": "Department of Animal Husbandry and Dairying – schemes", "hi": "पशुपालन एवं डेयरी विभाग – योजनाएँ" }, "url": "https://dahd.gov.in/" }
+    ]
+  },
+  {
+    "code": "agri_input_centre",
+    "kind": "service",
+    "business": {"crops": ["cereal", "pulse", "oilseed", "vegetable", "fruit", "commercial"], "catchmentVillages": 50},
+    "label": { "en": "Agri-input shop and crop advice centre", "hi": "कृषि आदान दुकान एवं फ़सल सलाह केंद्र" },
+    "summary": {
+      "en": "Farmers here travel to town for seed, fertiliser and sprays, and take advice from whoever sells to them. A village shop that stocks the right inputs and gives honest advice on dose and timing earns a steady margin and trust. Selling fertiliser and pesticides needs licences, and the pesticide licence needs an agriculture qualification or the DAESI input-dealer course.",
+      "hi": "यहाँ के किसान बीज, खाद और दवा के लिए कस्बे जाते हैं, और जो बेचता है उसी की सलाह मान लेते हैं। गाँव की दुकान जो सही आदान रखे और मात्रा व समय पर ईमानदार सलाह दे, स्थिर मुनाफ़ा और भरोसा दोनों कमाती है। खाद और कीटनाशक बेचने के लिए लाइसेंस चाहिए, और कीटनाशक लाइसेंस के लिए कृषि योग्यता या डीएईएसआई आदान-विक्रेता पाठ्यक्रम ज़रूरी है।"
+    },
+    "fit": {
+      "soilTypes": [],
+      "regions": ["all_india"],
+      "waterNeed": "low",
+      "salinityTolerance": "high",
+      "requiresIrrigation": false,
+      "preferredIrrigation": [],
+      "landless": true,
+      "maxWaterDepthMetres": 400
+    },
+    "sizing": {
+      "mode": "unit",
+      "unitsFromLand": false,
+      "unitLabel": { "en": "Shop with storage, soil-testing kit and opening stock", "hi": "गोदाम, मिट्टी जाँच किट और शुरुआती माल सहित दुकान" },
+      "landHaPerUnit": 0.01,
+      "minUnits": 1,
+      "maxUnits": 1
+    },
+    "economics": {
+      "capex": { "low": 300000, "high": 600000 },
+      "opexPerYear": { "low": 2650000, "high": 4450000 },
+      "revenuePerYear": { "low": 3000000, "high": 5000000 },
+      "gestationMonths": 2,
+      "fullYieldYear": 2,
+      "projectLifeYears": 10,
+      "riskLevel": "medium",
+      "labourDaysPerYear": 600
+    },
+    "export": { "potential": "none", "commodity": "farm_inputs" },
+    "schemes": ["acabc", "mudra"],
+    "resources": [
+      { "label": { "en": "Agri-Clinics and Agri-Business Centres – training and subsidy", "hi": "एग्री-क्लिनिक एवं एग्री-बिज़नेस केंद्र – प्रशिक्षण और अनुदान" }, "url": "https://www.agriclinics.net/" },
+      { "label": { "en": "MANAGE – DAESI diploma for input dealers", "hi": "मैनेज – आदान विक्रेताओं के लिए डीएईएसआई डिप्लोमा" }, "url": "https://www.manage.gov.in/" }
     ]
   }
 ]

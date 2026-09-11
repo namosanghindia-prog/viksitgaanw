@@ -10,10 +10,11 @@ from __future__ import annotations
 
 from typing import Any, Callable
 
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from .. import knowledge
-from ..models import LandParcel, State
+from ..models import FarmerGroup, InvestmentRequest, LandParcel, State, SubDistrict, Village
 from ..schemas import (
     EconomicsOut,
     ExportSummaryOut,
@@ -25,13 +26,21 @@ from ..schemas import (
 )
 from .i18n import Translator
 from .opportunities import Assessment, LandProfile, Money, Signal
+from .profiles import get_owner
 
 #: Reference list key used by the engine for state names, which do not live in
 #: the reference JSON at all -- they come out of the imported LGD tables.
 STATE_LIST_KEY = "states"
 
 
-def land_profile(parcel: LandParcel) -> LandProfile:
+def land_profile(parcel: LandParcel, session: Session | None = None) -> LandProfile:
+    """The plot as the engine sees it.
+
+    With a session it also carries what a non-farming project is judged on:
+    the family's crops across all its plots, what other farms in the district
+    grow, and how many villages are in the tehsil. The suggestions and the
+    report both pass one, so the two always agree.
+    """
     return LandProfile(
         area_hectares=float(parcel.area_hectares),
         state_code=parcel.state_code,
@@ -42,7 +51,61 @@ def land_profile(parcel: LandParcel) -> LandProfile:
         water_depth_metres=parcel.water_depth_metres,
         irrigation_type=parcel.irrigation_type,
         existing_crops=tuple(parcel.existing_crops or []),
+        **(_surroundings(session, parcel) if session is not None else {}),
     )
+
+
+def _surroundings(session: Session, parcel: LandParcel) -> dict[str, Any]:
+    household: set[str] = set()
+    if parcel.farmer_id:
+        for crops in session.scalars(select(LandParcel.existing_crops).where(LandParcel.farmer_id == parcel.farmer_id)):
+            household.update(crops or [])
+
+    # Other farms nearby: open projects and farmer groups in the district this
+    # device can see. Sample data and the owner's own records do not count.
+    owner = get_owner(session)
+    mine = owner.id if owner else ""
+    nearby: list[frozenset[str]] = []
+    if parcel.district_code:
+        by_farmer: dict[str, set[str]] = {}
+        for request in session.scalars(
+            select(InvestmentRequest).where(
+                InvestmentRequest.district_code == parcel.district_code,
+                InvestmentRequest.status == "open",
+                InvestmentRequest.origin != "demo",
+                InvestmentRequest.profile_id != mine,
+            )
+        ):
+            crops = ((request.listing or {}).get("land") or {}).get("existingCrops") or []
+            by_farmer.setdefault(request.profile_id, set()).update(crops)
+        nearby.extend(frozenset(crops) for crops in by_farmer.values() if crops)
+        for group in session.scalars(
+            select(FarmerGroup).where(
+                FarmerGroup.district_code == parcel.district_code,
+                FarmerGroup.origin != "demo",
+                FarmerGroup.owner_profile_id != mine,
+            )
+        ):
+            if group.crops:
+                nearby.append(frozenset(group.crops))
+
+    tehsil = session.get(SubDistrict, parcel.subdistrict_code) if parcel.subdistrict_code else None
+    villages = (
+        session.scalar(
+            select(func.count()).select_from(Village).where(
+                Village.subdistrict_code == parcel.subdistrict_code, Village.is_active.is_(True)
+            )
+        )
+        if tehsil
+        else None
+    )
+    return {
+        "household_crops": tuple(sorted(household)),
+        "nearby_farms": tuple(nearby),
+        "subdistrict_name": tehsil.name if tehsil else None,
+        # An empty directory says nothing about the catchment; leave it unknown.
+        "catchment_villages": villages or None,
+    }
 
 
 def label_resolver(session: Session, translator: Translator) -> Callable[[str, str | None], str]:

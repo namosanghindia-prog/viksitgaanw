@@ -2,6 +2,7 @@
   {
     "code": "spice_grinding_unit",
     "kind": "processing",
+    "business": {"crops": ["turmeric", "chilli", "coriander", "cumin", "garlic"], "catchmentVillages": 60},
     "label": { "en": "Spice grinding and packing unit", "hi": "मसाला पिसाई एवं पैकिंग इकाई" },
     "summary": {
       "en": "Buying whole turmeric, chilli and coriander from your own village, grinding, packing and selling under one label is where the margin on spices actually sits. The machinery is simple; the licences and hygiene standards are the real work.",
@@ -45,6 +46,7 @@
   {
     "code": "mini_dal_mill",
     "kind": "processing",
+    "business": {"crops": ["pulse"], "catchmentVillages": 80},
     "label": { "en": "Mini dal mill", "hi": "मिनी दाल मिल" },
     "summary": {
       "en": "A village dal mill earns on volume, not on price: farmers bring tur, chana or moong for milling and pay a job charge, and you also buy and sell on your own account. Margins per quintal are small, so location on a busy road matters more than the machine.",
@@ -88,6 +90,7 @@
   {
     "code": "oil_expeller_unit",
     "kind": "processing",
+    "business": {"crops": ["mustard", "groundnut", "sesame", "sunflower"], "catchmentVillages": 80},
     "label": { "en": "Cold-press oil expeller (ghani)", "hi": "कोल्ड-प्रेस तेल घानी" },
     "summary": {
       "en": "Wood-press mustard, groundnut or sesame oil sells at a clear premium over refined oil because customers can watch it being pressed. The oil cake left over sells straight away as cattle feed, which is what makes the numbers work.",
@@ -131,6 +134,7 @@
   {
     "code": "solar_dehydration_unit",
     "kind": "processing",
+    "business": {"crops": ["fruit", "vegetable"], "catchmentVillages": 40},
     "label": { "en": "Solar drying unit for fruit and vegetables", "hi": "फल-सब्ज़ी के लिए सौर सुखाई इकाई" },
     "summary": {
       "en": "A solar dryer costs little, uses no fuel, and turns the part of the crop that would have rotted — the small, split or surplus fruit — into a dried product that keeps for a year. It is the cheapest way to stop distress selling at harvest.",
@@ -175,6 +179,7 @@
   {
     "code": "modular_cold_room",
     "kind": "processing",
+    "business": {"crops": ["fruit", "vegetable"], "catchmentVillages": 60},
     "label": { "en": "Small modular cold room", "hi": "छोटा मॉड्यूलर कोल्ड रूम" },
     "summary": {
       "en": "A five-tonne cold room lets you hold fruit or vegetables back for the ten days when prices recover, and rent the spare space to neighbours the rest of the year. It only pays where there is reliable power or a solar backup.",
@@ -213,6 +218,183 @@
     "resources": [
       { "label": { "en": "Agriculture Infrastructure Fund", "hi": "कृषि अवसंरचना कोष" }, "url": "https://agriinfra.dac.gov.in/" },
       { "label": { "en": "National Horticulture Board – cold chain subsidy", "hi": "राष्ट्रीय बागवानी बोर्ड – कोल्ड चेन अनुदान" }, "url": "https://nhb.gov.in/" }
+    ]
+  },
+  {
+    "code": "atta_chakki",
+    "kind": "processing",
+    "business": {"crops": ["wheat", "maize", "bajra", "jowar", "ragi", "barley"], "catchmentVillages": 50},
+    "label": { "en": "Flour mill (atta chakki)", "hi": "आटा चक्की" },
+    "summary": {
+      "en": "Every household in the village needs its wheat, maize or bajra ground, week after week. A chakki with a pulveriser earns a milling charge on every kilo, and besan, spice powders and your own packed atta add to it. It needs a three-phase power connection and a spot on the village's main lane.",
+      "hi": "गाँव के हर घर को हफ़्ते-दर-हफ़्ते अपना गेहूँ, मक्का या बाजरा पिसवाना होता है। पल्वराइज़र वाली चक्की हर किलो पर पिसाई कमाती है, और बेसन, मसाला पाउडर और आपका अपना पैक किया आटा इसमें और जोड़ते हैं। इसके लिए तीन-फ़ेज़ बिजली कनेक्शन और गाँव की मुख्य गली में जगह चाहिए।"
+    },
+    "fit": {
+      "soilTypes": [],
+      "regions": ["all_india"],
+      "waterNeed": "low",
+      "salinityTolerance": "high",
+      "requiresIrrigation": false,
+      "preferredIrrigation": [],
+      "landless": true,
+      "maxWaterDepthMetres": 400
+    },
+    "sizing": {
+      "mode": "unit",
+      "unitsFromLand": false,
+      "unitLabel": { "en": "20 HP chakki with pulveriser, about 2 tonnes a day", "hi": "पल्वराइज़र सहित 20 एचपी चक्की, लगभग 2 टन प्रतिदिन" },
+      "landHaPerUnit": 0.02,
+      "minUnits": 1,
+      "maxUnits": 2
+    },
+    "economics": {
+      "capex": { "low": 350000, "high": 700000 },
+      "opexPerYear": { "low": 450000, "high": 750000 },
+      "revenuePerYear": { "low": 700000, "high": 1100000 },
+      "gestationMonths": 3,
+      "fullYieldYear": 2,
+      "projectLifeYears": 12,
+      "riskLevel": "low",
+      "labourDaysPerYear": 600
+    },
+    "export": { "potential": "none", "commodity": "flour" },
+    "schemes": ["pmegp", "pmfme", "mudra"],
+    "resources": [
+      { "label": { "en": "PMEGP e-portal – apply for an enterprise loan with subsidy", "hi": "पीएमईजीपी ई-पोर्टल – अनुदान सहित उद्यम ऋण के लिए आवेदन" }, "url": "https://www.kviconline.gov.in/pmegpeportal/" },
+      { "label": { "en": "PM-FME – micro food processing support", "hi": "पीएम-एफएमई – सूक्ष्म खाद्य प्रसंस्करण सहायता" }, "url": "https://pmfme.mofpi.gov.in/" }
+    ]
+  },
+  {
+    "code": "mini_rice_mill",
+    "kind": "processing",
+    "business": {"crops": ["rice"], "catchmentVillages": 80},
+    "label": { "en": "Mini rice mill (huller and polisher)", "hi": "मिनी राइस मिल (हलर और पॉलिशर)" },
+    "summary": {
+      "en": "Farmers around you sell paddy cheap at harvest and buy rice back dear through the year. A mini mill hulls and polishes paddy for a job charge and on its own account, and sells the bran and husk too, which often pays the electricity bill. It suits a paddy belt with a harvest you can count on.",
+      "hi": "आपके आसपास के किसान कटाई पर धान सस्ता बेचते हैं और साल भर चावल महँगा ख़रीदते हैं। मिनी मिल मज़दूरी पर और अपने खाते पर धान की कुटाई-पॉलिश करती है, और चोकर व भूसी भी बेचती है, जिससे अक्सर बिजली का बिल निकल आता है। यह ऐसे धान क्षेत्र के लिए ठीक है जहाँ फ़सल भरोसे की हो।"
+    },
+    "fit": {
+      "soilTypes": [],
+      "regions": ["indo_gangetic", "central_east", "southern_humid", "northeast", "coastal"],
+      "waterNeed": "low",
+      "salinityTolerance": "high",
+      "requiresIrrigation": false,
+      "preferredIrrigation": [],
+      "landless": true,
+      "maxWaterDepthMetres": 400
+    },
+    "sizing": {
+      "mode": "unit",
+      "unitsFromLand": false,
+      "unitLabel": { "en": "1 tonne/hour mini rice mill with polisher and grader", "hi": "पॉलिशर और ग्रेडर सहित 1 टन/घंटा की मिनी राइस मिल" },
+      "landHaPerUnit": 0.08,
+      "minUnits": 1,
+      "maxUnits": 2
+    },
+    "economics": {
+      "capex": { "low": 800000, "high": 1600000 },
+      "opexPerYear": { "low": 2150000, "high": 3500000 },
+      "revenuePerYear": { "low": 2600000, "high": 4200000 },
+      "gestationMonths": 4,
+      "fullYieldYear": 2,
+      "projectLifeYears": 15,
+      "riskLevel": "medium",
+      "labourDaysPerYear": 900
+    },
+    "export": { "potential": "none", "commodity": "rice" },
+    "schemes": ["pmfme", "agri_infra_fund", "pmegp"],
+    "resources": [
+      { "label": { "en": "PM-FME – micro food processing support", "hi": "पीएम-एफएमई – सूक्ष्म खाद्य प्रसंस्करण सहायता" }, "url": "https://pmfme.mofpi.gov.in/" },
+      { "label": { "en": "ICAR-CIPHET – post-harvest machinery and training", "hi": "आईसीएआर-सिफ़ेट – कटाई-उपरांत मशीनें और प्रशिक्षण" }, "url": "https://ciphet.icar.gov.in/" }
+    ]
+  },
+  {
+    "code": "jaggery_unit",
+    "kind": "processing",
+    "business": {"crops": ["sugarcane"], "catchmentVillages": 60},
+    "label": { "en": "Jaggery (gur) unit", "hi": "गुड़ इकाई (कोल्हू)" },
+    "summary": {
+      "en": "Where cane is grown, a modern kolhu turns it into gur, gur powder and cubes that sell well above sugar-mill prices, and pays cane growers faster than the mill does. It runs through the crushing season, about November to April, and clean handling is what reaches the better buyers.",
+      "hi": "जहाँ गन्ना होता है, वहाँ आधुनिक कोल्हू उससे गुड़, गुड़ पाउडर और गुड़ की डलियाँ बनाता है जो चीनी मिल के भाव से अच्छे दाम पर बिकती हैं, और गन्ना किसानों को मिल से जल्दी भुगतान करता है। यह पेराई के मौसम, लगभग नवंबर से अप्रैल तक चलता है, और साफ़-सुथरा काम ही अच्छे ख़रीदारों तक पहुँचाता है।"
+    },
+    "fit": {
+      "soilTypes": [],
+      "regions": ["indo_gangetic", "deccan", "southern_humid"],
+      "alsoStates": ["24", "23"],
+      "waterNeed": "low",
+      "salinityTolerance": "high",
+      "requiresIrrigation": false,
+      "preferredIrrigation": [],
+      "landless": true,
+      "maxWaterDepthMetres": 400
+    },
+    "sizing": {
+      "mode": "unit",
+      "unitsFromLand": false,
+      "unitLabel": { "en": "Improved furnace and crusher for 5 tonnes of cane a day", "hi": "प्रतिदिन 5 टन गन्ने के लिए उन्नत भट्ठी और क्रशर" },
+      "landHaPerUnit": 0.1,
+      "minUnits": 1,
+      "maxUnits": 2
+    },
+    "economics": {
+      "capex": { "low": 600000, "high": 1200000 },
+      "opexPerYear": { "low": 1900000, "high": 2800000 },
+      "revenuePerYear": { "low": 2400000, "high": 3600000 },
+      "gestationMonths": 5,
+      "fullYieldYear": 2,
+      "projectLifeYears": 12,
+      "riskLevel": "medium",
+      "labourDaysPerYear": 900
+    },
+    "export": { "potential": "none", "commodity": "jaggery" },
+    "schemes": ["pmfme", "pmegp", "kcc"],
+    "resources": [
+      { "label": { "en": "ICAR-IISR Lucknow – jaggery technology and training", "hi": "आईसीएआर-आईआईएसआर लखनऊ – गुड़ तकनीक और प्रशिक्षण" }, "url": "https://iisr.icar.gov.in/" },
+      { "label": { "en": "PM-FME – micro food processing support", "hi": "पीएम-एफएमई – सूक्ष्म खाद्य प्रसंस्करण सहायता" }, "url": "https://pmfme.mofpi.gov.in/" }
+    ]
+  },
+  {
+    "code": "village_bakery",
+    "kind": "processing",
+    "business": {"catchmentVillages": 40},
+    "label": { "en": "Village bakery (rusk, bread and biscuits)", "hi": "गाँव की बेकरी (रस्क, ब्रेड और बिस्कुट)" },
+    "summary": {
+      "en": "Rusk, bread and biscuits reach the village from distant towns on the grocer's shelf. A small bakery makes them fresh, sells to the same shops and to tea stalls at a better margin, and suits a women's group. It needs an FSSAI food licence and steady daily orders.",
+      "hi": "रस्क, ब्रेड और बिस्कुट दूर के कस्बों से किराने की दुकान पर गाँव पहुँचते हैं। छोटी बेकरी इन्हें ताज़ा बनाती है, उन्हीं दुकानों और चाय की दुकानों को बेहतर मुनाफ़े पर बेचती है, और महिला समूह के लिए उपयुक्त है। इसके लिए एफ़एसएसएआई खाद्य लाइसेंस और रोज़ के पक्के ऑर्डर चाहिए।"
+    },
+    "fit": {
+      "soilTypes": [],
+      "regions": ["all_india"],
+      "waterNeed": "low",
+      "salinityTolerance": "high",
+      "requiresIrrigation": false,
+      "preferredIrrigation": [],
+      "landless": true,
+      "maxWaterDepthMetres": 400
+    },
+    "sizing": {
+      "mode": "unit",
+      "unitsFromLand": false,
+      "unitLabel": { "en": "Bakery with a two-deck oven, mixer and packing, about 150 kg a day", "hi": "दो-डेक ओवन, मिक्सर और पैकिंग सहित बेकरी, लगभग 150 किग्रा प्रतिदिन" },
+      "landHaPerUnit": 0.02,
+      "minUnits": 1,
+      "maxUnits": 2
+    },
+    "economics": {
+      "capex": { "low": 500000, "high": 1000000 },
+      "opexPerYear": { "low": 1300000, "high": 2200000 },
+      "revenuePerYear": { "low": 1700000, "high": 2800000 },
+      "gestationMonths": 3,
+      "fullYieldYear": 2,
+      "projectLifeYears": 10,
+      "riskLevel": "medium",
+      "labourDaysPerYear": 900
+    },
+    "export": { "potential": "none", "commodity": "bakery" },
+    "schemes": ["pmegp", "pmfme", "mudra"],
+    "resources": [
+      { "label": { "en": "FSSAI FoSCoS – food business licence and registration", "hi": "एफ़एसएसएआई फ़ॉस्कॉस – खाद्य व्यवसाय लाइसेंस और पंजीकरण" }, "url": "https://foscos.fssai.gov.in/" },
+      { "label": { "en": "PMEGP e-portal – apply for an enterprise loan with subsidy", "hi": "पीएमईजीपी ई-पोर्टल – अनुदान सहित उद्यम ऋण के लिए आवेदन" }, "url": "https://www.kviconline.gov.in/pmegpeportal/" }
     ]
   }
 ]

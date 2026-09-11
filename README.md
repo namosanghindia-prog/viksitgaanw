@@ -68,7 +68,7 @@ The download is ~10 MB and the import takes about a minute, producing a
 ```bash
 npm run api          # local FastAPI backend on 127.0.0.1:8756 (docs at /docs)
 npm run dev:web      # Vite dev server on 127.0.0.1:5273, in a normal browser
-cd apps/api && python -m pytest    # API test suite (448 tests)
+cd apps/api && python -m pytest    # API test suite (463 tests)
 npm run typecheck    # TypeScript
 npm run build        # production frontend build
 python scripts/check_translations.py   # report translation coverage
@@ -308,6 +308,29 @@ NRLM: crops and allied activities are the farm sector. Each kind in
 option can override its kind (the sapling nursery is filed as a service but is
 plants on land, so it is `farm`). Every option the API returns says which it
 is.
+
+**How a non-farming project is scored.** Soil and water say whether something
+will grow; they say nothing about whether a dal mill will pay. So a non-farming
+project skips those signals and is judged on what the device actually knows
+about its business, from each option's `business` block (`crops` it works
+with — codes or whole categories such as `pulse` — and the `catchmentVillages`
+at which there is comfortably enough trade):
+
+- **Raw material or customers in the family's own fields**, across all its
+  plots: for a processing unit its raw material, for a service what its
+  customers grow.
+- **Farms nearby that grow it**: other farmers' open projects and farmer
+  groups in the same district that the device can see (never sample data).
+- **The catchment**: how many villages the tehsil has, from the LGD directory.
+- **Honest cautions**: a mill with none of its raw material nearby is told it
+  will buy everything in; a small tehsil is flagged.
+
+Without evidence a non-farming project sits in the 40s; with its raw material
+in hand and a large tehsil, one with sound economics reaches *Best suited*. The
+list covers processing (spice grinding, dal mill, oil ghani, solar dryer, cold
+room, atta chakki, mini rice mill, jaggery, village bakery) and services
+(custom hiring, vermicompost, drone spraying, milk collection centre with bulk
+cooler, agri-input shop and crop advice centre).
 
 Two things the engine is careful about, because both produce plausible-looking
 nonsense if you get them wrong:
