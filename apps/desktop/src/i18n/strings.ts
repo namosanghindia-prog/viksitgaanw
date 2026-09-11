@@ -6,6 +6,14 @@
  * well. Keep sentences short, concrete and free of jargon.
  */
 
+import type { LanguageCode } from '@viksitgaanw/shared';
+
+import bnStrings from './locales/bn.json';
+import mrStrings from './locales/mr.json';
+import taStrings from './locales/ta.json';
+import teStrings from './locales/te.json';
+import knStrings from './locales/kn.json';
+
 export const en = {
   'app.name': 'ViksitGaanw',
   'app.tagline': 'Your land, your plan',
@@ -2293,4 +2301,19 @@ export const hi: Record<StringKey, string> = {
   'note.video_ready': 'आपका वीडियो अपलोड हो गया और चलाने के लिए तैयार है।',
 };
 
-export const DICTIONARIES = { en, hi } as const;
+/**
+ * The other languages live in ``locales/<code>.json`` -- plain JSON, so a
+ * translator never has to touch code. A key left out falls back to English;
+ * ``python scripts/check_ui_translations.py`` reports what is missing.
+ */
+type Partial_ = Partial<Record<StringKey, string>>;
+
+export const DICTIONARIES: Record<LanguageCode, Partial_> = {
+  en,
+  hi,
+  bn: bnStrings as Partial_,
+  mr: mrStrings as Partial_,
+  ta: taStrings as Partial_,
+  te: teStrings as Partial_,
+  kn: knStrings as Partial_,
+};

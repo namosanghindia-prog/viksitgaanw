@@ -1,7 +1,15 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { LanguageCode } from '@viksitgaanw/shared';
 
-const VOICE_LANG: Record<LanguageCode, string> = { en: 'en-IN', hi: 'hi-IN' };
+const VOICE_LANG: Record<LanguageCode, string> = {
+  en: 'en-IN',
+  hi: 'hi-IN',
+  bn: 'bn-IN',
+  mr: 'mr-IN',
+  ta: 'ta-IN',
+  te: 'te-IN',
+  kn: 'kn-IN',
+};
 
 /** Whether this device can read text aloud at all. */
 export const canSpeak = () => typeof window !== 'undefined' && 'speechSynthesis' in window;

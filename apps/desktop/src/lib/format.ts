@@ -5,7 +5,17 @@ import type { LanguageCode, LocationPath } from '@viksitgaanw/shared';
 const LOCALES: Record<LanguageCode, string> = {
   en: 'en-IN',
   hi: 'hi-IN',
+  bn: 'bn-IN',
+  mr: 'mr-IN',
+  ta: 'ta-IN',
+  te: 'te-IN',
+  kn: 'kn-IN',
 };
+
+/** The locale tag for a language, for the few places that format directly. */
+export function localeFor(lang: LanguageCode): string {
+  return LOCALES[lang] ?? 'en-IN';
+}
 
 export function formatNumber(
   value: number,

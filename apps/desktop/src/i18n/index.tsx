@@ -8,6 +8,24 @@ import { DICTIONARIES, type StringKey } from './strings';
 const STORAGE_KEY = 'viksitgaanw.language';
 const DEFAULT_LANGUAGE: LanguageCode = 'hi';
 
+/**
+ * The languages the screens are in, each named in its own script so a reader
+ * finds theirs without reading English. Hindi and English are complete; the
+ * others are drafts awaiting a native speaker's review, and anything not yet
+ * translated shows in English.
+ */
+export const LANGUAGES: ReadonlyArray<{ code: LanguageCode; name: string; draft: boolean }> = [
+  { code: 'hi', name: 'हिन्दी', draft: false },
+  { code: 'en', name: 'English', draft: false },
+  { code: 'bn', name: 'বাংলা', draft: true },
+  { code: 'mr', name: 'मराठी', draft: true },
+  { code: 'te', name: 'తెలుగు', draft: true },
+  { code: 'ta', name: 'தமிழ்', draft: true },
+  { code: 'kn', name: 'ಕನ್ನಡ', draft: true },
+];
+
+const KNOWN = new Set<string>(LANGUAGES.map((entry) => entry.code));
+
 interface I18nValue {
   lang: LanguageCode;
   setLang: (lang: LanguageCode) => void;
@@ -24,7 +42,7 @@ const I18nContext = createContext<I18nValue | null>(null);
 function readStoredLanguage(): LanguageCode {
   try {
     const stored = localStorage.getItem(STORAGE_KEY);
-    if (stored === 'en' || stored === 'hi') return stored;
+    if (stored && KNOWN.has(stored)) return stored as LanguageCode;
   } catch {
     // Private mode or a locked-down profile: fall through to the default.
   }

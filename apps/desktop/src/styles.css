@@ -216,6 +216,34 @@ code {
   color: var(--soil);
 }
 
+/* The language picker: each language written in its own script. */
+.langpick {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 6px 4px 12px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.22);
+  color: var(--wheat);
+  cursor: pointer;
+}
+
+.langpick__select {
+  appearance: none;
+  border: none;
+  border-radius: 999px;
+  padding: 6px 28px 6px 12px;
+  font: inherit;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--soil);
+  background: var(--wheat)
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%234a3728'/%3E%3C/svg%3E")
+    no-repeat right 10px center;
+  cursor: pointer;
+}
+
+
 /* ------------------------------------------------------------------ *
  * Banners
  * ------------------------------------------------------------------ */

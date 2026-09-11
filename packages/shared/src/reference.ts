@@ -28,10 +28,47 @@ import userSegments from '../reference/user-segments.json';
 import waterSources from '../reference/water-sources.json';
 import waterTypes from '../reference/water-types.json';
 import schemesKnowledge from '../knowledge/schemes.json';
+import bnLabels from '../reference/i18n/bn.json';
+import knLabels from '../reference/i18n/kn.json';
+import mrLabels from '../reference/i18n/mr.json';
+import taLabels from '../reference/i18n/ta.json';
+import teLabels from '../reference/i18n/te.json';
 
 import type { Label, LanguageCode, ReferenceItem, ReferenceList } from './types';
 
-export const REFERENCE = {
+/**
+ * Labels in the languages beyond English and Hindi, one file per language:
+ * ``{ "<list key>": { "<code>": "label" } }``, plus ``crop_categories``. Kept
+ * apart from the lists so each language can be translated on its own; merged
+ * in below, and anything missing falls back to English.
+ */
+type Overlay = Record<string, Record<string, string>>;
+const OVERLAYS: Array<[LanguageCode, Overlay]> = [
+  ['bn', bnLabels as Overlay],
+  ['mr', mrLabels as Overlay],
+  ['ta', taLabels as Overlay],
+  ['te', teLabels as Overlay],
+  ['kn', knLabels as Overlay],
+];
+
+function translated(key: string, list: ReferenceList): ReferenceList {
+  const withLabels = (items: ReferenceItem[] | undefined, overlayKey: string) =>
+    items?.map((item) => {
+      const label: Label = { ...item.label };
+      for (const [lang, overlay] of OVERLAYS) {
+        const text = overlay[overlayKey]?.[item.code];
+        if (text) label[lang] = text;
+      }
+      return { ...item, label };
+    });
+  return {
+    ...list,
+    items: withLabels(list.items, key) ?? [],
+    categories: withLabels(list.categories, key === 'crops' ? 'crop_categories' : `${key}__categories`),
+  };
+}
+
+const BASE = {
   area_units: areaUnits as ReferenceList,
   certifications: certifications as ReferenceList,
   countries: countries as ReferenceList,
@@ -63,6 +100,10 @@ export const REFERENCE = {
   /** Opportunity kinds from the knowledge base: what investors call sectors. */
   opportunity_kinds: { key: 'opportunity_kinds', version: 1, items: opportunitiesMeta.kinds } as ReferenceList,
 } as const;
+
+export const REFERENCE = Object.fromEntries(
+  Object.entries(BASE).map(([key, list]) => [key, translated(key, list)]),
+) as { [K in keyof typeof BASE]: ReferenceList };
 
 export type ReferenceKey = keyof typeof REFERENCE;
 

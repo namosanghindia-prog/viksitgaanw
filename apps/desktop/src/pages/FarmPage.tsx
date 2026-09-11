@@ -10,7 +10,7 @@ import { ReadAloud } from '../components/ReadAloud';
 import { TextField } from '../components/TextField';
 import { useI18n } from '../i18n';
 import { api } from '../lib/api';
-import { formatDate, formatMoneyShort, formatNumber } from '../lib/format';
+import { formatDate, formatMoneyShort, formatNumber, localeFor } from '../lib/format';
 import { useAsync } from '../lib/hooks';
 
 const today = () => new Date().toISOString().slice(0, 10);
@@ -81,7 +81,7 @@ function WeatherCard({ parcelId }: { parcelId: string }) {
           {data.days.map((day) => (
             <div key={day.date} className="forecast__day" role="row">
               <strong>
-                {new Intl.DateTimeFormat(lang === 'hi' ? 'hi-IN' : 'en-IN', { weekday: 'short', day: 'numeric' }).format(
+                {new Intl.DateTimeFormat(localeFor(lang), { weekday: 'short', day: 'numeric', numberingSystem: 'latn' }).format(
                   new Date(day.date),
                 )}
               </strong>

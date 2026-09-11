@@ -3,6 +3,7 @@ import type { Equipment } from '@viksitgaanw/shared';
 
 import { useI18n } from '../i18n';
 import { api } from '../lib/api';
+import { formatDate } from '../lib/format';
 import { useProfile } from '../lib/profile';
 import { useSharing } from '../lib/sharing';
 import { AskPartnerDialog } from './AskPartnerDialog';
@@ -73,8 +74,8 @@ export function EquipmentActions({ item, onChanged }: { item: Equipment; onChang
             {t(`enquiry.kind.${enquiry.kind}`)}
             {enquiry.startDate && enquiry.endDate
               ? ` · ${t('enquiry.dates', {
-                  from: new Date(enquiry.startDate).toLocaleDateString(lang === 'hi' ? 'hi-IN' : 'en-IN'),
-                  to: new Date(enquiry.endDate).toLocaleDateString(lang === 'hi' ? 'hi-IN' : 'en-IN'),
+                  from: formatDate(enquiry.startDate, lang),
+                  to: formatDate(enquiry.endDate, lang),
                 })}`
               : ''}
           </span>

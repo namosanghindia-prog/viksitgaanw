@@ -3,7 +3,8 @@
  * FastAPI backend. Keep these in step with `apps/api/app/schemas.py`.
  */
 
-export type LanguageCode = 'en' | 'hi';
+/** Languages the app's own screens are in. Reports cover all 22 scheduled languages. */
+export type LanguageCode = 'en' | 'hi' | 'bn' | 'mr' | 'ta' | 'te' | 'kn';
 
 /** A bilingual label as stored in `packages/shared/reference/*.json`. */
 export interface Label {

@@ -1,6 +1,8 @@
 import { useEffect, useState } from 'react';
 import type { FxRate, LanguageCode, Profile } from '@viksitgaanw/shared';
 
+import { localeFor } from './format';
+
 import { api } from './api';
 import { isInternational } from './segments';
 
@@ -52,7 +54,7 @@ export function approxForeign(rupees: number, currency: string | null, rates: Fx
   if (!currency) return null;
   const rate = rates.find((entry) => entry.currency === currency);
   if (!rate || rate.inrPerUnit <= 0) return null;
-  return new Intl.NumberFormat(lang === 'hi' ? 'hi-IN' : 'en-IN', {
+  return new Intl.NumberFormat(localeFor(lang), {
     style: 'currency',
     currency,
     maximumFractionDigits: 0,

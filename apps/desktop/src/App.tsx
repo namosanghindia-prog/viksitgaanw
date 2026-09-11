@@ -1,7 +1,7 @@
 import { NavLink, Route, Routes } from 'react-router-dom';
 import type { LanguageCode, Profile, Segment } from '@viksitgaanw/shared';
 
-import { useI18n } from './i18n';
+import { LANGUAGES, useI18n } from './i18n';
 import type { StringKey } from './i18n';
 import { api } from './lib/api';
 import { useAsync } from './lib/hooks';
@@ -41,11 +41,6 @@ import { ParcelInsurancePage } from './pages/ParcelInsurancePage';
 import { PlanPage } from './pages/PlanPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { RequestInvestmentPage } from './pages/RequestInvestmentPage';
-
-const LANGUAGES: Array<{ code: LanguageCode; label: string }> = [
-  { code: 'hi', label: 'हिन्दी' },
-  { code: 'en', label: 'English' },
-];
 
 /** The top-bar links each kind of user gets. The first is their home screen. */
 function navFor(segment: Segment): Array<{ to: string; label: StringKey }> {
@@ -142,19 +137,21 @@ export function App() {
           <span className="pill" title={t('status.offlineReady')}>
             ⛰ {t('status.offlineReady')}
           </span>
-          <div className="langswitch" role="group" aria-label={t('nav.language')}>
-            {LANGUAGES.map((entry) => (
-              <button
-                key={entry.code}
-                type="button"
-                className={`langswitch__button ${lang === entry.code ? 'langswitch__button--active' : ''}`}
-                aria-pressed={lang === entry.code}
-                onClick={() => setLang(entry.code)}
-              >
-                {entry.label}
-              </button>
-            ))}
-          </div>
+          <label className="langpick" title={t('nav.language')}>
+            <span aria-hidden="true">🌐</span>
+            <select
+              className="langpick__select"
+              value={lang}
+              aria-label={t('nav.language')}
+              onChange={(event) => setLang(event.target.value as LanguageCode)}
+            >
+              {LANGUAGES.map((entry) => (
+                <option key={entry.code} value={entry.code}>
+                  {entry.name}
+                </option>
+              ))}
+            </select>
+          </label>
           {profile ? (
             <>
               <NavLink to="/inbox" className="navlink navlink--icon" title={t('nav.inbox')} aria-label={t('nav.inbox')}>
