@@ -5,7 +5,6 @@ from __future__ import annotations
 import importlib
 import re
 import sys
-import tempfile
 from pathlib import Path
 
 import pytest
@@ -20,7 +19,7 @@ from app.services.videos import VideoError, youtube_id
 from .conftest import become
 from .test_marketplace import insert_profile, insert_request, make_owner, request_body
 from .test_profiles import farmer_body, investor_india_body, partner_national_body
-from .test_sync import SYNC_DIR, OtherDevice, ServerTransport
+from .test_sync import SYNC_DIR, fresh_sync_module, OtherDevice, ServerTransport
 
 VIDEO_ID = "dQw4w9WgXcQ"
 
@@ -205,9 +204,7 @@ class FakeStorage:
 @pytest.fixture()
 def cloud(monkeypatch):
     """A sync server with a fake Mux, and this device pointed at it."""
-    monkeypatch.setenv("VG_SYNC_DB", str(Path(tempfile.mkdtemp()) / "sync.db"))
-    sys.path.insert(0, str(SYNC_DIR))
-    module = importlib.reload(importlib.import_module("server"))
+    module = fresh_sync_module(monkeypatch)
     module.mux = FakeMux()
     storage = FakeStorage(module.mux)
     monkeypatch.setattr(videos, "put_chunk", storage)
@@ -238,7 +235,8 @@ def work(transport) -> int:
 def subscribe(module, profile_id: str, until: str | None = None) -> None:
     with module.db() as con:
         con.execute(
-            "INSERT OR REPLACE INTO subscriptions (profile_id, plan, until, created_at) VALUES (?, 'video', ?, ?)",
+            "INSERT INTO subscriptions (profile_id, plan, until, created_at) VALUES (?, 'video', ?, ?) "
+            "ON CONFLICT (profile_id) DO UPDATE SET until = excluded.until",
             (profile_id, until, module._now()),
         )
 

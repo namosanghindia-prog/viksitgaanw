@@ -19,8 +19,9 @@ mandi prices, government-scheme checks, backups and an opt-in sync. See
 > **Development build — not for public release.** Nothing here should be
 > published online or put in front of real users yet: there is no identity
 > verification (every profile shows as unverified); sync works only against the
-> development sync server in `apps/sync`, which has no hardening, rate limits or
-> hosting and must only be run on your own machine or network; the deal and
+> sync server in `apps/sync`, which now runs on PostgreSQL with rate limits and
+> abuse controls but has not been security-reviewed or hosted, so run it only on
+> your own machine or network for now; the deal and
 > milestone layer records payments made bank to bank but has had no legal or
 > financial-regulation review; scheme eligibility, insurance and
 > foreign-investment guidance have not been checked by a lawyer or against
@@ -68,7 +69,7 @@ The download is ~10 MB and the import takes about a minute, producing a
 ```bash
 npm run api          # local FastAPI backend on 127.0.0.1:8756 (docs at /docs)
 npm run dev:web      # Vite dev server on 127.0.0.1:5273, in a normal browser
-cd apps/api && python -m pytest    # API test suite (488 tests)
+cd apps/api && python -m pytest    # API test suite (497 tests)
 npm run typecheck    # TypeScript
 npm run build        # production frontend build
 python scripts/check_translations.py   # report translation coverage
@@ -571,9 +572,69 @@ data & sync**. Then, every five minutes and on "Sync now":
 - What arrives is written locally and turned into notifications on the
   receiving device.
 
-The server in `apps/sync/server.py` (FastAPI + its own SQLite, `VG_SYNC_DB`)
-exists to develop and test this against. It is **not** a production service.
-`apps/api/tests/test_sync.py` runs two devices against it end to end.
+The server is `apps/sync/server.py` (FastAPI). On a laptop it keeps its data in
+SQLite (`VG_SYNC_DB`); in production, in PostgreSQL. `apps/api/tests/test_sync.py`
+runs two devices against it end to end.
+
+### Running the sync service in production
+
+The same server runs on any PostgreSQL — Supabase, AWS RDS or your own. Nothing
+is deployed yet; this is what it takes.
+
+1. **A database.** Create an empty PostgreSQL database and set its address:
+
+   ```
+   VG_SYNC_DATABASE_URL=postgresql://user:password@host:5432/viksitgaanw
+   ```
+
+   `postgres://` and `postgresql://` addresses as hosts print them both work.
+   The tables are created on first start, and columns added by later versions
+   are added on start too. On Supabase, the transaction pooler (port 6543)
+   works: the server never uses prepared statements, which a pooler would
+   break. Backups are the database host's job.
+2. **The service.** `apps/sync/Dockerfile` runs it on any container host
+   (two workers, as a non-root user):
+
+   ```bash
+   docker build -t viksitgaanw-sync apps/sync
+   docker run -p 8900:8900 -e VG_SYNC_DATABASE_URL=... viksitgaanw-sync
+   ```
+
+   Without Docker: `pip install -r apps/sync/requirements.txt`, then
+   `uvicorn server:app --app-dir apps/sync --host 0.0.0.0 --port 8900 --workers 2`.
+3. **HTTPS.** The service speaks plain HTTP; put it behind the host's HTTPS
+   load balancer or a reverse proxy, and set `VG_SYNC_TRUST_PROXY=1` (the image
+   does) so rate limits see the real client address.
+4. **Keys.** Mux and Razorpay keys go in the host's environment settings,
+   never into the image or the repository.
+
+**Protection built in:**
+
+- **Rate limits** — each device may make `VG_SYNC_RATE_PER_MINUTE` requests a
+  minute (300; a sync run is a burst), and one address may register
+  `VG_SYNC_REGISTRATIONS_PER_HOUR` devices an hour (20). Limits are kept per
+  server process.
+- **Size limits** — requests over `VG_SYNC_MAX_BODY_MB` (10) and single records
+  over `VG_SYNC_MAX_RECORD_KB` (256) are refused before they are stored.
+- **Tokens** — only a hash of each device's token is stored, and a device
+  swaps its token for a new one every 90 days.
+- **A lost or stolen phone** — `python apps/sync/admin.py sign-out <device-id>`
+  stops its token at once. The profile then cannot register another device,
+  so whoever has the phone cannot sign back in; once you are sure the owner is
+  the one asking, `admin.py release <profile-id>` lets their new phone register.
+- **Abuse** — `admin.py suspend <profile-id> --reason "..."` refuses every
+  device of a profile and stops what it shared reaching anyone;
+  `admin.py unsuspend` lifts it. `admin.py devices` lists devices and their
+  state.
+- **Payments and webhooks** stay exactly-once with several server processes:
+  a payment is claimed by one guarded update and the subscription row is
+  locked while it is extended.
+
+**Still to do before real users:** a security review and penetration test of
+the service; identity beyond device tokens, which comes with KYC or a
+phone-number check; and monitoring and alerting on the host. The whole sync
+test suite runs against PostgreSQL as well as SQLite — set
+`VG_SYNC_TEST_DATABASE_URL` to an empty database and run the tests as usual.
 
 ### Videos
 
@@ -698,10 +759,11 @@ partnerships, farmer groups with pooled requests, mandi prices, the farm
 diary, weather advice, backups and the sync protocol with a development
 server, introduction and biodata videos with Mux uploads for subscribers,
 farmers and investors finding each other, and prepaid subscriptions paid
-through Razorpay (switched off until keys and prices are set). Phase 2, next:
-KYC through an authorised provider, a production sync service (PostgreSQL,
-authentication beyond device tokens, abuse controls), and legal review of the
-deal and dispute terms.
+through Razorpay (switched off until keys and prices are set). The sync service
+now runs on PostgreSQL with rate limits, size limits, token rotation, device
+sign-out and suspension. Phase 2, next: KYC through an authorised provider,
+hosting the sync service after a security review, and legal review of the deal
+and dispute terms.
 
 Phase 3: self-hosted map and geocoding infrastructure, scheme application
 assistance beyond tracking, partnership-based verification tier, voice input,
@@ -785,7 +847,13 @@ Every setting takes a `VG_`-prefixed environment variable.
 | `VG_BACKUPS_DIR`    | next to the database, `backups/`   | One-file backups               |
 | `VG_ALLOW_NETWORK`  | `true`                             | `false` keeps the API offline  |
 | `VG_DATA_GOV_API_KEY` | none                             | Fetch Agmarknet mandi prices   |
-| `VG_SYNC_DB`        | `apps/sync/data/sync.db`           | Development sync server's DB   |
+| `VG_SYNC_DB`        | `apps/sync/data/sync.db`           | Sync server's SQLite file      |
+| `VG_SYNC_DATABASE_URL` | none (use SQLite)               | Sync server's PostgreSQL       |
+| `VG_SYNC_RATE_PER_MINUTE` | `300`                        | Requests per device a minute   |
+| `VG_SYNC_REGISTRATIONS_PER_HOUR` | `20`                  | New devices per address an hour|
+| `VG_SYNC_MAX_BODY_MB` | `10`                             | Largest request                |
+| `VG_SYNC_MAX_RECORD_KB` | `256`                          | Largest single record          |
+| `VG_SYNC_TRUST_PROXY` | off                              | Read X-Forwarded-For (proxy)   |
 | `MUX_TOKEN_ID`      | none (sync server only)            | Mux token for video uploads    |
 | `MUX_TOKEN_SECRET`  | none (sync server only)            | Its secret; or `apps/sync/.env`|
 | `RAZORPAY_KEY_ID`   | none (sync server only)            | Razorpay key for payments      |

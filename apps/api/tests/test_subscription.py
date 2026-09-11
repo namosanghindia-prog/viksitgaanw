@@ -7,7 +7,6 @@ import hmac
 import importlib
 import json
 import sys
-import tempfile
 from datetime import date, timedelta
 from pathlib import Path
 
@@ -21,7 +20,7 @@ from app.services import subscription, sync_client
 
 from .test_marketplace import make_owner
 from .test_profiles import farmer_body
-from .test_sync import SYNC_DIR, OtherDevice, ServerTransport
+from .test_sync import SYNC_DIR, fresh_sync_module, OtherDevice, ServerTransport
 
 WEBHOOK_SECRET = "whsec_test"
 
@@ -61,9 +60,7 @@ class FakeRazorpay:
 @pytest.fixture()
 def cloud(monkeypatch):
     """A sync server taking payments through a fake Razorpay, and this device pointed at it."""
-    monkeypatch.setenv("VG_SYNC_DB", str(Path(tempfile.mkdtemp()) / "sync.db"))
-    sys.path.insert(0, str(SYNC_DIR))
-    module = importlib.reload(importlib.import_module("server"))
+    module = fresh_sync_module(monkeypatch)
     module.razorpay = FakeRazorpay(module.RazorpayClient.signature_ok)
     server = TestClient(module.app)
     # The app's own HTTP calls to the sync server go to the test server instead.
@@ -75,8 +72,9 @@ def cloud(monkeypatch):
 def add_plan(module, code="video-month", name="Video uploads, 1 month", paise=9900, months=1) -> None:
     with module.db() as con:
         con.execute(
-            "INSERT OR REPLACE INTO plans (code, name, amount_paise, months, active, created_at) "
-            "VALUES (?, ?, ?, ?, 1, ?)",
+            "INSERT INTO plans (code, name, amount_paise, months, active, created_at) VALUES (?, ?, ?, ?, 1, ?) "
+            "ON CONFLICT (code) DO UPDATE SET name = excluded.name, amount_paise = excluded.amount_paise, "
+            "months = excluded.months, active = 1",
             (code, name, paise, months, module._now()),
         )
 

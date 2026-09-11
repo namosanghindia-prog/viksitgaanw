@@ -30,7 +30,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from dataclasses import dataclass, field
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from typing import Any, Protocol
 
 from sqlalchemy import Date, DateTime, inspect, select
@@ -210,7 +210,8 @@ def status(session: Session) -> SyncStatusOut:
 def configure(session: Session, server_url: str | None) -> SyncStatusOut:
     if server_url != _get(session, "server_url"):
         # A different server knows nothing of this device: start again there.
-        for key in ("server_url", "device_id", "token", "device_profile_id", "pull_rev", "last_error"):
+        for key in ("server_url", "device_id", "token", "token_issued_at", "device_profile_id", "pull_rev",
+                    "last_error"):
             _set(session, key, None)
         _set(session, "server_url", server_url)
     return status(session)
@@ -285,6 +286,7 @@ def _register(session: Session, transport: Transport, owner: Profile) -> str:
     answer = transport.post("/v1/devices", {"profile_id": owner.id, "segment": owner.segment})
     _set(session, "device_id", answer["deviceId"])
     _set(session, "token", answer["token"])
+    _set(session, "token_issued_at", datetime.now(timezone.utc).isoformat())
     _set(session, "device_profile_id", owner.id)
     _set(session, "pull_rev", "0")
     return answer["token"]
@@ -652,6 +654,32 @@ def pull(session: Session, transport: Transport, token: str, owner: Profile) -> 
 # --------------------------------------------------------------------------- #
 
 
+#: A device swaps its sync token for a new one this often, so a token copied
+#: off an old backup or a lost phone does not stay good for ever.
+TOKEN_LIFETIME = timedelta(days=90)
+
+
+def _fresh_token(session: Session, transport: Transport, token: str) -> str:
+    """The token to sync with: the same one, or a new one once it is old."""
+    issued = _when(session, "token_issued_at")
+    now = datetime.now(timezone.utc)
+    if issued is None:
+        # Issued before tokens were dated: start its clock now.
+        _set(session, "token_issued_at", now.isoformat())
+        return token
+    if now - (issued if issued.tzinfo else issued.replace(tzinfo=timezone.utc)) < TOKEN_LIFETIME:
+        return token
+    try:
+        answer = transport.post("/v1/devices/rotate", {}, token)
+    except SyncError as exc:
+        if exc.status == 404:  # a server from before rotation
+            return token
+        raise
+    _set(session, "token", answer["token"])
+    _set(session, "token_issued_at", now.isoformat())
+    return answer["token"]
+
+
 def run(session: Session, transport: Transport | None = None) -> RunResult:
     url = _get(session, "server_url")
     if not url:
@@ -661,7 +689,7 @@ def run(session: Session, transport: Transport | None = None) -> RunResult:
         raise SyncError("Set up your profile first.", 409)
     transport = transport or HttpTransport(url)
     try:
-        token = _register(session, transport, owner)
+        token = _fresh_token(session, transport, _register(session, transport, owner))
         pushed = push(session, transport, token, owner)
         pulled = pull(session, transport, token, owner)
     except SyncError as exc:

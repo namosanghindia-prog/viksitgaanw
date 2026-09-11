@@ -27,12 +27,42 @@ from .test_profiles import farmer_body
 SYNC_DIR = Path(__file__).resolve().parents[2] / "sync"
 
 
+def fresh_sync_module(monkeypatch):
+    """Load the sync server against an empty database of its own.
+
+    SQLite by default: a new file for every test. To run the same tests on
+    PostgreSQL, set VG_SYNC_TEST_DATABASE_URL; every table is dropped first,
+    so each test still starts empty. The caller removes SYNC_DIR from sys.path.
+    """
+    previous = sys.modules.get("server")
+    if previous is not None and hasattr(previous, "store"):
+        previous.store.engine.dispose()  # a small PostgreSQL allows few connections
+    sys.path.insert(0, str(SYNC_DIR))
+    postgres = os.environ.get("VG_SYNC_TEST_DATABASE_URL")
+    if postgres:
+        from sqlalchemy import create_engine
+
+        import storage
+
+        monkeypatch.setenv("VG_SYNC_DATABASE_URL", postgres)
+        engine = create_engine(
+            storage.database_url({"VG_SYNC_DATABASE_URL": postgres}, SYNC_DIR),
+            connect_args={"prepare_threshold": None},
+        )
+        storage.metadata.drop_all(engine)
+        engine.dispose()
+    else:
+        monkeypatch.delenv("VG_SYNC_DATABASE_URL", raising=False)
+        monkeypatch.setenv("VG_SYNC_DB", str(Path(tempfile.mkdtemp()) / "sync.db"))
+    # Importing runs the module once; reloading an already-imported one runs it
+    # again. Doing both the first time would open two databases at once.
+    return importlib.reload(previous) if previous is not None else importlib.import_module("server")
+
+
 @pytest.fixture()
 def server(monkeypatch):
     """A fresh sync server with its own throwaway database."""
-    monkeypatch.setenv("VG_SYNC_DB", str(Path(tempfile.mkdtemp()) / "sync.db"))
-    sys.path.insert(0, str(SYNC_DIR))
-    module = importlib.reload(importlib.import_module("server"))
+    module = fresh_sync_module(monkeypatch)
     yield TestClient(module.app)
     sys.path.remove(str(SYNC_DIR))
 

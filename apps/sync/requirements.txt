@@ -1,0 +1,8 @@
+# The sync service on its own -- what a server host installs.
+# SQLite needs nothing more; psycopg is the driver for PostgreSQL
+# (Supabase, AWS RDS or any other), picked by VG_SYNC_DATABASE_URL.
+fastapi>=0.115.0
+uvicorn[standard]>=0.32.0
+pydantic>=2.10.0
+sqlalchemy>=2.0.36
+psycopg[binary]>=3.2

@@ -1,4 +1,4 @@
-"""Manage plans, payments and subscriptions on the sync server.
+"""Manage plans, payments, subscriptions, devices and abuse on the sync server.
 
     python apps/sync/admin.py list
     python apps/sync/admin.py set-plan video-month --name "Video uploads, 1 month" --price 99 --months 1
@@ -7,13 +7,26 @@
     python apps/sync/admin.py payments [--profile <profile-id>]
     python apps/sync/admin.py subscribe <profile-id> [--plan video] [--until 2027-03-31]
     python apps/sync/admin.py unsubscribe <profile-id>
+    python apps/sync/admin.py devices [--profile <profile-id>]
+    python apps/sync/admin.py sign-out <device-id>
+    python apps/sync/admin.py release <profile-id>
+    python apps/sync/admin.py suspend <profile-id> --reason "Fake investment offers"
+    python apps/sync/admin.py unsuspend <profile-id>
 
 A subscription lets its profile upload videos directly (through Mux) instead
 of linking them on YouTube. People buy one from the app once a plan is on
 sale and Razorpay keys are set; ``subscribe`` grants one by hand -- a trial, a
 partner, a refund made good. Prices are the operator's to set: nothing is on
-sale until ``set-plan`` says so. It works on the same database as the server
-(``VG_SYNC_DB``), so run it where the server runs. Profile ids are listed by
+sale until ``set-plan`` says so.
+
+When a phone is lost or stolen, ``sign-out`` stops its token at once; the
+profile then cannot register another device until ``release`` -- so a thief
+cannot sign back in, and the owner's new phone can once you have checked it
+is them. ``suspend`` refuses every device of a profile that abuses others,
+and stops what it shared reaching anyone.
+
+It works on the same database as the server (``VG_SYNC_DATABASE_URL`` or
+``VG_SYNC_DB``), so run it where the server runs. Profile ids are listed by
 ``list``, next to the names people gave.
 """
 
@@ -140,6 +153,58 @@ def unsubscribe(profile_id: str) -> None:
     print(f"{profile_id}: no subscription")
 
 
+def list_devices(profile_id: str | None) -> None:
+    with server.db() as con:
+        names = _names(con)
+        suspended = {row["profile_id"]: row["reason"] for row in con.execute("SELECT * FROM suspensions")}
+        query, params = "SELECT * FROM devices", ()
+        if profile_id:
+            query, params = query + " WHERE profile_id = ?", (profile_id,)
+        rows = con.execute(query + " ORDER BY created_at", params).fetchall()
+    if not rows:
+        print("No devices.")
+    for row in rows:
+        state = "signed out" if row["revoked_at"] else "active"
+        if row["profile_id"] in suspended:
+            state += f", profile suspended ({suspended[row['profile_id']]})"
+        print(f"{row['id']:18} {row['profile_id']:38} {(row['last_seen'] or '-')[:16]:17} {state:12} "
+              f"{names.get(row['profile_id'], '')}")
+
+
+def sign_out(device_id: str) -> None:
+    with server.db() as con:
+        if con.execute("UPDATE devices SET revoked_at = ? WHERE id = ? AND revoked_at IS NULL",
+                       (server._now(), device_id)).rowcount == 0:
+            sys.exit(f"No active device {device_id}.")
+    print(f"{device_id}: signed out. Its profile cannot register another device until you run release.")
+
+
+def release(profile_id: str) -> None:
+    with server.db() as con:
+        active = con.execute("SELECT id FROM devices WHERE profile_id = ? AND revoked_at IS NULL", (profile_id,)).fetchall()
+        if active:
+            sys.exit(f"{profile_id} still has an active device ({active[0]['id']}). Sign it out first.")
+        removed = con.execute("DELETE FROM devices WHERE profile_id = ?", (profile_id,)).rowcount
+    print(f"{profile_id}: released ({removed} signed-out device(s) removed). A new device may now register it.")
+
+
+def suspend(profile_id: str, reason: str) -> None:
+    with server.db() as con:
+        con.execute(
+            "INSERT INTO suspensions (profile_id, reason, created_at) VALUES (?, ?, ?) "
+            "ON CONFLICT (profile_id) DO UPDATE SET reason = excluded.reason",
+            (profile_id, reason, server._now()),
+        )
+    print(f"{profile_id}: suspended -- {reason}")
+
+
+def unsuspend(profile_id: str) -> None:
+    with server.db() as con:
+        if con.execute("DELETE FROM suspensions WHERE profile_id = ?", (profile_id,)).rowcount == 0:
+            sys.exit(f"{profile_id} is not suspended.")
+    print(f"{profile_id}: no longer suspended")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     commands = parser.add_subparsers(dest="command", required=True)
@@ -160,6 +225,17 @@ def main() -> None:
     commands.add_parser("plans", help="plans and their prices")
     payments = commands.add_parser("payments", help="recent payments")
     payments.add_argument("--profile")
+    devices = commands.add_parser("devices", help="registered devices and whether they may sync")
+    devices.add_argument("--profile")
+    out = commands.add_parser("sign-out", help="stop a lost or stolen device's token")
+    out.add_argument("device_id")
+    rel = commands.add_parser("release", help="let a profile whose device was signed out register a new one")
+    rel.add_argument("profile_id")
+    sus = commands.add_parser("suspend", help="refuse a profile's devices and hide what it shared")
+    sus.add_argument("profile_id")
+    sus.add_argument("--reason", required=True)
+    uns = commands.add_parser("unsuspend", help="lift a suspension")
+    uns.add_argument("profile_id")
     args = parser.parse_args()
 
     if args.command == "list":
@@ -174,8 +250,18 @@ def main() -> None:
         retire_plan(args.code)
     elif args.command == "plans":
         list_plans()
-    else:
+    elif args.command == "payments":
         list_payments(args.profile)
+    elif args.command == "devices":
+        list_devices(args.profile)
+    elif args.command == "sign-out":
+        sign_out(args.device_id)
+    elif args.command == "release":
+        release(args.profile_id)
+    elif args.command == "suspend":
+        suspend(args.profile_id, args.reason)
+    else:
+        unsuspend(args.profile_id)
 
 
 if __name__ == "__main__":
