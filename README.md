@@ -329,6 +329,10 @@ at which there is comfortably enough trade):
   customers grow.
 - **Farms nearby that grow it**: other farmers' open projects and farmer
   groups in the same district that the device can see (never sample data).
+- **The district's mandis**: when Agmarknet prices have been imported, the
+  commodities the district's own mandis trade show what is grown around
+  there — worth less than a farm you can name, but it lifts the "you will buy
+  everything in" caution.
 - **The catchment**: how many villages the tehsil has, from the LGD directory.
 - **Honest cautions**: a mill with none of its raw material nearby is told it
   will buy everything in; a small tehsil is flagged.

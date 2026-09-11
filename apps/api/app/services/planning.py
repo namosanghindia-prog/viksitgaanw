@@ -14,7 +14,7 @@ from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from .. import knowledge
-from ..models import FarmerGroup, InvestmentRequest, LandParcel, State, SubDistrict, Village
+from ..models import District, FarmerGroup, InvestmentRequest, LandParcel, MandiPrice, State, SubDistrict, Village
 from ..schemas import (
     EconomicsOut,
     ExportSummaryOut,
@@ -99,13 +99,43 @@ def _surroundings(session: Session, parcel: LandParcel) -> dict[str, Any]:
         if tehsil
         else None
     )
+    district = session.get(District, parcel.district_code) if parcel.district_code else None
+    state = session.get(State, parcel.state_code)
     return {
         "household_crops": tuple(sorted(household)),
         "nearby_farms": tuple(nearby),
         "subdistrict_name": tehsil.name if tehsil else None,
         # An empty directory says nothing about the catchment; leave it unknown.
         "catchment_villages": villages or None,
+        "district_name": district.name if district else None,
+        "mandi_crops": _mandi_crops(session, district, state),
     }
+
+
+def _mandi_crops(session: Session, district: District | None, state: State | None) -> tuple[str, ...]:
+    """Crops the district's own mandis have traded, as crop codes.
+
+    Agmarknet names districts in plain English, as the LGD does, so the two
+    are matched by name within the state. Nothing is fetched here: this only
+    reads prices already imported on the device.
+    """
+    if district is None or state is None:
+        return ()
+    commodities = [
+        name
+        for name in session.scalars(
+            select(func.lower(MandiPrice.commodity))
+            .where(func.lower(MandiPrice.district_name) == district.name.lower())
+            .where(func.lower(MandiPrice.state_name) == state.name.lower())
+            .distinct()
+        )
+    ]
+    if not commodities:
+        return ()
+    mapping = knowledge.load_mandi_commodities().get("crops", {})
+    return tuple(
+        sorted(crop for crop, terms in mapping.items() if any(term in name for name in commodities for term in terms))
+    )
 
 
 def label_resolver(session: Session, translator: Translator) -> Callable[[str, str | None], str]:

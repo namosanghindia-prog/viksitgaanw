@@ -174,6 +174,8 @@
     "fit.buyFeedstock": "You would buy all the {crops} it needs. Talk to the farmers and traders who would sell to you before you invest.",
     "fit.catchmentLarge": "{tehsil} tehsil has {n} villages: enough farms and families within reach to keep this busy.",
     "fit.catchmentSmall": "{tehsil} tehsil has only {n} villages. Make sure there is enough business within reach before you invest.",
+    "fit.mandiFeedstock": "Mandis in {district} trade {crops}, so it is grown around you and can be bought close by.",
+    "fit.mandiCustomers": "Mandis in {district} trade {crops}, so farms around you grow what this serves.",
     "fit.lowRisk": "This is among the lower-risk options for your land.",
     "fit.highRisk": "This carries high risk. Do not put your whole holding into it in the first year.",
     "fit.quickReturn": "First income comes in about {months} months.",

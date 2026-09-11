@@ -181,6 +181,10 @@ class LandProfile:
     #: a village business draws its customers and its raw material from.
     subdistrict_name: str | None = None
     catchment_villages: int | None = None
+    #: Crops the district's own mandis have traded, from imported Agmarknet
+    #: prices: evidence of what is grown around here. Empty when none imported.
+    district_name: str | None = None
+    mandi_crops: tuple[str, ...] = ()
 
     @property
     def own_crops(self) -> frozenset[str]:
@@ -510,7 +514,13 @@ def _business_signals(opportunity: dict[str, Any], land: LandProfile, *, add, re
             # One neighbour is a hint; several are a supply.
             add(reasons, f"fit.nearby{word}", min(16, 6 + 2 * len(growers)),
                 n=str(len(growers)), crops=labels("crops", common))
-        if word == "Feedstock" and not own and not growers:
+        traded = crops & frozenset(land.mandi_crops)
+        if traded:
+            # A mandi trading it is proof it is grown here, but not that anyone
+            # will sell to you: worth less than a farm you can name.
+            add(reasons, f"fit.mandi{word}", 8, crops=_crop_names(traded, labels),
+                district=land.district_name or "")
+        if word == "Feedstock" and not own and not growers and not traded:
             add(cautions, "fit.buyFeedstock", -3, crops=_crop_names(crops, labels, limit=3))
 
     need = (opportunity.get("business") or {}).get("catchmentVillages")

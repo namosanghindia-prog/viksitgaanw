@@ -379,6 +379,45 @@ def test_a_business_can_earn_beyond_a_small_holding(land_profile, labels):
     assert "fit.smallHoldingBusiness" not in _keys(large)
 
 
+def test_a_district_mandi_trading_it_is_evidence_it_is_grown(land_profile, labels):
+    mill = _opportunity("mini_dal_mill")
+    without = assess(mill, land_profile(existing_crops=("wheat",)), labels=labels)
+    traded = assess(
+        mill,
+        land_profile(existing_crops=("wheat",), district_name="Varanasi", mandi_crops=("tur", "wheat")),
+        labels=labels,
+    )
+    mandi = next(s for s in traded.reasons if s.key == "fit.mandiFeedstock")
+    assert mandi.variables == {"crops": "tur", "district": "Varanasi"}
+    assert "fit.buyFeedstock" not in _keys(traded), "raw material can be bought locally"
+    assert traded.score > without.score
+    # Wheat in the mandi is no evidence for a dal mill.
+    assert "fit.mandiFeedstock" not in _keys(
+        assess(mill, land_profile(district_name="Varanasi", mandi_crops=("wheat",)), labels=labels)
+    )
+
+
+def test_imported_mandi_prices_reach_the_plan_page(client, parcel_id):
+    from datetime import date
+
+    from app.db import session_scope
+    from app.models import MandiPrice
+
+    with session_scope() as session:
+        for commodity, district in (("Arhar (Tur/Red Gram)(Whole)", "Varanasi"), ("Onion", "Nashik")):
+            session.add(MandiPrice(state_name="Uttar Pradesh", district_name=district, market=f"{district} mandi",
+                                   commodity=commodity, arrival_date=date(2026, 8, 1), modal_price=7200,
+                                   source="agmarknet", imported_at=date(2026, 8, 2)))
+    items = {
+        item["code"]: item
+        for item in client.get(f"/api/v1/land-parcels/{parcel_id}/opportunities", params={"lang": "en"}).json()["items"]
+    }
+    mill_text = " ".join(s["text"] for s in items["mini_dal_mill"]["reasons"])
+    assert "Mandis in Varanasi trade" in mill_text, mill_text
+    # Onion was traded in another district, so it says nothing about this one.
+    assert not any(s["code"] == "fit.mandiFeedstock" for s in items["modular_cold_room"]["reasons"])
+
+
 def test_the_plan_page_sees_the_district_and_the_tehsil(client, parcel_id):
     """Other farmers' projects in the district, and the village directory, reach the reasons."""
     from .test_marketplace import insert_profile, insert_request
