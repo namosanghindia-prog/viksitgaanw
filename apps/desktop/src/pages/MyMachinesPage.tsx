@@ -7,6 +7,7 @@ import { PhotoButton } from '../components/PhotoButton';
 import { MessageLink } from '../components/MessageLink';
 import { ContactLine, PartyLine } from '../components/RequestCard';
 import { ShareControl } from '../components/ShareControl';
+import { RateBox } from '../components/Stars';
 import { VideoField } from '../components/Video';
 import { useI18n } from '../i18n';
 import { api } from '../lib/api';
@@ -104,7 +105,11 @@ export function MyMachinesPage() {
                 {t('common.delete')}
               </button>
             </div>
-            <Enquiries item={item} onAnswer={(enquiry, status) => run(() => api.respondToEnquiry(enquiry.id, status))} />
+            <Enquiries
+              item={item}
+              onAnswer={(enquiry, status) => run(() => api.respondToEnquiry(enquiry.id, status))}
+              onRated={listings.reload}
+            />
           </EquipmentCard>
         ))}
       </div>
@@ -115,9 +120,11 @@ export function MyMachinesPage() {
 function Enquiries({
   item,
   onAnswer,
+  onRated,
 }: {
   item: Equipment;
-  onAnswer: (enquiry: Enquiry, status: 'accepted' | 'declined') => void;
+  onAnswer: (enquiry: Enquiry, status: 'accepted' | 'declined' | 'completed') => void;
+  onRated: () => void;
 }) {
   const { t, lang } = useI18n();
   return (
@@ -157,7 +164,29 @@ function Enquiries({
                   </button>
                 </span>
               ) : null}
+              {enquiry.status === 'accepted' ? (
+                <span className="answer__actions">
+                  <button
+                    type="button"
+                    className="button button--small"
+                    onClick={() => {
+                      if (window.confirm(t('enquiry.confirmDone'))) onAnswer(enquiry, 'completed');
+                    }}
+                  >
+                    ✅ {t(enquiry.kind === 'buy' ? 'enquiry.markDoneBuy' : 'enquiry.markDoneRent')}
+                  </button>
+                </span>
+              ) : null}
             </div>
+            {enquiry.canRate || enquiry.myRating ? (
+              <RateBox
+                contextType="enquiry"
+                contextId={enquiry.id}
+                myRating={enquiry.myRating}
+                title={t('rating.rateThem', { name: enquiry.enquirer.organisationName || enquiry.enquirer.displayName })}
+                onRated={onRated}
+              />
+            ) : null}
           </li>
         ))}
       </ul>

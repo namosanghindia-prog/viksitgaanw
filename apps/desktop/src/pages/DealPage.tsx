@@ -9,7 +9,7 @@ import { MessageLink } from '../components/MessageLink';
 import { PhotoButton } from '../components/PhotoButton';
 import { ReadAloud } from '../components/ReadAloud';
 import { ContactLine, PartyLine } from '../components/RequestCard';
-import { StarPicker } from '../components/Stars';
+import { RateBox } from '../components/Stars';
 import { TextField } from '../components/TextField';
 import { useI18n } from '../i18n';
 import { api } from '../lib/api';
@@ -160,7 +160,7 @@ export function DealPage() {
 
       <DisputeSection deal={current} busy={busy} act={act} />
 
-      {current.canRate || current.myRating ? <RatingSection deal={current} busy={busy} act={act} /> : null}
+      {current.canRate || current.myRating ? <RatingSection deal={current} onRated={state.reload} /> : null}
 
       {current.status === 'drafting' || current.status === 'active' ? (
         <div className="actions">
@@ -454,34 +454,11 @@ function DisputeRow({ dispute, busy, act }: { dispute: Dispute; busy: string | n
   );
 }
 
-function RatingSection({ deal, busy, act }: { deal: Deal; busy: string | null; act: Act }) {
+function RatingSection({ deal, onRated }: { deal: Deal; onRated: () => void }) {
   const { t } = useI18n();
-  const [stars, setStars] = useState(0);
-  const [comment, setComment] = useState('');
-
-  if (deal.myRating) {
-    return (
-      <section className="card card--tight">
-        <p>{t('rating.yours', { stars: deal.myRating.stars })}</p>
-        {deal.myRating.comment ? <blockquote className="answer__message">{deal.myRating.comment}</blockquote> : null}
-      </section>
-    );
-  }
-
   return (
-    <section className="card">
-      <h3 className="card__title">{t('rating.title')}</h3>
-      <StarPicker value={stars} onChange={setStars} />
-      <TextField id="ratingComment" label={t('rating.comment')} value={comment} onChange={setComment} multiline optional maxLength={1000} />
-      <p className="muted small">{t('rating.public')}</p>
-      <button
-        type="button"
-        className="button button--primary"
-        disabled={!stars || busy !== null}
-        onClick={() => act('rate', () => api.rate({ contextType: 'deal', contextId: deal.id, stars, comment }))}
-      >
-        {t('rating.send')}
-      </button>
+    <section className="card card--tight">
+      <RateBox contextType="deal" contextId={deal.id} myRating={deal.myRating} title={t('rating.title')} onRated={onRated} />
     </section>
   );
 }

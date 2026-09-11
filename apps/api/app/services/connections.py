@@ -73,7 +73,7 @@ def work_partners(session: Session, profile_id: str) -> dict[str, set[str]]:
     for enquirer, seller in session.execute(
         select(EquipmentEnquiry.profile_id, EquipmentListing.profile_id)
         .join(EquipmentListing, EquipmentListing.id == EquipmentEnquiry.listing_id)
-        .where(EquipmentEnquiry.status == "accepted")
+        .where(EquipmentEnquiry.status.in_(("accepted", "completed")))
         .where(or_(EquipmentEnquiry.profile_id == profile_id, EquipmentListing.profile_id == profile_id))
     ):
         add(seller if enquirer == profile_id else enquirer, "enquiry")

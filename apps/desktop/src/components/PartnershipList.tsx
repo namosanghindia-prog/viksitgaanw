@@ -7,12 +7,14 @@ import { api } from '../lib/api';
 import { formatDate } from '../lib/format';
 import { MessageLink } from './MessageLink';
 import { ContactLine, PartyLine } from './RequestCard';
+import { RateBox } from './Stars';
 
 /**
  * Partnerships, read from whichever side the device owner is on.
  *
- * The side that did not propose answers; either side can end it. Contact
- * details appear once a partnership is active.
+ * The side that did not propose answers; the side that did can withdraw it
+ * while it waits; either side can end one that is active. Contact details
+ * appear once it is active, and once it has run each side can rate the other.
  */
 export function PartnershipList({
   partnerships,
@@ -27,7 +29,7 @@ export function PartnershipList({
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  const act = async (row: Partnership, status: 'active' | 'declined' | 'ended') => {
+  const act = async (row: Partnership, status: 'active' | 'declined' | 'withdrawn' | 'ended') => {
     const other = row.isSeller ? row.partner : row.seller;
     const name = other?.organisationName || other?.displayName || row.contactName || '';
     if (status === 'active' && !window.confirm(t('partners.confirmAccept', { name }))) return;
@@ -121,12 +123,26 @@ export function PartnershipList({
                     </>
                   ) : null}
                   {row.status === 'active' || (row.status === 'proposed' && iProposed) ? (
-                    <button type="button" className="button button--ghost button--small" disabled={busy === row.id} onClick={() => act(row, 'ended')}>
+                    <button
+                      type="button"
+                      className="button button--ghost button--small"
+                      disabled={busy === row.id}
+                      onClick={() => act(row, row.status === 'active' ? 'ended' : 'withdrawn')}
+                    >
                       {row.status === 'active' ? t('partners.end') : t('browse.withdraw')}
                     </button>
                   ) : null}
                 </span>
               </div>
+              {other && (row.canRate || row.myRating) ? (
+                <RateBox
+                  contextType="partnership"
+                  contextId={row.id}
+                  myRating={row.myRating}
+                  title={t('rating.rateThem', { name: other.organisationName || other.displayName })}
+                  onRated={onChanged}
+                />
+              ) : null}
             </li>
           );
         })}

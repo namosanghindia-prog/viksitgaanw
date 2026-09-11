@@ -101,7 +101,7 @@ KNOWN_TYPES = PUBLIC_TYPES | PRIVATE_TYPES | CONNECTION_TYPES
 LINKS = {
     "connection": {"accepted"},
     "investment_interest": {"accepted"},
-    "equipment_enquiry": {"accepted"},
+    "equipment_enquiry": {"accepted", "completed"},
     "equipment_partnership": {"active"},
     "group_member": {"active"},
     "deal": {"drafting", "active", "disputed", "completed"},
@@ -267,6 +267,36 @@ def _owner_of(con: sqlite3.Connection, entity_type: str, entity_id: str | None) 
     return row["owner_profile_id"] if row else None
 
 
+#: What a rating may be about: the record it names, and the states in which
+#: the two sides have actually worked together.
+RATABLE = {
+    "deal": ("deal", {"completed"}),
+    "enquiry": ("equipment_enquiry", {"completed"}),
+    "partnership": ("equipment_partnership", {"active", "ended"}),
+}
+
+
+def _check_rating(con: sqlite3.Connection, p: dict[str, Any]) -> None:
+    """A rating is public, so it must be about real work the two did together.
+
+    Without this, anyone could push stars for anyone. The work itself -- the
+    deal, the hire, the partnership -- is on this server with both people
+    named in it, and must have reached a state where rating makes sense.
+    """
+    kind = RATABLE.get(p.get("context_type"))
+    if kind is None:
+        raise HTTPException(status_code=422, detail="A rating must be about a deal, a hire or sale, or a partnership.")
+    if not 1 <= int(p.get("stars") or 0) <= 5:
+        raise HTTPException(status_code=422, detail="Stars are 1 to 5.")
+    rater, rated = p.get("rater_profile_id"), p.get("rated_profile_id")
+    work = _stored(con, kind[0], p.get("context_id"))
+    if work is None or not rater or not rated or rater == rated:
+        raise HTTPException(status_code=403, detail="not a rating for work this server knows of")
+    parties = set(json.loads(work["parties"]))
+    if not {rater, rated} <= parties or json.loads(work["payload"]).get("status") not in kind[1]:
+        raise HTTPException(status_code=403, detail="not a rating for work the two finished together")
+
+
 def _rules(con: sqlite3.Connection, entity_type: str, payload: dict[str, Any]) -> tuple[str, list[str]]:
     """(owner profile, parties) for a record, from its own content."""
     p = payload
@@ -282,6 +312,7 @@ def _rules(con: sqlite3.Connection, entity_type: str, payload: dict[str, Any]) -
     if entity_type == "farmer_group":
         return p["owner_profile_id"], []
     if entity_type == "rating":
+        _check_rating(con, p)
         return p["rater_profile_id"], []
     if entity_type == "insurance_policy":
         owner = _owner_of(con, "investment_request", p.get("request_id"))

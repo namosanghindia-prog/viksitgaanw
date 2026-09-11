@@ -88,8 +88,19 @@ def partnership_between(session: Session, seller_id: str, partner_id: str) -> Eq
     ).first()
 
 
-def serialise_enquiry(session: Session, enquiry: EquipmentEnquiry, *, reveal: bool) -> EnquiryOut:
+#: Enquiry states in which the two sides have agreed, and see each other's phone.
+AGREED = ("accepted", "completed")
+
+
+def serialise_enquiry(
+    session: Session, enquiry: EquipmentEnquiry, *, reveal: bool, viewer: Profile
+) -> EnquiryOut:
+    from .trust import rating_state  # noqa: PLC0415 - trust imports equipment models
+
+    can_rate, my_rating = rating_state(session, viewer, "enquiry", enquiry.id)
     return EnquiryOut(
+        can_rate=can_rate,
+        my_rating=my_rating,
         id=enquiry.id,
         listing_id=enquiry.listing_id,
         kind=enquiry.kind,
@@ -109,9 +120,14 @@ def serialise_enquiry(session: Session, enquiry: EquipmentEnquiry, *, reveal: bo
 def serialise_partnership(
     session: Session, partnership: EquipmentPartnership, viewer: Profile
 ) -> PartnershipOut:
+    from .trust import rating_state  # noqa: PLC0415 - trust imports equipment models
+
     active = partnership.status == "active"
     is_seller = partnership.seller_profile_id == viewer.id
+    can_rate, my_rating = rating_state(session, viewer, "partnership", partnership.id)
     return PartnershipOut(
+        can_rate=can_rate,
+        my_rating=my_rating,
         id=partnership.id,
         partner_kind=partnership.partner_kind,
         role=partnership.role,
@@ -148,7 +164,7 @@ def serialise(session: Session, listing: EquipmentListing, viewer: Profile) -> E
     mine = listing.profile_id == viewer.id
     own_enquiry = None if mine else _latest_enquiry(listing, viewer.id)
     partnership = None if mine else partnership_between(session, listing.profile_id, viewer.id)
-    connected = (own_enquiry is not None and own_enquiry.status == "accepted") or (
+    connected = (own_enquiry is not None and own_enquiry.status in AGREED) or (
         partnership is not None and partnership.status == "active"
     )
 
@@ -200,11 +216,11 @@ def serialise(session: Session, listing: EquipmentListing, viewer: Profile) -> E
         seller=card(session, listing.profile, reveal_contact=connected),
         is_mine=mine,
         my_enquiry=(
-            serialise_enquiry(session, own_enquiry, reveal=False) if own_enquiry else None
+            serialise_enquiry(session, own_enquiry, reveal=False, viewer=viewer) if own_enquiry else None
         ),
         enquiries=(
             [
-                serialise_enquiry(session, enquiry, reveal=enquiry.status == "accepted")
+                serialise_enquiry(session, enquiry, reveal=enquiry.status in AGREED, viewer=viewer)
                 for enquiry in sorted(listing.enquiries, key=lambda e: e.created_at, reverse=True)
             ]
             if mine
@@ -420,6 +436,30 @@ def respond_enquiry(
             raise EquipmentError("Only the person who asked can withdraw.", 403)
         if enquiry.status not in ("sent", "accepted"):
             raise EquipmentError("This enquiry cannot be withdrawn now.")
+    elif status == "completed":
+        # Either side can say the hire is over or the machine changed hands;
+        # that is what opens ratings, and it is the finished transaction a
+        # rental fee would one day be metered on.
+        if owner.id not in (enquiry.profile_id, listing.profile_id):
+            raise EquipmentError("Enquiry not found.", 404)
+        if enquiry.status != "accepted":
+            raise EquipmentError("Only an agreed hire or sale can be marked done.")
+        enquiry.status = "completed"
+        session.flush()
+        record_event(
+            session,
+            EventType.ENQUIRY_COMPLETED,
+            entity_type=ENQUIRY,
+            entity_id=enquiry.id,
+            payload={
+                "listing_id": listing.id,
+                "kind": enquiry.kind,
+                "equipment_type": listing.equipment_type,
+                "quantity": enquiry.quantity,
+            },
+        )
+        enqueue_sync(session, entity_type=ENQUIRY, entity_id=enquiry.id, operation="update")
+        return enquiry
     else:
         if listing.profile_id != owner.id:
             raise EquipmentError("Only the seller can answer.", 403)
@@ -581,15 +621,23 @@ def respond_partnership(
     if not (is_seller or is_partner):
         raise EquipmentError("Partnership not found.", 404)
 
+    answering_side = "partner" if partnership.initiated_by == "seller" else "seller"
+    answering = (answering_side == "seller") == is_seller
+    if status in ("ended", "withdrawn") and partnership.status == "proposed":
+        # Calling off a proposal nobody accepted is not ending a partnership:
+        # it never ran, so it must never be rated as though it had.
+        status = "declined" if answering else "withdrawn"
     if status in ("active", "declined"):
         # Only the side that did *not* propose can accept or decline.
-        answering_side = "partner" if partnership.initiated_by == "seller" else "seller"
         if partnership.status != "proposed":
             raise EquipmentError("This partnership has already been answered.")
-        if (answering_side == "seller") != is_seller:
+        if not answering:
             raise EquipmentError("Waiting for the other side to answer.", 403)
+    elif status == "withdrawn":
+        if partnership.status != "proposed" or answering:
+            raise EquipmentError("Only the side that proposed can withdraw a proposal still waiting.")
     elif status == "ended":
-        if partnership.status not in ("proposed", "active"):
+        if partnership.status != "active":
             raise EquipmentError("This partnership is already over.")
 
     partnership.status = status

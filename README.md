@@ -68,7 +68,7 @@ The download is ~10 MB and the import takes about a minute, producing a
 ```bash
 npm run api          # local FastAPI backend on 127.0.0.1:8756 (docs at /docs)
 npm run dev:web      # Vite dev server on 127.0.0.1:5273, in a normal browser
-cd apps/api && python -m pytest    # API test suite (463 tests)
+cd apps/api && python -m pytest    # API test suite (470 tests)
 npm run typecheck    # TypeScript
 npm run build        # production frontend build
 python scripts/check_translations.py   # report translation coverage
@@ -100,10 +100,10 @@ python scripts/import_mandi_prices.py --fetch --api-key <key>   # data.gov.in
   GPS radio and no Google API key. See
   [Finding the device](#finding-the-device-without-google) for how, and for the
   reverse lookup that offers to fill in the district from a dropped pin.
-- **Business and farming options** — 44 curated options (orchards, protected
-  cultivation, spices, livestock, processing units, farm-service businesses)
-  ranked against the plot's own soil, water, salinity, size, region and the
-  crops the farmer already grows. Every option carries what it would cost and
+- **Business and farming options** — 50 curated options (orchards, protected
+  cultivation, spices, livestock, processing units, farm-service businesses and
+  village enterprises) ranked against the plot's own soil, water, salinity,
+  size, region and the crops the farmer already grows. Every option carries what it would cost and
   earn *on that plot*, and every point of its score is attached to a sentence
   the farmer can read and argue with.
 - **Project reports (DPR)** — a bank-format PDF: promoter and land particulars,
@@ -151,8 +151,16 @@ python scripts/import_mandi_prices.py --fetch --api-key <key>   # data.gov.in
   the plan; the farmer shows each stage done with a note and photos; the
   investor approves (recording the bank reference of the payment) or sends it
   back. The app never holds money. Either side can report a problem, which
-  pauses the deal until both agree a fix. Completed deals are rated, and ratings
-  show on profile cards. Completion and each release are billing events.
+  pauses the deal until both agree a fix. Completion and each release are
+  billing events.
+- **Ratings** — after finished work each side can rate the other: a completed
+  deal, a machine hire or sale once either side marks it done, and an
+  equipment partnership once it has run. One rating per piece of work, which
+  its giver can change. The average shows on every profile card; tapping it
+  shows what people said, and each profile lists what people say about its
+  owner. A withdrawn proposal or an agreement that never happened cannot be
+  rated, and the sync server refuses any rating that is not about work the two
+  people finished together.
 - **Farm diary and traceability** — per plot: sowing, sprays (with product,
   dose and pre-harvest interval), fertiliser, harvests and sales, with photos.
   Every harvest gets a lot code and a printable traceability record; a harvest
@@ -625,14 +633,14 @@ Phase 2, done: profiles for all six segments with photos, investment requests,
 interests, match scoring, insurance on plots, profiles and projects, offline-
 until-shared visibility with a common timeline, the equipment marketplace with
 seller partner networks, notifications and messages, deals with milestone
-release, disputes and ratings, farmer groups with pooled requests, mandi
+release, disputes, ratings for deals, machine hires and sales and
+partnerships, farmer groups with pooled requests, mandi
 prices, the farm diary, weather advice, backups and the sync protocol with a
 development server, introduction and biodata videos with Mux uploads for
 subscribers, and farmers and investors finding each other. Phase 2, next:
 payments for subscriptions, KYC through an authorised provider, a
 production sync service (PostgreSQL, authentication beyond device tokens,
-abuse controls), legal review of the deal and dispute terms, and rating
-enquiries and partnerships as well as deals.
+abuse controls), and legal review of the deal and dispute terms.
 
 Phase 3: self-hosted map and geocoding infrastructure, scheme application
 assistance beyond tracking, partnership-based verification tier, voice input,

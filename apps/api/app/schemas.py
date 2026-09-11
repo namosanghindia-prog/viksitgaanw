@@ -1198,6 +1198,10 @@ class EnquiryInput(ApiModel):
         return self
 
 
+#: An enquiry, plus "completed": the hire is over or the machine changed hands.
+EnquiryStatus = Literal["sent", "accepted", "declined", "withdrawn", "completed"]
+
+
 class EnquiryOut(ApiModel):
     id: str
     listing_id: str
@@ -1207,17 +1211,21 @@ class EnquiryOut(ApiModel):
     end_date: date | None = None
     area_acres: float | None = None
     message: str | None = None
-    status: InterestStatus
+    status: EnquiryStatus
     enquirer: ProfileCardOut
     origin: str
     created_at: datetime
     responded_at: datetime | None = None
+    #: Whether the viewer may rate the other side now: once it is completed.
+    can_rate: bool = False
+    my_rating: "RatingOut | None" = None
 
 
 class ResponseUpdate(ApiModel):
-    """accepted / declined by the one asked, withdrawn by the one asking."""
+    """accepted / declined by the one asked, withdrawn by the one asking,
+    completed by either once the hire is over or the sale is done."""
 
-    status: Literal["accepted", "declined", "withdrawn"]
+    status: Literal["accepted", "declined", "withdrawn", "completed"]
 
 
 class PartnershipInput(ApiModel):
@@ -1298,8 +1306,9 @@ class PartnershipAsk(ApiModel):
 
 
 class PartnershipUpdate(ApiModel):
-    #: active (accept) | declined | ended
-    status: Literal["active", "declined", "ended"]
+    #: active (accept) | declined | withdrawn (a proposal taken back) | ended.
+    #: "ended" on a proposal still waiting is read as withdrawing or declining it.
+    status: Literal["active", "declined", "withdrawn", "ended"]
 
 
 class PartnershipOut(ApiModel):
@@ -1323,6 +1332,9 @@ class PartnershipOut(ApiModel):
     origin: str
     created_at: datetime
     responded_at: datetime | None = None
+    #: Whether the viewer may rate the other side: once it has been active.
+    can_rate: bool = False
+    my_rating: "RatingOut | None" = None
 
 
 # --------------------------------------------------------------------------- #
@@ -1392,7 +1404,7 @@ class TimelineItemOut(ApiModel):
     update: FarmUpdateOut | None = None
 
 
-EquipmentOut.model_rebuild()
+# EquipmentOut, EnquiryOut and PartnershipOut are rebuilt once RatingOut exists (below).
 
 
 
@@ -1577,6 +1589,10 @@ class RatingOut(ApiModel):
     stars: int
     comment: str | None = None
     context_type: str
+    context_id: str
+    #: What the work was, in a few words: a project's title, or the machine
+    #: hired or bought. None for a partnership, or when it is not on this device.
+    about: str | None = None
     rater: ProfileCardOut
     created_at: datetime
 
@@ -2334,6 +2350,10 @@ class ConnectionsOut(ApiModel):
 
 ProfileCardOut.model_rebuild()
 LandParcelOut.model_rebuild()
+# They carry the viewer's own rating, which is defined after them.
+EnquiryOut.model_rebuild()
+PartnershipOut.model_rebuild()
+EquipmentOut.model_rebuild()
 
 
 # --------------------------------------------------------------------------- #

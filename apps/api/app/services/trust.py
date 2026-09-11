@@ -351,19 +351,26 @@ def _rating_target(session: Session, owner: Profile, context_type: str, context_
         seller = enquiry.listing.profile_id
         if owner.id not in (seller, enquiry.profile_id):
             raise TrustError("Enquiry not found.", 404)
-        if enquiry.status != "accepted":
-            raise TrustError("Ratings open once the seller has agreed.")
+        # Agreeing is not the work: the hire has to be over, or the machine
+        # handed over, before either side knows how it went.
+        if enquiry.status != "completed":
+            raise TrustError("Ratings open once the hire or sale is marked done.")
         return enquiry.profile_id if owner.id == seller else seller
-    partnership = session.get(EquipmentPartnership, context_id)
-    if partnership is None or owner.id not in (partnership.seller_profile_id, partnership.partner_profile_id):
-        raise TrustError("Partnership not found.", 404)
-    if partnership.status not in ("active", "ended") or not partnership.partner_profile_id:
-        raise TrustError("Ratings open once the partnership is active.")
-    return (
-        partnership.partner_profile_id
-        if owner.id == partnership.seller_profile_id
-        else partnership.seller_profile_id
-    )
+    if context_type == "partnership":
+        partnership = session.get(EquipmentPartnership, context_id)
+        if partnership is None or owner.id not in (partnership.seller_profile_id, partnership.partner_profile_id):
+            raise TrustError("Partnership not found.", 404)
+        if not partnership.partner_profile_id:
+            raise TrustError("An off-platform partner cannot be rated here.")
+        # "ended" only follows "active": a proposal taken back is "withdrawn".
+        if partnership.status not in ("active", "ended"):
+            raise TrustError("Ratings open once the partnership is active.")
+        return (
+            partnership.partner_profile_id
+            if owner.id == partnership.seller_profile_id
+            else partnership.seller_profile_id
+        )
+    raise TrustError("Nothing to rate there.", 422)
 
 
 def rate(session: Session, owner: Profile, data: RatingInput) -> Rating:
@@ -402,6 +409,35 @@ def rating_stats(session: Session, profile_id: str) -> tuple[float | None, int]:
     return (round(float(avg), 1) if avg is not None else None), int(count or 0)
 
 
+def rating_state(session: Session, viewer: Profile, context_type: str, context_id: str) -> tuple[bool, RatingOut | None]:
+    """Whether the viewer may rate this piece of work now, and what they gave."""
+    try:
+        _rating_target(session, viewer, context_type, context_id)
+        can = True
+    except TrustError:
+        can = False
+    mine = session.scalars(
+        select(Rating).where(
+            Rating.rater_profile_id == viewer.id,
+            Rating.context_type == context_type,
+            Rating.context_id == context_id,
+        )
+    ).first()
+    return can, serialise_rating(session, mine) if mine else None
+
+
+def _about(session: Session, rating: Rating) -> str | None:
+    """What the work was, in a few words, as far as this device knows."""
+    if rating.context_type == "deal":
+        deal = session.get(Deal, rating.context_id)
+        request = session.get(InvestmentRequest, deal.request_id) if deal else None
+        return request.title if request else None
+    if rating.context_type == "enquiry":
+        enquiry = session.get(EquipmentEnquiry, rating.context_id)
+        return enquiry.listing.title if enquiry and enquiry.listing else None
+    return None
+
+
 def serialise_rating(session: Session, rating: Rating) -> RatingOut:
     rater = session.get(Profile, rating.rater_profile_id)
     return RatingOut(
@@ -409,6 +445,8 @@ def serialise_rating(session: Session, rating: Rating) -> RatingOut:
         stars=rating.stars,
         comment=rating.comment,
         context_type=rating.context_type,
+        context_id=rating.context_id,
+        about=_about(session, rating),
         rater=card(session, rater),
         created_at=rating.created_at,
     )

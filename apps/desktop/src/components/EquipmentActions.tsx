@@ -9,6 +9,7 @@ import { AskPartnerDialog } from './AskPartnerDialog';
 import { EnquiryDialog } from './EnquiryDialog';
 import { MessageLink } from './MessageLink';
 import { ContactLine } from './RequestCard';
+import { RateBox } from './Stars';
 
 /**
  * What someone other than the seller can do with a machine: ask to rent it,
@@ -47,7 +48,19 @@ export function EquipmentActions({ item, onChanged }: { item: Equipment; onChang
     }
   };
 
-  const connected = enquiry?.status === 'accepted' || partnership?.status === 'active';
+  const markDone = async () => {
+    if (!enquiry || !window.confirm(t('enquiry.confirmDone'))) return;
+    try {
+      await api.respondToEnquiry(enquiry.id, 'completed');
+      onChanged();
+    } catch (cause) {
+      setError(cause instanceof Error ? cause.message : String(cause));
+    }
+  };
+
+  const connected =
+    enquiry?.status === 'accepted' || enquiry?.status === 'completed' || partnership?.status === 'active';
+  const sellerName = item.seller.organisationName || item.seller.displayName;
 
   return (
     <div className="request__respond">
@@ -66,6 +79,23 @@ export function EquipmentActions({ item, onChanged }: { item: Equipment; onChang
               : ''}
           </span>
         </p>
+      ) : null}
+      {enquiry?.status === 'accepted' ? (
+        <div className="request__actions">
+          <button type="button" className="button button--small" onClick={markDone}>
+            ✅ {t(enquiry.kind === 'buy' ? 'enquiry.markDoneBuy' : 'enquiry.markDoneRent')}
+          </button>
+          <span className="muted small">{t('enquiry.doneHint')}</span>
+        </div>
+      ) : null}
+      {enquiry && (enquiry.canRate || enquiry.myRating) ? (
+        <RateBox
+          contextType="enquiry"
+          contextId={enquiry.id}
+          myRating={enquiry.myRating}
+          title={t('rating.rateThem', { name: sellerName })}
+          onRated={onChanged}
+        />
       ) : null}
       {partnership ? (
         <p className="request__mine">

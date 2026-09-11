@@ -102,7 +102,7 @@ def compute(session: Session, owner: Profile) -> InsightsOut:
     machine_types = Counter(row.equipment_type for row in machines)
     rentals = sum(
         1
-        for row in session.scalars(select(EquipmentEnquiry).where(EquipmentEnquiry.status == "accepted"))
+        for row in session.scalars(select(EquipmentEnquiry).where(EquipmentEnquiry.status.in_(("accepted", "completed"))))
         if row.listing_id in machine_ids
     )
     active_members = [m for group in groups for m in group.members if m.status == "active"]

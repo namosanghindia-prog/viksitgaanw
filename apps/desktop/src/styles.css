@@ -1549,7 +1549,8 @@ code {
   color: var(--warn);
 }
 
-.badge--status-accepted {
+.badge--status-accepted,
+.badge--status-completed {
   background: var(--leaf);
   color: var(--white);
 }
@@ -1590,7 +1591,8 @@ code {
   gap: 8px;
 }
 
-.answer--accepted {
+.answer--accepted,
+.answer--completed {
   border-color: var(--leaf);
   background: #f6fbf7;
 }
@@ -2015,6 +2017,18 @@ code {
 .badge--rating {
   background: var(--warn-light);
   color: var(--warn);
+}
+
+/* A rating badge that opens what people said. */
+.badge--button {
+  border: none;
+  font: inherit;
+  cursor: pointer;
+}
+
+.badge--button:hover {
+  filter: brightness(0.95);
+  text-decoration: underline;
 }
 
 .read-aloud {
@@ -2802,3 +2816,67 @@ code {
   align-items: center;
   gap: 8px;
 }
+
+/* ------------------------------------------------------------------ *
+ * Ratings: giving one, and reading what people said
+ * ------------------------------------------------------------------ */
+
+.rate-box {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 10px;
+  padding: 12px 14px;
+  border: 1px dashed #e0c36a;
+  border-radius: var(--radius);
+  background: #fffbef;
+}
+
+.rate-box--done {
+  flex-direction: row;
+  flex-wrap: wrap;
+  align-items: center;
+  border-style: solid;
+}
+
+.rate-box__stars {
+  color: #e0a100;
+  letter-spacing: 1px;
+}
+
+.reviews-dialog {
+  max-height: 85vh;
+  overflow-y: auto;
+}
+
+.reviews__summary {
+  margin: 0 0 10px;
+  font-size: 1.1rem;
+}
+
+.reviews__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.reviews__item {
+  padding: 10px 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.reviews__item:last-child {
+  border-bottom: none;
+}
+
+.reviews__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 8px;
+}
+
+.reviews__comment {
+  margin: 4px 0 0;
+}
+

@@ -7,6 +7,7 @@ import { Avatar } from '../components/Avatar';
 import { InsuranceManager } from '../components/InsuranceManager';
 import { PhotoButton } from '../components/PhotoButton';
 import { ProfileForm } from '../components/ProfileForm';
+import { ReviewList } from '../components/Stars';
 import { VideoField } from '../components/Video';
 import { useI18n } from '../i18n';
 import { api } from '../lib/api';
@@ -195,6 +196,11 @@ export function ProfilePage() {
             onChanged={reload}
           />
         ) : null}
+      </section>
+
+      <section className="card" id="ratings">
+        <h3 className="card__title">⭐ {t('rating.aboutYou')}</h3>
+        <ReviewList profileId={profile.id} emptyText={t('rating.noneAboutYou')} />
       </section>
 
       {insuranceScope ? (

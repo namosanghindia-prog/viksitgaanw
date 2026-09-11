@@ -518,7 +518,7 @@ export interface ProfileCard {
   photoUrl: string | null;
   biodataVideo: Video | null;
   contact: { phone: string | null; email: string | null } | null;
-  /** Average stars from completed deals and rentals; null before any. */
+  /** Average stars from finished deals, hires, sales and partnerships; null before any. */
   ratingAvg: number | null;
   ratingCount: number;
   /** Where the device owner stands with this person; null on the owner's own card. */
@@ -723,7 +723,8 @@ export interface MediaFile {
 export type RentUnit = 'hour' | 'day' | 'acre' | 'season';
 export type ListingStatus = 'active' | 'paused' | 'sold';
 export type PartnerKind = 'farmer' | 'village' | 'district' | 'distributor';
-export type PartnershipStatus = 'proposed' | 'active' | 'declined' | 'ended';
+/** withdrawn: a proposal taken back before anyone answered; ended only follows active. */
+export type PartnershipStatus = 'proposed' | 'active' | 'declined' | 'withdrawn' | 'ended';
 
 export interface EquipmentInput {
   equipmentType: string;
@@ -756,6 +757,9 @@ export interface EnquiryInput {
   message?: string | null;
 }
 
+/** An enquiry's status, plus completed: the hire is over, or the machine changed hands. */
+export type EnquiryStatus = InterestStatus | 'completed';
+
 export interface Enquiry {
   id: string;
   listingId: string;
@@ -765,11 +769,14 @@ export interface Enquiry {
   endDate: string | null;
   areaAcres: number | null;
   message: string | null;
-  status: InterestStatus;
+  status: EnquiryStatus;
   enquirer: ProfileCard;
   origin: string;
   createdAt: string;
   respondedAt: string | null;
+  /** Whether the viewer may rate the other side: once the hire or sale is done. */
+  canRate: boolean;
+  myRating: Rating | null;
 }
 
 export interface Partnership {
@@ -790,6 +797,9 @@ export interface Partnership {
   origin: string;
   createdAt: string;
   respondedAt: string | null;
+  /** Whether the viewer may rate the other side: once it has been active. */
+  canRate: boolean;
+  myRating: Rating | null;
 }
 
 export interface Equipment extends Omit<EquipmentInput, 'status'> {
@@ -804,7 +814,7 @@ export interface Equipment extends Omit<EquipmentInput, 'status'> {
   isMine: boolean;
   myEnquiry: Enquiry | null;
   enquiries: Enquiry[];
-  enquiryCounts: Partial<Record<InterestStatus, number>>;
+  enquiryCounts: Partial<Record<EnquiryStatus, number>>;
   myPartnership: Partnership | null;
   origin: string;
   createdAt: string;
@@ -1000,7 +1010,11 @@ export interface Rating {
   id: string;
   stars: number;
   comment: string | null;
+  /** deal | enquiry (a hire or a purchase) | partnership */
   contextType: string;
+  contextId: string;
+  /** What the work was: a project's title, or the machine hired or bought. */
+  about: string | null;
   rater: ProfileCard;
   createdAt: string;
 }

@@ -43,6 +43,8 @@ class EventType:
     #: A seller agreed to rent or sell to someone -- the equipment
     #: marketplace's counterpart of MATCH_MADE, and its future billing unit.
     ENQUIRY_ACCEPTED = "equipment_enquiry.accepted"
+    #: A hire finished or a machine changed hands: a completed transaction.
+    ENQUIRY_COMPLETED = "equipment_enquiry.completed"
     PARTNERSHIP_PROPOSED = "equipment_partnership.proposed"
     PARTNERSHIP_UPDATED = "equipment_partnership.updated"
     MESSAGE_SENT = "message.sent"

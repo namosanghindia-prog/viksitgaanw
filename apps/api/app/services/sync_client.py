@@ -555,6 +555,14 @@ def _hooks(session: Session, entity_type: str, row: Any, before: dict | None, ow
             notify(session, owner.id, "enquiry_received",
                    params={"name": _name(session, row.profile_id), "title": listing.title, "kind": row.kind},
                    link="/my-machines", entity_type=entity_type, entity_id=row.id)
+        elif was != row.status and row.status == "completed" and listing:
+            # The other side marked the hire or sale done: time to rate them.
+            enquirer = row.profile_id == owner.id
+            if enquirer or listing.profile_id == owner.id:
+                other = listing.profile_id if enquirer else row.profile_id
+                notify(session, owner.id, "enquiry_completed",
+                       params={"title": listing.title, "name": _name(session, other)},
+                       link="/machines" if enquirer else "/my-machines", entity_type=entity_type, entity_id=row.id)
         elif was != row.status and row.profile_id == owner.id and row.status in ("accepted", "declined"):
             notify(session, owner.id, f"enquiry_{row.status}",
                    params={"title": listing.title if listing else ""},

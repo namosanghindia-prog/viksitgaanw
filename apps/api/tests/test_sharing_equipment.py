@@ -445,9 +445,10 @@ def test_seller_proposes_to_a_farmer_on_the_platform(client, seller):
     # The seller cannot accept their own proposal.
     own = client.patch(f"/api/v1/equipment-partnerships/{partnership['id']}", json={"status": "active"})
     assert own.status_code == 403
-    # But may withdraw it.
+    # But may withdraw it -- which is not ending a partnership that ran.
     ended = client.patch(f"/api/v1/equipment-partnerships/{partnership['id']}", json={"status": "ended"})
-    assert ended.json()["status"] == "ended"
+    assert ended.json()["status"] == "withdrawn"
+    assert ended.json()["canRate"] is False
 
     distributor = client.post(
         "/api/v1/equipment-partnerships",

@@ -423,7 +423,7 @@ export const api = {
   sendEnquiry: (listingId: string, body: EnquiryInput) =>
     request<Equipment>(`/equipment/${listingId}/enquiries`, { method: 'POST', body }),
   myEnquiries: (signal?: AbortSignal) => request<Equipment[]>('/equipment-enquiries/mine', { signal }),
-  respondToEnquiry: (id: string, status: 'accepted' | 'declined' | 'withdrawn') =>
+  respondToEnquiry: (id: string, status: 'accepted' | 'declined' | 'withdrawn' | 'completed') =>
     request<Equipment>(`/equipment-enquiries/${id}`, { method: 'PATCH', body: { status } }),
 
   partnerships: (signal?: AbortSignal) => request<Partnership[]>('/equipment-partnerships', { signal }),
@@ -431,7 +431,7 @@ export const api = {
     request<Partnership>('/equipment-partnerships', { method: 'POST', body }),
   askToPartner: (sellerId: string, body: PartnershipAsk) =>
     request<Partnership>(`/equipment-sellers/${sellerId}/partnerships`, { method: 'POST', body }),
-  respondToPartnership: (id: string, status: 'active' | 'declined' | 'ended') =>
+  respondToPartnership: (id: string, status: 'active' | 'declined' | 'withdrawn' | 'ended') =>
     request<Partnership>(`/equipment-partnerships/${id}`, { method: 'PATCH', body: { status } }),
 
   /* Inbox */

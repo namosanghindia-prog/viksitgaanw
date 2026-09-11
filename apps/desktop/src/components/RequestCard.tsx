@@ -56,7 +56,12 @@ export function PartyLine({
         {party.kycStatus === 'verified' ? '✓ ' : ''}
         {t(`kyc.${party.kycStatus}`)}
       </span>
-      <RatingBadge average={party.ratingAvg} count={party.ratingCount} />
+      <RatingBadge
+        average={party.ratingAvg}
+        count={party.ratingCount}
+        profileId={party.id}
+        name={party.organisationName || party.displayName}
+      />
       {party.origin === 'demo' ? <span className="badge badge--sample">{t('card.sample')}</span> : null}
       {party.biodataVideo ? <VideoButton video={party.biodataVideo} label={t('video.biodataShort')} /> : null}
       <ConnectButton party={party} onChanged={onConnectionChanged} />
