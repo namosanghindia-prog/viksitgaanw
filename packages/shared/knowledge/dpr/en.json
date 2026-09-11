@@ -52,6 +52,7 @@
 
     "f.projectName": "Project",
     "f.projectType": "Type of activity",
+    "f.origin": "Country of origin of the model",
     "f.projectSize": "Size proposed",
     "f.riskLevel": "Risk assessment",
     "f.gestation": "Time before first income",

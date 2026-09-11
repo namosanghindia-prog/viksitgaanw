@@ -2,6 +2,7 @@
   {
     "code": "spice_grinding_unit",
     "kind": "processing",
+    "origin": { "country": "IN", "note": { "en": "The village masala chakki, as PMFME supports it", "hi": "गाँव की मसाला चक्की, जैसा पीएमएफएमई सहायता देता है" } },
     "business": {"crops": ["turmeric", "chilli", "coriander", "cumin", "garlic"], "catchmentVillages": 60},
     "label": { "en": "Spice grinding and packing unit", "hi": "मसाला पिसाई एवं पैकिंग इकाई" },
     "summary": {
@@ -46,6 +47,7 @@
   {
     "code": "mini_dal_mill",
     "kind": "processing",
+    "origin": { "country": "IN", "note": { "en": "Mini dal mills designed at CIAE Bhopal and IIPR Kanpur", "hi": "सीआईएई भोपाल और आईआईपीआर कानपुर की बनाई मिनी दाल मिल" } },
     "business": {"crops": ["pulse"], "catchmentVillages": 80},
     "label": { "en": "Mini dal mill", "hi": "मिनी दाल मिल" },
     "summary": {
@@ -90,6 +92,7 @@
   {
     "code": "oil_expeller_unit",
     "kind": "processing",
+    "origin": { "country": "IN", "note": { "en": "The Indian kolhu, now as a motorised expeller", "hi": "भारतीय कोल्हू, अब मोटर वाले एक्सपेलर के रूप में" } },
     "business": {"crops": ["mustard", "groundnut", "sesame", "sunflower"], "catchmentVillages": 80},
     "label": { "en": "Cold-press oil expeller (ghani)", "hi": "कोल्ड-प्रेस तेल घानी" },
     "summary": {
@@ -134,6 +137,7 @@
   {
     "code": "solar_dehydration_unit",
     "kind": "processing",
+    "origin": { "country": "IN", "note": { "en": "Solar dryers developed and spread by Indian agri-tech makers", "hi": "भारतीय कृषि-तकनीक निर्माताओं के बनाए सोलर ड्रायर" } },
     "business": {"crops": ["fruit", "vegetable"], "catchmentVillages": 40},
     "label": { "en": "Solar drying unit for fruit and vegetables", "hi": "फल-सब्ज़ी के लिए सौर सुखाई इकाई" },
     "summary": {
@@ -179,6 +183,7 @@
   {
     "code": "modular_cold_room",
     "kind": "processing",
+    "origin": { "country": "IN", "note": { "en": "Solar and modular cold rooms from Indian start-ups", "hi": "भारतीय स्टार्ट-अप के सोलर और मॉड्यूलर कोल्ड रूम" } },
     "business": {"crops": ["fruit", "vegetable"], "catchmentVillages": 60},
     "label": { "en": "Small modular cold room", "hi": "छोटा मॉड्यूलर कोल्ड रूम" },
     "summary": {
@@ -223,6 +228,7 @@
   {
     "code": "atta_chakki",
     "kind": "processing",
+    "origin": { "country": "IN", "note": { "en": "The village flour mill", "hi": "गाँव की आटा चक्की" } },
     "business": {"crops": ["wheat", "maize", "bajra", "jowar", "ragi", "barley"], "catchmentVillages": 50},
     "label": { "en": "Flour mill (atta chakki)", "hi": "आटा चक्की" },
     "summary": {
@@ -267,6 +273,7 @@
   {
     "code": "mini_rice_mill",
     "kind": "processing",
+    "origin": { "country": "IN", "note": { "en": "Rubber-roll mini rice mills made across India", "hi": "पूरे भारत में बनने वाली रबर-रोल मिनी राइस मिल" } },
     "business": {"crops": ["rice"], "catchmentVillages": 80},
     "label": { "en": "Mini rice mill (huller and polisher)", "hi": "मिनी राइस मिल (हलर और पॉलिशर)" },
     "summary": {
@@ -311,6 +318,7 @@
   {
     "code": "jaggery_unit",
     "kind": "processing",
+    "origin": { "country": "IN", "note": { "en": "The Indian kolhu-and-kadhai gur unit, improved at IISR Lucknow", "hi": "भारतीय कोल्हू-कड़ाही गुड़ इकाई, आईआईएसआर लखनऊ में सुधरी" } },
     "business": {"crops": ["sugarcane"], "catchmentVillages": 60},
     "label": { "en": "Jaggery (gur) unit", "hi": "गुड़ इकाई (कोल्हू)" },
     "summary": {
@@ -356,6 +364,7 @@
   {
     "code": "village_bakery",
     "kind": "processing",
+    "origin": { "country": "IN", "note": { "en": "Village bakeries run by SHGs under NRLM", "hi": "एनआरएलएम के तहत स्वयं सहायता समूहों की गाँव बेकरी" } },
     "business": {"catchmentVillages": 40},
     "label": { "en": "Village bakery (rusk, bread and biscuits)", "hi": "गाँव की बेकरी (रस्क, ब्रेड और बिस्कुट)" },
     "summary": {

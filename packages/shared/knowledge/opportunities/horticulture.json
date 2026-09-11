@@ -2,6 +2,7 @@
   {
     "code": "pomegranate_orchard",
     "kind": "horticulture",
+    "origin": { "country": "IN", "note": { "en": "Bhagwa variety from MPKV Rahuri, Maharashtra", "hi": "भगवा किस्म, एमपीकेवी राहुरी, महाराष्ट्र से" } },
     "label": { "en": "Pomegranate orchard (Bhagwa)", "hi": "अनार का बाग (भगवा)" },
     "summary": {
       "en": "A high-density Bhagwa pomegranate orchard under drip. It suits light, well-drained land with limited but assured water, and earns several times what a cereal rotation does per acre. It also carries real disease risk, so it belongs with a farmer willing to spray on schedule.",
@@ -39,6 +40,7 @@
   {
     "code": "banana_tissue_culture",
     "kind": "horticulture",
+    "origin": { "country": "IN", "note": { "en": "Indian tissue-culture labs' G-9 plantlets (the Grand Naine variety)", "hi": "भारतीय टिश्यू कल्चर लैब के जी-9 पौधे (ग्रैंड नैन किस्म)" } },
     "label": { "en": "Tissue-culture banana (G9)", "hi": "टिश्यू कल्चर केला (जी-9)" },
     "summary": {
       "en": "Uniform G9 banana raised from tissue-culture plants under drip and fertigation. It needs deep soil and water you can count on all year, and it repays its cost inside the first crop cycle, which makes it one of the easier orchard loans to get sanctioned.",
@@ -76,6 +78,7 @@
   {
     "code": "mango_orchard_hd",
     "kind": "horticulture",
+    "origin": { "country": "IN", "note": { "en": "High-density planting from ICAR-CISH Lucknow and IIHR Bengaluru", "hi": "आईसीएआर-सीआईएसएच लखनऊ और आईआईएचआर बेंगलुरु की सघन रोपाई" } },
     "label": { "en": "High-density mango orchard", "hi": "सघन आम का बाग" },
     "summary": {
       "en": "A high-density mango planting that starts bearing in the fourth year and then earns for thirty. It asks for patience rather than money: the yearly cost is small, but there is no income from the block until it comes into bearing, so it fits land that has other income beside it.",
@@ -113,6 +116,7 @@
   {
     "code": "guava_meadow",
     "kind": "horticulture",
+    "origin": { "country": "IN", "note": { "en": "Meadow orcharding developed at ICAR-CISH, Lucknow", "hi": "आईसीएआर-सीआईएसएच, लखनऊ में विकसित मीडो बागवानी" } },
     "label": { "en": "Meadow-orchard guava", "hi": "सघन अमरूद का बाग" },
     "summary": {
       "en": "Guava planted very close together and kept short by pruning. It tolerates poor and even mildly salty land better than most fruit, starts paying in the second year, and needs no cold chain because the fruit sells locally.",
@@ -150,6 +154,7 @@
   {
     "code": "papaya_hybrid",
     "kind": "horticulture",
+    "origin": { "country": "TW", "note": { "en": "Red Lady hybrids bred in Taiwan — 'Taiwan papaya' in Indian markets", "hi": "ताइवान में विकसित रेड लेडी हाइब्रिड — बाज़ार में 'ताइवान पपीता'" } },
     "label": { "en": "Hybrid papaya (Red Lady)", "hi": "हाइब्रिड पपीता (रेड लेडी)" },
     "summary": {
       "en": "Papaya gives fruit within a year and clears a large gross income in two, which makes it attractive when money is needed quickly. The catch is ring-spot virus: where it is already present in the area, plan on a two-year cycle and nothing longer.",
@@ -186,6 +191,7 @@
   {
     "code": "dragon_fruit",
     "kind": "horticulture",
+    "origin": { "country": "VN", "note": { "en": "Commercial model from Vietnam; the cactus itself is native to Central America", "hi": "व्यावसायिक मॉडल वियतनाम का; पौधा मूल रूप से मध्य अमेरिका का" } },
     "label": { "en": "Dragon fruit (kamalam)", "hi": "ड्रैगन फ्रूट (कमलम)" },
     "summary": {
       "en": "A cactus fruit that thrives on thin, dry, stony land where little else pays, and sells at a high price in cities. The establishment cost is the highest on this list because of the concrete poles, and the market is still small — plant it only with a buyer in view.",
@@ -223,6 +229,7 @@
   {
     "code": "acid_lime",
     "kind": "horticulture",
+    "origin": { "country": "IN", "note": { "en": "Kagzi lime, with varieties from PDKV Akola and TNAU", "hi": "कागज़ी नींबू, पीडीकेवी अकोला और टीएनएयू की किस्मों के साथ" } },
     "label": { "en": "Acid lime orchard (kagzi)", "hi": "कागज़ी नींबू का बाग" },
     "summary": {
       "en": "Kagzi lime is about as forgiving as a fruit tree gets: it stands heat, poor soil and irregular water, sells all year round, and has a standing local market in every town. Returns are steady rather than spectacular.",
@@ -258,6 +265,7 @@
   {
     "code": "custard_apple_dryland",
     "kind": "horticulture",
+    "origin": { "country": "IN", "note": { "en": "Balanagar and NMK-1 Golden, from Maharashtra's dryland growers", "hi": "बालानगर और एनएमके-1 गोल्डन, महाराष्ट्र के सूखे इलाकों से" } },
     "label": { "en": "Custard apple on dry land", "hi": "सूखी ज़मीन पर सीताफल" },
     "summary": {
       "en": "Custard apple is the rare high-value fruit that will grow on shallow, stony, rainfed land with no well at all. Yearly costs are low, the tree asks little, and improved varieties fetch a good price in nearby cities.",
@@ -294,6 +302,7 @@
   {
     "code": "coconut_garden",
     "kind": "horticulture",
+    "origin": { "country": "IN", "note": { "en": "Varieties and practice from ICAR-CPCRI, Kasaragod", "hi": "आईसीएआर-सीपीसीआरआई, कासरगोड की किस्में और तरीके" } },
     "label": { "en": "Coconut garden with inter-cropping", "hi": "नारियल का बाग (अंतरवर्ती फसल सहित)" },
     "summary": {
       "en": "Coconut is a long-lived, low-risk asset on the coast, and the gaps between palms carry a second crop — banana early on, then cocoa, pepper or fodder. Income is slow to start but then continues for decades with very little annual cost.",

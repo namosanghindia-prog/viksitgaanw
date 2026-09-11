@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
-import type { Opportunity, Sector, Verdict } from '@viksitgaanw/shared';
+import type { Opportunity, OriginScope, Sector, Verdict } from '@viksitgaanw/shared';
 
 import { DprDialog } from '../components/DprDialog';
 import { OpportunityCard } from '../components/OpportunityCard';
@@ -20,9 +20,11 @@ type Tab = 'all' | 'export';
  * grown or built on it, what that would cost, and what it would earn -- and
  * then turn the chosen option into a report a bank will read.
  *
- * Farming projects (crops, orchards, livestock, fish) and non-farming ones
- * (processing, storage, services) stand side by side in two columns: the
- * second is often the answer for a family with little land.
+ * Farming projects (crops, orchards, livestock, fish), non-farming ones
+ * (processing, storage, services) and hybrids that do both on the same produce
+ * each get their own band -- non-farming is often the answer for a family with
+ * little land. Within a band, models that grew up in India and models brought
+ * from abroad stand side by side, and every card names its country of origin.
  *
  * Options that do not suit the land are kept, not hidden, but collapsed behind
  * a disclosure. A farmer who wonders why the app did not suggest pomegranate
@@ -56,10 +58,11 @@ export function PlanPage() {
 
   const bySector = useMemo(() => {
     const items = plan.data?.items ?? [];
-    return {
-      farm: items.filter((item) => item.sector === 'farm'),
-      nonfarm: items.filter((item) => item.sector === 'nonfarm'),
-    };
+    const pick = (sector: Sector, scope: OriginScope) =>
+      items.filter((item) => item.sector === sector && item.origin.scope === scope);
+    return Object.fromEntries(
+      SECTORS.map((sector) => [sector, { national: pick(sector, 'national'), international: pick(sector, 'international') }]),
+    ) as Record<Sector, Record<OriginScope, Opportunity[]>>;
   }, [plan.data]);
 
   if (!parcelId) return null;
@@ -167,24 +170,31 @@ export function PlanPage() {
         </section>
       ) : null}
 
-      {plan.data ? (
-        <div className="plan-columns">
-          <PlanColumn
-            sector="farm"
-            items={bySector.farm}
-            exportOnly={tab === 'export'}
-            onChoose={setChosen}
-            onAsk={ask}
-          />
-          <PlanColumn
-            sector="nonfarm"
-            items={bySector.nonfarm}
-            exportOnly={tab === 'export'}
-            onChoose={setChosen}
-            onAsk={ask}
-          />
-        </div>
-      ) : null}
+      {plan.data
+        ? SECTORS.map((sector) => (
+            <section key={sector} className={`plan-sector plan-sector--${sector}`} aria-labelledby={`plan-sector-${sector}`}>
+              <header className="plan-sector__head">
+                <h3 id={`plan-sector-${sector}`} className="plan-sector__title">
+                  <span aria-hidden="true">{SECTOR[sector].icon}</span> {t(SECTOR[sector].title)}
+                </h3>
+                <p className="muted small">{t(SECTOR[sector].hint)}</p>
+              </header>
+              <div className="plan-columns">
+                {SCOPES.map((scope) => (
+                  <PlanColumn
+                    key={scope}
+                    sector={sector}
+                    scope={scope}
+                    items={bySector[sector][scope]}
+                    exportOnly={tab === 'export'}
+                    onChoose={setChosen}
+                    onAsk={ask}
+                  />
+                ))}
+              </div>
+            </section>
+          ))
+        : null}
 
       {plan.data ? (
         <p className="fineprint">
@@ -207,25 +217,37 @@ export function PlanPage() {
   );
 }
 
-const COLUMN: Record<Sector, { icon: string; title: StringKey; hint: StringKey }> = {
+const SECTORS: Sector[] = ['farm', 'nonfarm', 'hybrid'];
+const SCOPES: OriginScope[] = ['national', 'international'];
+
+const SECTOR: Record<Sector, { icon: string; title: StringKey; hint: StringKey }> = {
   farm: { icon: '🌾', title: 'plan.farm', hint: 'plan.farmHint' },
   nonfarm: { icon: '🏭', title: 'plan.nonfarm', hint: 'plan.nonfarmHint' },
+  hybrid: { icon: '🌾🏭', title: 'plan.hybrid', hint: 'plan.hybridHint' },
+};
+
+const SCOPE: Record<OriginScope, { icon: string; title: StringKey; hint: StringKey }> = {
+  national: { icon: '📍', title: 'plan.national', hint: 'plan.nationalHint' },
+  international: { icon: '🌍', title: 'plan.international', hint: 'plan.internationalHint' },
 };
 
 /**
- * One side of the plan: farming projects, or non-farming ones -- best suited
- * first, then worth considering, and what does not suit the land folded away.
- * Each side is ranked on its own, so a strong dal mill is not buried under
- * twenty crops, nor a strong crop under a cold room.
+ * One column of the plan: say, farming models that grew up in India, or
+ * non-farming models brought from abroad -- best suited first, then worth
+ * considering, and what does not suit the land folded away. Each column is
+ * ranked on its own, so a strong dal mill is not buried under twenty crops,
+ * nor a Dutch greenhouse under an Indian one.
  */
 function PlanColumn({
   sector,
+  scope,
   items,
   exportOnly,
   onChoose,
   onAsk,
 }: {
   sector: Sector;
+  scope: OriginScope;
   items: Opportunity[];
   exportOnly: boolean;
   onChoose: (item: Opportunity) => void;
@@ -237,7 +259,8 @@ function PlanColumn({
   const recommended = by('recommended');
   const possible = by('possible');
   const unsuitable = by('unsuitable');
-  const column = COLUMN[sector];
+  const column = SCOPE[scope];
+  const id = `plan-column-${sector}-${scope}`;
 
   const group = (title: StringKey, rows: Opportunity[]) =>
     rows.length > 0 ? (
@@ -259,9 +282,9 @@ function PlanColumn({
     ) : null;
 
   return (
-    <section className={`plan-column plan-column--${sector}`} aria-labelledby={`plan-column-${sector}`}>
+    <section className={`plan-column plan-column--${sector} plan-column--${scope}`} aria-labelledby={id}>
       <header className="plan-column__head">
-        <h3 id={`plan-column-${sector}`} className="plan-column__title">
+        <h3 id={id} className="plan-column__title">
           <span aria-hidden="true">{column.icon}</span> {t(column.title)}{' '}
           <span className="plan-column__count">{recommended.length + possible.length}</span>
         </h3>

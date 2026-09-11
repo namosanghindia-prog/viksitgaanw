@@ -499,6 +499,13 @@ def _section_promoter(pdf: _Pdf, data: ReportInput) -> None:
     )
 
 
+def _origin_line(t: Translator, opportunity: dict[str, Any]) -> str:
+    country = knowledge.opportunity_origin(opportunity).get("country", knowledge.HOME_COUNTRY)
+    note = t.origin_note(opportunity)
+    name = t.reference("countries", country)
+    return f"{name} — {note}" if note else name
+
+
 def _section_project(pdf: _Pdf, data: ReportInput) -> None:
     t = data.translator
     assessment = data.assessment
@@ -533,6 +540,7 @@ def _section_project(pdf: _Pdf, data: ReportInput) -> None:
         [
             (t.s("f.projectName"), t.opportunity_name(opportunity)),
             (t.s("f.projectType"), t.reference("kinds", opportunity["kind"], kind.get("label"))),
+            (t.s("f.origin"), _origin_line(t, opportunity)),
             (t.s("f.projectSize"), size),
             (
                 t.s("f.gestation"),

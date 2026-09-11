@@ -2214,13 +2214,29 @@ class LinkOut(ApiModel):
     url: str
 
 
+class OriginOut(ApiModel):
+    """The country a farming or business model comes from."""
+
+    #: ISO 3166 two-letter code, e.g. IN, IL, NL.
+    country: str
+    #: Its name in the reader's language.
+    country_name: str
+    #: national (an Indian model) | international (one from abroad)
+    scope: Literal["national", "international"]
+    #: A line on where exactly the model comes from.
+    note: str = ""
+
+
 class OpportunityOut(ApiModel):
     code: str
     kind: str
     kind_label: str
-    #: A farming project (crops, livestock, fish) or a non-farming one
-    #: (processing, storage, services). See knowledge.opportunity_sector.
-    sector: Literal["farm", "nonfarm"]
+    #: A farming project (crops, livestock, fish), a non-farming one
+    #: (processing, storage, services), or a hybrid of the two -- a farm with
+    #: its own business on top. See knowledge.opportunity_sector.
+    sector: Literal["farm", "nonfarm", "hybrid"]
+    #: Where the model comes from; national when it is Indian.
+    origin: OriginOut
     name: str
     summary: str
     score: int

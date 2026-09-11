@@ -597,11 +597,16 @@ def assess(opportunity: dict[str, Any], land: LandProfile, *, labels) -> Assessm
     # Soil and water say whether something will grow; they say nothing about
     # whether a dal mill or a hiring centre will pay. A non-farming project is
     # judged instead on its raw material, its customers and its catchment.
-    if knowledge.opportunity_sector(opportunity) == "nonfarm":
+    # A hybrid is a farm first -- its business sells what the farm grows -- so
+    # it is judged on the land, and also on its market when it draws on one.
+    sector = knowledge.opportunity_sector(opportunity)
+    if sector == "nonfarm":
         _business_signals(opportunity, land, add=add, reasons=reasons, cautions=cautions, labels=labels)
     else:
         _land_signals(opportunity, land, add=add, reasons=reasons, cautions=cautions, blockers=blockers,
                       labels=labels)
+        if sector == "hybrid" and opportunity.get("business"):
+            _business_signals(opportunity, land, add=add, reasons=reasons, cautions=cautions, labels=labels)
 
     # -- Money and time ----------------------------------------------------- #
     risk = economics.risk_level

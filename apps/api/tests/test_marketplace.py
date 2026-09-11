@@ -175,6 +175,10 @@ def test_farmer_publishes_a_request(client, farmer, parcel_id):
     assert listing["location"]["district"]["name"]
     assert listing["land"]["soilType"] == "alluvial"
     assert listing["opportunity"]["name"]["en"]
+    # An investor abroad sees where the model comes from, and whether it is a hybrid.
+    assert listing["opportunity"]["sector"] in {"farm", "nonfarm", "hybrid"}
+    assert len(listing["opportunity"]["origin"]["country"]) == 2
+    assert listing["opportunity"]["origin"]["note"]["en"]
     # Nothing that lets a stranger find the field or phone the farmer.
     assert "surveyNumber" not in listing["land"]
     assert "phone" not in str(listing)

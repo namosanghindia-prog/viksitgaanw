@@ -438,16 +438,60 @@ def test_the_plan_page_sees_the_district_and_the_tehsil(client, parcel_id):
 
 
 def test_every_option_says_whether_it_is_farming_or_not(client, parcel_id):
-    """The plan page puts farming and non-farming projects in two columns."""
+    """The plan page puts farming, non-farming and hybrid projects apart."""
     body = client.get(
         f"/api/v1/land-parcels/{parcel_id}/opportunities", params={"lang": "en"}
     ).json()
     sector = {item["code"]: item["sector"] for item in body["items"]}
-    assert set(sector.values()) == {"farm", "nonfarm"}
+    assert set(sector.values()) == {"farm", "nonfarm", "hybrid"}
     assert sector["dairy_crossbred"] == "farm"
     assert sector["modular_cold_room"] == "nonfarm"
     assert sector["custom_hiring_centre"] == "nonfarm"
     assert sector["grafted_sapling_nursery"] == "farm", "a nursery is plants growing on land"
+    assert sector["dairy_biogas_vermi"] == "hybrid"
+    assert sector["farmstead_cheese"] == "hybrid"
+
+
+def test_every_option_names_its_country_of_origin(client, parcel_id):
+    """Each suggestion says where its model comes from, in the reader's language."""
+    body = client.get(
+        f"/api/v1/land-parcels/{parcel_id}/opportunities", params={"lang": "en"}
+    ).json()
+    origin = {item["code"]: item["origin"] for item in body["items"]}
+    for code, entry in origin.items():
+        assert len(entry["country"]) == 2 and entry["country"].isupper(), code
+        assert entry["countryName"] and entry["countryName"] != entry["country"], code
+        assert entry["note"], code
+        assert entry["scope"] == ("national" if entry["country"] == "IN" else "international"), code
+
+    assert origin["dairy_crossbred"]["scope"] == "national"
+    assert origin["polyhouse_vegetables"]["country"] == "NL"
+    assert origin["avocado_hass"]["country"] == "MX"
+    assert origin["farmstead_cheese"]["country"] == "CH"
+
+    scopes = {(item["sector"], item["origin"]["scope"]) for item in body["items"]}
+    for sector in ("farm", "nonfarm", "hybrid"):
+        for scope in ("national", "international"):
+            assert (sector, scope) in scopes, f"no {scope} {sector} option at all"
+
+    hindi = client.get(
+        f"/api/v1/land-parcels/{parcel_id}/opportunities", params={"lang": "hi"}
+    ).json()
+    cheese = next(item for item in hindi["items"] if item["code"] == "farmstead_cheese")
+    assert cheese["origin"]["countryName"] != "Switzerland"
+    assert any("ऀ" <= ch <= "ॿ" for ch in cheese["origin"]["note"])
+
+
+def test_a_hybrid_option_is_judged_on_the_land_and_the_business(client, parcel_id):
+    """A hybrid project needs the land to suit the farm half, and still shows the business half's evidence."""
+    body = client.get(
+        f"/api/v1/land-parcels/{parcel_id}/opportunities", params={"lang": "en"}
+    ).json()
+    hybrid = [item for item in body["items"] if item["sector"] == "hybrid"]
+    assert len(hybrid) >= 8
+    for item in hybrid:
+        assert item["economics"]["capex"]["mid"] > 0
+        assert item["reasons"] or item["cautions"] or item["blockers"], item["code"]
 
 
 def test_every_reason_arrives_as_a_finished_sentence(client, parcel_id):

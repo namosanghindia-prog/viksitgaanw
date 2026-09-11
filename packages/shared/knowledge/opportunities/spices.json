@@ -2,6 +2,7 @@
   {
     "code": "turmeric_improved",
     "kind": "spice",
+    "origin": { "country": "IN", "note": { "en": "Varieties from ICAR-IISR, Kozhikode, and the Erode and Sangli trade", "hi": "आईसीएआर-आईआईएसआर, कोझिकोड की किस्में, और इरोड-सांगली का बाज़ार" } },
     "label": { "en": "Turmeric with on-farm boiling and polishing", "hi": "हल्दी – खेत पर उबालने और पॉलिश सहित" },
     "summary": {
       "en": "Turmeric already grows across most of India; the money is in not selling it raw. Boiling, drying and polishing on the farm roughly doubles what the same crop fetches, and dry turmeric keeps for a year, so you can wait for a better price.",
@@ -39,6 +40,7 @@
   {
     "code": "ginger_upland",
     "kind": "spice",
+    "origin": { "country": "IN", "note": { "en": "Upland ginger of the Northeast and Kerala, with IISR varieties", "hi": "पूर्वोत्तर और केरल की ऊँची ज़मीन की अदरक, आईआईएसआर किस्मों के साथ" } },
     "label": { "en": "Ginger on upland / sloping land", "hi": "ऊँची और ढलान वाली ज़मीन पर अदरक" },
     "summary": {
       "en": "Ginger pays very well in a good year and can lose money in a bad one — seed rhizome alone is the largest single cost of any crop here. It suits well-drained upland with shade, and rhizome rot is the risk to plan against.",
@@ -76,6 +78,7 @@
   {
     "code": "chilli_hybrid",
     "kind": "spice",
+    "origin": { "country": "IN", "note": { "en": "Guntur's chilli belt, with Indian public and private hybrids", "hi": "गुंटूर की मिर्च पट्टी, भारतीय सरकारी और निजी हाइब्रिड के साथ" } },
     "label": { "en": "Hybrid chilli for dry-chilli sale", "hi": "सूखी मिर्च के लिए हाइब्रिड मिर्च" },
     "summary": {
       "en": "Chilli dried on the farm stores for months and travels well, so you are not forced to sell on harvest day. Prices swing hard from year to year, so treat one good season as a reason to build a store, not to expand the area.",
@@ -112,6 +115,7 @@
   {
     "code": "cumin_arid",
     "kind": "spice",
+    "origin": { "country": "IN", "note": { "en": "Cumin of Gujarat and Rajasthan, with varieties from SDAU and NRCSS", "hi": "गुजरात-राजस्थान का जीरा, एसडीएयू और एनआरसीएसएस की किस्मों के साथ" } },
     "label": { "en": "Cumin in the dry rabi season", "hi": "सूखे रबी मौसम में जीरा" },
     "summary": {
       "en": "Cumin is a short, low-cost rabi crop for dry western India that needs only two or three irrigations and finishes in about 110 days. It is very sensitive to cloud and dew at flowering, so keep the area modest and do not borrow heavily against it.",
@@ -148,6 +152,7 @@
   {
     "code": "ashwagandha",
     "kind": "spice",
+    "origin": { "country": "IN", "note": { "en": "Mandsaur's ashwagandha, with CIMAP and NBPGR varieties", "hi": "मंदसौर का अश्वगंधा, सीमैप और एनबीपीजीआर किस्मों के साथ" } },
     "label": { "en": "Ashwagandha (medicinal root)", "hi": "अश्वगंधा (औषधीय जड़)" },
     "summary": {
       "en": "Ashwagandha is a hardy rainfed crop for dry, light land that finishes in about 160 days and sells to ayurvedic and nutraceutical buyers rather than to the mandi. Fix your buyer before you sow — that, not the growing, is the hard part.",
@@ -185,6 +190,7 @@
   {
     "code": "lemongrass_oil",
     "kind": "spice",
+    "origin": { "country": "IN", "note": { "en": "Aroma Mission lemongrass and field stills from CSIR-CIMAP", "hi": "सीएसआईआर-सीमैप के एरोमा मिशन की लेमनग्रास और खेत की आसवन इकाई" } },
     "label": { "en": "Lemongrass with an oil still", "hi": "लेमनग्रास और तेल आसवन इकाई" },
     "summary": {
       "en": "Lemongrass grows on land nobody else wants — salty, sloping, stony, barely irrigated — and is cut four times a year for five years from one planting. Distilled on the spot, the oil is light, keeps well and sells by weight, so distance to market stops mattering.",
@@ -222,6 +228,7 @@
   {
     "code": "moringa_drumstick",
     "kind": "spice",
+    "origin": { "country": "IN", "note": { "en": "PKM-1 annual moringa from TNAU, Periyakulam", "hi": "टीएनएयू, पेरियाकुलम का पीकेएम-1 सालाना सहजन" } },
     "label": { "en": "Moringa for pods and leaf powder", "hi": "सहजन – फली और पत्ती चूर्ण के लिए" },
     "summary": {
       "en": "Moringa survives drought, starts giving pods within a year, and has a second market in dried leaf powder that exporters buy by the tonne. It is one of the few crops that suits genuinely poor, dry land and still reaches a foreign buyer.",
@@ -259,6 +266,7 @@
   {
     "code": "black_pepper_intercrop",
     "kind": "spice",
+    "origin": { "country": "IN", "note": { "en": "Pepper on shade trees, as in Kerala and Coorg's plantations", "hi": "छायादार पेड़ों पर काली मिर्च, जैसे केरल और कुर्ग के बागानों में" } },
     "label": { "en": "Black pepper trained on existing trees", "hi": "मौजूदा पेड़ों पर काली मिर्च" },
     "summary": {
       "en": "Pepper vines climb the coconut, arecanut or silver-oak trees you already have, so they cost you no extra land and almost no extra water. It is close to free income on a garden that is already standing.",

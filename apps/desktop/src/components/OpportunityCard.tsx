@@ -25,7 +25,7 @@ export function OpportunityCard({ opportunity, onChoose, onAsk }: OpportunityCar
   const { t, lang } = useI18n();
   const [open, setOpen] = useState(false);
 
-  const { economics: money, sizing } = opportunity;
+  const { economics: money, sizing, origin } = opportunity;
   const unsuitable = opportunity.verdict === 'unsuitable';
 
   const size =
@@ -43,6 +43,13 @@ export function OpportunityCard({ opportunity, onChoose, onAsk }: OpportunityCar
           </p>
         </div>
         <div className="opp__badges">
+          {/* A name, not a flag: Windows draws flag emoji as two bare letters. */}
+          <span
+            className={`badge badge--origin badge--origin-${origin.scope}`}
+            title={origin.note || undefined}
+          >
+            {origin.scope === 'national' ? '📍' : '🌍'} {t('plan.origin', { country: origin.countryName })}
+          </span>
           <span className={`badge badge--risk-${money.riskLevel}`}>{money.riskLabel}</span>
           {opportunity.export.potential !== 'none' ? (
             <span className="badge badge--export">
@@ -128,6 +135,15 @@ export function OpportunityCard({ opportunity, onChoose, onAsk }: OpportunityCar
 
       {open ? (
         <div className="opp__detail">
+          {origin.note ? (
+            <>
+              <h5>{t('plan.originTitle')}</h5>
+              <p className="small">
+                <strong>{origin.countryName}</strong> — {origin.note}
+              </p>
+            </>
+          ) : null}
+
           {opportunity.reasons.length > 0 ? (
             <>
               <h5>{t('plan.reasonsFor')}</h5>

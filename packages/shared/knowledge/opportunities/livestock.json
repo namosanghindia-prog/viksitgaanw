@@ -2,6 +2,7 @@
   {
     "code": "dairy_crossbred",
     "kind": "livestock",
+    "origin": { "country": "IN", "note": { "en": "Operation Flood and the Anand pattern of village dairies (NDDB)", "hi": "ऑपरेशन फ्लड और गाँव की डेयरी का आणंद पैटर्न (एनडीडीबी)" } },
     "label": { "en": "Crossbred dairy unit", "hi": "संकर नस्ल डेयरी इकाई" },
     "summary": {
       "en": "A ten-animal dairy pays cash twice a day, every day, which no crop does. It only works if you grow your own green fodder — bought feed eats the entire margin — so it belongs on land that can spare a corner for napier or maize.",
@@ -44,6 +45,7 @@
   {
     "code": "goatery_semi_intensive",
     "kind": "livestock",
+    "origin": { "country": "IN", "note": { "en": "Semi-intensive goat rearing from ICAR-CIRG, Makhdoom", "hi": "आईसीएआर-सीआईआरजी, मखदूम का अर्ध-सघन बकरी पालन" } },
     "label": { "en": "Semi-intensive goat unit", "hi": "अर्ध-सघन बकरी पालन इकाई" },
     "summary": {
       "en": "Goats need less capital per animal than cattle, eat browse that cattle refuse, and sell for cash at festivals without any cold chain. Income starts about a year in, when the first kids are ready.",
@@ -86,6 +88,7 @@
   {
     "code": "backyard_poultry",
     "kind": "livestock",
+    "origin": { "country": "IN", "note": { "en": "Vanaraja and Kadaknath birds from ICAR-DPR, Hyderabad", "hi": "आईसीएआर-डीपीआर, हैदराबाद के वनराजा और कड़कनाथ पक्षी" } },
     "label": { "en": "Improved backyard poultry", "hi": "उन्नत देसी मुर्गी पालन" },
     "summary": {
       "en": "Dual-purpose birds like Vanaraja or Kadaknath live largely on scavenged feed, need only a night shelter, and fetch two to three times the price of broiler meat. It is the cheapest entry point on this list for a family with very little land.",
@@ -129,6 +132,7 @@
   {
     "code": "broiler_contract",
     "kind": "livestock",
+    "origin": { "country": "US", "note": { "en": "Integrated contract growing began in the USA; run in India by integrators like Suguna", "hi": "एकीकृत अनुबंध पालन अमेरिका में शुरू हुआ; भारत में सुगुणा जैसी कंपनियाँ चलाती हैं" } },
     "label": { "en": "Contract broiler shed", "hi": "अनुबंध ब्रॉयलर शेड" },
     "summary": {
       "en": "The company supplies chicks, feed and medicine and buys the birds back; you supply the shed, water, electricity and labour, and are paid growing charges per kilogram. There is no market risk at all, but the margin is fixed and thin, and one disease outbreak can wipe out a cycle.",
@@ -170,6 +174,7 @@
   {
     "code": "apiculture",
     "kind": "livestock",
+    "origin": { "country": "IT", "note": { "en": "Italian bees (Apis mellifera) in Langstroth boxes", "hi": "लैंगस्ट्रॉथ बक्सों में इटालियन मधुमक्खी (एपिस मेलिफ़ेरा)" } },
     "label": { "en": "Beekeeping with migratory boxes", "hi": "प्रवासी बक्सों के साथ मधुमक्खी पालन" },
     "summary": {
       "en": "Bee boxes need no land of your own and pay twice — the honey you sell, and the extra yield on mustard, sunflower or fruit near the hives. Boxes travel by truck to follow the flowering, which is what turns it from a hobby into a business.",
@@ -214,6 +219,7 @@
   {
     "code": "inland_fish_pond",
     "kind": "livestock",
+    "origin": { "country": "IN", "note": { "en": "Composite fish culture developed at ICAR-CIFA, Bhubaneswar", "hi": "आईसीएआर-सीफ़ा, भुवनेश्वर में विकसित मिश्रित मछली पालन" } },
     "label": { "en": "Inland fish pond (carp polyculture)", "hi": "अंतर्देशीय मत्स्य तालाब (मिश्रित कार्प)" },
     "summary": {
       "en": "A dug pond stocked with three or four carp species uses each layer of the water, so one pond produces far more than a single species would. Low, clayey land that holds water and grows a poor crop is exactly the right site.",

@@ -73,7 +73,15 @@ def opportunity_summary(code: str | None) -> dict[str, Any] | None:
     item = knowledge.get_opportunity(code)
     if item is None:
         return None
-    return {"code": item["code"], "kind": item["kind"], "name": item.get("label", {})}
+    origin = knowledge.opportunity_origin(item)
+    return {
+        "code": item["code"],
+        "kind": item["kind"],
+        "name": item.get("label", {}),
+        "sector": knowledge.opportunity_sector(item),
+        # The viewer's device names the country in its own language from the code.
+        "origin": {"country": origin.get("country", knowledge.HOME_COUNTRY), "note": origin.get("note", {})},
+    }
 
 
 def make_listing(

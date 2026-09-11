@@ -315,15 +315,36 @@ Every point awarded or removed carries a reason string, rendered by the API in
 the farmer's language, so the recommendation can always be interrogated — and
 so the project report can answer the credit officer's "why this crop".
 
-**Farming and non-farming projects.** The plan page shows two columns, each
-ranked on its own: *farming projects* — crops, orchards, vegetables, spices,
-livestock and fish — and *non-farming projects* — processing, storage and
-services, most of which need little or no land. The split follows NABARD and
-NRLM: crops and allied activities are the farm sector. Each kind in
-`opportunities/_meta.json` carries `"sector": "farm"` or `"nonfarm"`, and an
-option can override its kind (the sapling nursery is filed as a service but is
-plants on land, so it is `farm`). Every option the API returns says which it
-is.
+**Farming, non-farming and hybrid projects.** The plan page shows three bands,
+each ranked on its own: *farming projects* — crops, orchards, vegetables,
+spices, livestock and fish — *non-farming projects* — processing, storage and
+services, most of which need little or no land — and *hybrid projects*, which
+farm and turn the same produce into a finished product or service on the spot
+(dairy with biogas and vermicompost, cane with a jaggery unit, bees with honey
+bottling, mushrooms with drying and pickles, a farmstead cheese room, an
+orchard farm stay, aquaponics with a farm shop, shiitake with a drying room).
+The split follows NABARD and NRLM: crops and allied activities are the farm
+sector. Each kind in `opportunities/_meta.json` carries `"sector": "farm"` or
+`"nonfarm"`, and an option can override its kind (the sapling nursery is filed
+as a service but is plants on land, so it is `farm`; every option in
+`opportunities/hybrid.json` is `hybrid`). A hybrid is scored on the land, like
+a farming project, and when it has a `business` block its business evidence is
+added on top. Every option the API returns says which sector it is in.
+
+**Country of origin.** Every option carries an `origin` — the ISO country where
+the model began, and a one-line note in English and Hindi (Bengali and Marathi
+notes live in the report catalogues under `origins`). The knowledge loader
+refuses an option without one. The API returns `origin.country`,
+`origin.countryName` in the reader's language, `origin.scope` (`national` for
+India, `international` for anything else) and the note, so within each band
+the plan page puts Indian models and international ones side by side, and
+every card, project report and investor listing names the country.
+`opportunities/international.json` holds models brought from abroad —
+Hass avocado (Mexico), kiwi (New Zealand), tissue-culture dates (UAE),
+hydroponic greens and an export pack-house (Netherlands), rice–fish culture
+and bamboo processing (China), bokashi (Japan) — alongside existing options
+that already came from abroad, such as the Dutch polyhouse, Taiwanese papaya
+and Vietnamese dragon fruit.
 
 **How a non-farming project is scored.** Soil and water say whether something
 will grow; they say nothing about whether a dal mill will pay. So a non-farming

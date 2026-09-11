@@ -135,6 +135,20 @@ export function RequestCard({ request, showRequester = true, children }: Request
             {listingPlace(request)}
             {opportunity ? <span className="muted"> · {pickLabel(opportunity.name, lang)}</span> : null}
           </p>
+          {opportunity?.origin ? (
+            <p className="request__origin small">
+              <span
+                className={`badge badge--origin-${opportunity.origin.country === 'IN' ? 'national' : 'international'}`}
+                title={pickLabel(opportunity.origin.note, lang) || undefined}
+              >
+                {opportunity.origin.country === 'IN' ? '📍' : '🌍'}{' '}
+                {t('plan.origin', {
+                  country: rt(findItem('countries', opportunity.origin.country)) || opportunity.origin.country,
+                })}
+              </span>
+              {opportunity.sector === 'hybrid' ? <span className="badge">🌾🏭 {t('plan.hybridShort')}</span> : null}
+            </p>
+          ) : null}
         </div>
         <div className="request__badges">
           {request.fit ? (

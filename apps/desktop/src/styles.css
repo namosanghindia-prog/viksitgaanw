@@ -1030,8 +1030,26 @@ code {
 
 .opportunities--muted { opacity: 0.75; }
 
-/* The plan page: farming projects on the left, non-farming on the right, each
-   ranked on its own. Tinted so the two read apart at a glance. */
+/* The plan page: a band each for farming, non-farming and hybrid projects;
+   within a band, Indian models on the left and international ones on the
+   right, each ranked on its own. Tinted so the bands read apart at a glance. */
+.plan-sector {
+  margin-top: 1.6rem;
+}
+
+.plan-sector__head {
+  margin-bottom: 10px;
+}
+
+.plan-sector__title {
+  font-size: 1.4rem;
+  margin: 0;
+}
+
+.plan-sector__head p {
+  margin: 4px 0 0;
+}
+
 .plan-columns {
   display: grid;
   grid-template-columns: 1fr 1fr;
@@ -1052,12 +1070,23 @@ code {
   background: #e8f1f8;
 }
 
+.plan-column--hybrid {
+  border-top-color: #b7791f;
+  background: #fbf3e4;
+}
+
+/* International columns keep their band's colour but wear a dashed rule, so
+   "brought from abroad" is visible before a single card is read. */
+.plan-column--international {
+  border-top-style: dashed;
+}
+
 .plan-column__head p {
   margin: 4px 0 0;
 }
 
 .plan-column__title {
-  font-size: 1.3rem;
+  font-size: 1.15rem;
   display: flex;
   align-items: center;
   gap: 8px;
@@ -1119,6 +1148,8 @@ code {
 .badge--risk-medium { background: #fdf5e2; color: #8a6100; }
 .badge--risk-high { background: #fdeceb; color: #a32a1f; }
 .badge--export { background: #e8f0fb; color: #1d4e89; }
+.badge--origin-national { background: #fff1e0; color: #8a4b00; }
+.badge--origin-international { background: #ece8fb; color: #43308f; }
 
 .opp__summary {
   margin: 0;
@@ -1448,6 +1479,13 @@ code {
   margin: 2px 0 0;
   color: var(--leaf-dark);
   font-weight: 600;
+}
+
+.request__origin {
+  margin: 4px 0 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 
 .request__badges {

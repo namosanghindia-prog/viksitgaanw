@@ -2,6 +2,7 @@
   {
     "code": "custom_hiring_centre",
     "kind": "service",
+    "origin": { "country": "IN", "note": { "en": "Custom hiring centres under India's farm-machinery mission (SMAM)", "hi": "भारत के कृषि यंत्र मिशन (एसएमएएम) के कस्टम हायरिंग सेंटर" } },
     "business": {"crops": ["cereal", "pulse", "oilseed", "sugarcane", "cotton"], "catchmentVillages": 60},
     "label": { "en": "Custom hiring centre for farm machinery", "hi": "कृषि यंत्रों का कस्टम हायरिंग केंद्र" },
     "summary": {
@@ -46,6 +47,7 @@
   {
     "code": "vermicompost_unit",
     "kind": "service",
+    "origin": { "country": "IN", "note": { "en": "Vermicomposting as Indian KVKs teach it", "hi": "केवीके द्वारा सिखाई जाने वाली केंचुआ खाद" } },
     "business": {"crops": ["fruit", "vegetable", "plantation"], "catchmentVillages": 40},
     "label": { "en": "Vermicompost production unit", "hi": "वर्मी कम्पोस्ट उत्पादन इकाई" },
     "summary": {
@@ -90,6 +92,7 @@
   {
     "code": "grafted_sapling_nursery",
     "kind": "service",
+    "origin": { "country": "IN", "note": { "en": "Accredited nurseries under the National Horticulture Board", "hi": "राष्ट्रीय बागवानी बोर्ड की मान्यता वाली नर्सरी" } },
     "sector": "farm",
     "label": { "en": "Grafted fruit sapling nursery", "hi": "कलमी फल पौध नर्सरी" },
     "summary": {
@@ -134,6 +137,7 @@
   {
     "code": "drone_spraying_service",
     "kind": "service",
+    "origin": { "country": "JP", "note": { "en": "Crop-spraying drones began in Japan in the 1990s", "hi": "फसल पर छिड़काव वाले ड्रोन 1990 के दशक में जापान में शुरू हुए" } },
     "business": {"crops": ["rice", "wheat", "maize", "cotton", "sugarcane", "soybean", "vegetable"], "catchmentVillages": 100},
     "label": { "en": "Drone spraying service", "hi": "ड्रोन छिड़काव सेवा" },
     "summary": {
@@ -178,6 +182,7 @@
   {
     "code": "milk_collection_centre",
     "kind": "service",
+    "origin": { "country": "IN", "note": { "en": "The Amul village milk society, copied across India", "hi": "अमूल की गाँव दुग्ध समिति, जो पूरे भारत में अपनाई गई" } },
     "business": {"crops": ["fodder"], "catchmentVillages": 30},
     "label": { "en": "Village milk collection centre with bulk cooler", "hi": "बल्क कूलर सहित गाँव का दूध संग्रह केंद्र" },
     "summary": {
@@ -222,6 +227,7 @@
   {
     "code": "agri_input_centre",
     "kind": "service",
+    "origin": { "country": "IN", "note": { "en": "Licensed input dealers trained under MANAGE's DAESI course", "hi": "मैनेज के डीएईएसआई कोर्स से प्रशिक्षित लाइसेंसी खाद-बीज विक्रेता" } },
     "business": {"crops": ["cereal", "pulse", "oilseed", "vegetable", "fruit", "commercial"], "catchmentVillages": 50},
     "label": { "en": "Agri-input shop and crop advice centre", "hi": "कृषि आदान दुकान एवं फ़सल सलाह केंद्र" },
     "summary": {

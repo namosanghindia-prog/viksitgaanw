@@ -92,6 +92,13 @@ def load_opportunities() -> dict[str, Any]:
                 # Two files claiming the same code would make the ranking
                 # non-deterministic depending on filesystem order.
                 raise KnowledgeUnavailableError(f"Duplicate opportunity code: {code}")
+            # Every suggestion says where its model comes from: a farmer weighs
+            # a Dutch greenhouse differently from a Rahuri pomegranate.
+            country = (item.get("origin") or {}).get("country")
+            if not (isinstance(country, str) and len(country) == 2 and country.isupper()):
+                raise KnowledgeUnavailableError(f"{path}: {code} has no origin country.")
+            if item.get("sector") not in (None, *SECTORS):
+                raise KnowledgeUnavailableError(f"{path}: {code} has an unknown sector.")
             seen.add(code)
             items.append(item)
 
@@ -126,17 +133,37 @@ def kind_index() -> dict[str, dict[str, Any]]:
 
 
 #: Farm (crops and allied: livestock, fisheries, beekeeping) or non-farm
-#: (processing, storage, services), as NABARD and NRLM split livelihoods.
-SECTORS = ("farm", "nonfarm")
+#: (processing, storage, services), as NABARD and NRLM split livelihoods --
+#: and hybrid: a farm with its own business on top (a dairy with a biogas and
+#: compost unit, a turmeric farm that sells powder, an orchard with a farm stay).
+SECTORS = ("farm", "nonfarm", "hybrid")
+
+#: The country an option's model is Indian to. Anything else is international.
+HOME_COUNTRY = "IN"
 
 
 def opportunity_sector(item: dict[str, Any]) -> str:
-    """Whether an option is a farming or a non-farming project.
+    """Whether an option is a farming, a non-farming or a hybrid project.
 
     Its kind decides, unless the option says otherwise -- a sapling nursery is
-    filed as a service business but is plants growing on land.
+    filed as a service business but is plants growing on land, and a hybrid
+    names itself.
     """
     return item.get("sector") or kind_index()[item["kind"]]["sector"]
+
+
+def opportunity_origin(item: dict[str, Any]) -> dict[str, Any]:
+    """Where the option's farming or business model comes from.
+
+    ``{"country": "IL", "note": {...}}`` -- every option carries one, and the
+    loader refuses a knowledge base where one does not.
+    """
+    return item.get("origin") or {"country": HOME_COUNTRY}
+
+
+def opportunity_scope(item: dict[str, Any]) -> str:
+    """national (an Indian model) or international (one from abroad)."""
+    return "national" if opportunity_origin(item).get("country") == HOME_COUNTRY else "international"
 
 
 def business_crops(item: dict[str, Any]) -> frozenset[str]:

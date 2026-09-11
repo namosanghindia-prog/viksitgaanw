@@ -1,0 +1,300 @@
+[
+  {
+    "code": "dairy_biogas_vermi",
+    "kind": "livestock",
+    "sector": "hybrid",
+    "origin": { "country": "IN", "note": { "en": "India's GOBARdhan and Anand-pattern dairy: milk, gas and compost from the same herd", "hi": "भारत का गोबरधन और आणंद पैटर्न डेयरी: एक ही झुंड से दूध, गैस और खाद" } },
+    "label": { "en": "Dairy with biogas and vermicompost", "hi": "बायोगैस और केंचुआ खाद वाली डेयरी" },
+    "summary": {
+      "en": "Ten milch animals pay daily for milk; their dung, usually burnt as cakes, runs a biogas plant that cooks for the house, and the slurry becomes vermicompost that sells by the sack. Three incomes from one herd, and the fodder plot gets its manure back. It needs someone at home every day.",
+      "hi": "दस दुधारू पशु रोज़ दूध का पैसा देते हैं; उनका गोबर, जो आमतौर पर उपले बनकर जलता है, बायोगैस चलाता है जिस पर घर का खाना बनता है, और घोल केंचुआ खाद बनकर बोरियों में बिकता है। एक झुंड से तीन आमदनी, और चारे के खेत को खाद वापस मिलती है। इसके लिए रोज़ घर पर किसी का होना ज़रूरी है।"
+    },
+    "fit": {
+      "soilTypes": [],
+      "regions": ["all_india"],
+      "waterNeed": "medium",
+      "salinityTolerance": "medium",
+      "requiresIrrigation": false,
+      "preferredIrrigation": [],
+      "maxWaterDepthMetres": 300
+    },
+    "sizing": { "mode": "unit", "unitsFromLand": true, "unitLabel": { "en": "10 milch animals, 6 m³ biogas plant and vermicompost beds", "hi": "10 दुधारू पशु, 6 घन मीटर बायोगैस संयंत्र और केंचुआ खाद की क्यारियाँ" }, "landHaPerUnit": 0.5, "minUnits": 1, "maxUnits": 5 },
+    "economics": {
+      "capex": { "low": 1100000, "high": 1600000 },
+      "opexPerYear": { "low": 700000, "high": 950000 },
+      "revenuePerYear": { "low": 1100000, "high": 1500000 },
+      "gestationMonths": 4,
+      "fullYieldYear": 2,
+      "projectLifeYears": 8,
+      "riskLevel": "medium",
+      "labourDaysPerYear": 900
+    },
+    "export": { "potential": "none", "commodity": "milk" },
+    "schemes": ["ahidf", "nlm", "kcc", "agri_infra_fund"],
+    "resources": [
+      { "label": { "en": "National Dairy Development Board", "hi": "राष्ट्रीय डेयरी विकास बोर्ड" }, "url": "https://www.nddb.coop/" },
+      { "label": { "en": "GOBARdhan – biogas from cattle dung", "hi": "गोबरधन – गोबर से बायोगैस" }, "url": "https://sbm.gov.in/gbdw20/" }
+    ]
+  },
+  {
+    "code": "sugarcane_jaggery_farm",
+    "kind": "field_crop",
+    "sector": "hybrid",
+    "origin": { "country": "IN", "note": { "en": "Kolhapur and Muzaffarnagar gur: the cane crushed on the farm, with pans improved at IISR Lucknow", "hi": "कोल्हापुर और मुज़फ़्फ़रनगर का गुड़: गन्ना खेत पर ही पेरा जाता है, आईआईएसआर लखनऊ की सुधरी कड़ाही के साथ" } },
+    "label": { "en": "Sugarcane with an on-farm jaggery unit", "hi": "खेत पर गुड़ इकाई के साथ गन्ना" },
+    "summary": {
+      "en": "Instead of waiting months for a sugar mill to pay for cane, crush it on the farm and sell clean, chemical-free jaggery, which fetches a premium in cities and online. The crusher and pans run only in the crushing season and can take neighbours' cane on charge. It needs plenty of water and a steady hand at the pan.",
+      "hi": "गन्ने के भुगतान के लिए महीनों चीनी मिल का इंतज़ार करने के बजाय उसे खेत पर ही पेरें और साफ़, बिना रसायन का गुड़ बेचें, जिसका शहरों और ऑनलाइन में अच्छा दाम मिलता है। कोल्हू और कड़ाही सिर्फ़ पेराई के मौसम में चलते हैं और पड़ोसियों का गन्ना शुल्क पर पेर सकते हैं। पानी भरपूर चाहिए और कड़ाही पर सधा हाथ।"
+    },
+    "fit": {
+      "soilTypes": ["alluvial", "loamy", "black", "clayey"],
+      "avoidSoilTypes": ["sandy", "saline_alkaline", "peaty_marshy"],
+      "regions": ["indo_gangetic", "deccan"],
+      "waterNeed": "high",
+      "salinityTolerance": "medium",
+      "requiresIrrigation": true,
+      "preferredIrrigation": ["furrow", "drip", "flood"],
+      "maxWaterDepthMetres": 120
+    },
+    "sizing": { "mode": "area", "minHa": 1, "maxHa": 10 },
+    "economics": {
+      "capex": { "low": 350000, "high": 600000 },
+      "opexPerYear": { "low": 200000, "high": 280000 },
+      "revenuePerYear": { "low": 350000, "high": 550000 },
+      "gestationMonths": 12,
+      "fullYieldYear": 2,
+      "projectLifeYears": 10,
+      "riskLevel": "medium",
+      "labourDaysPerYear": 350
+    },
+    "export": { "potential": "none", "commodity": "jaggery" },
+    "schemes": ["pmfme", "kcc", "agri_infra_fund"],
+    "resources": [
+      { "label": { "en": "ICAR-IISR, Lucknow – jaggery", "hi": "आईसीएआर-आईआईएसआर, लखनऊ – गुड़" }, "url": "https://iisr.icar.gov.in/" },
+      { "label": { "en": "PM-FME – micro food processing support", "hi": "पीएम-एफएमई – सूक्ष्म खाद्य प्रसंस्करण सहायता" }, "url": "https://pmfme.mofpi.gov.in/" }
+    ]
+  },
+  {
+    "code": "honey_farm_processing",
+    "kind": "livestock",
+    "sector": "hybrid",
+    "origin": { "country": "IN", "note": { "en": "KVIC's Honey Mission: bee boxes on the farm, with honey processed and packed under your own name", "hi": "केवीआईसी का हनी मिशन: खेत पर मधुमक्खी के बक्से, और शहद आपके अपने नाम से प्रसंस्कृत और पैक" } },
+    "label": { "en": "Bee-keeping with honey processing and packing", "hi": "शहद प्रसंस्करण और पैकिंग के साथ मधुमक्खी पालन" },
+    "summary": {
+      "en": "Raw honey sold to traders fetches a fraction of what packed, tested honey does. Fifty boxes give the honey; a small processing unit filters, dehumidifies and bottles it, and a lab test and an FSSAI licence let you sell to shops and online. The bees also pollinate your own and your neighbours' crops.",
+      "hi": "व्यापारियों को बेचा कच्चा शहद, पैक और जाँचे गए शहद के मुकाबले बहुत कम दाम पाता है। पचास बक्सों से शहद मिलता है; छोटी प्रसंस्करण इकाई उसे छानती, नमी घटाती और बोतल में भरती है, और लैब जाँच व एफ़एसएसएआई लाइसेंस से आप दुकानों और ऑनलाइन बेच सकते हैं। मधुमक्खियाँ आपकी और पड़ोसियों की फ़सलों का परागण भी करती हैं।"
+    },
+    "fit": {
+      "soilTypes": [],
+      "regions": ["all_india"],
+      "waterNeed": "low",
+      "salinityTolerance": "high",
+      "requiresIrrigation": false,
+      "preferredIrrigation": [],
+      "maxWaterDepthMetres": 400
+    },
+    "sizing": { "mode": "unit", "unitsFromLand": false, "unitLabel": { "en": "50 bee boxes with a honey processing and bottling unit", "hi": "शहद प्रसंस्करण और बोतल भराई इकाई के साथ 50 मधुमक्खी बक्से" }, "landHaPerUnit": 0.05, "minUnits": 1, "maxUnits": 4 },
+    "economics": {
+      "capex": { "low": 400000, "high": 600000 },
+      "opexPerYear": { "low": 150000, "high": 250000 },
+      "revenuePerYear": { "low": 400000, "high": 650000 },
+      "gestationMonths": 6,
+      "fullYieldYear": 2,
+      "projectLifeYears": 8,
+      "riskLevel": "medium",
+      "labourDaysPerYear": 250
+    },
+    "export": { "potential": "emerging", "commodity": "honey" },
+    "schemes": ["nbhm", "pmfme", "kcc"],
+    "resources": [
+      { "label": { "en": "National Bee Board – NBHM", "hi": "राष्ट्रीय मधुमक्खी बोर्ड – एनबीएचएम" }, "url": "https://nbb.gov.in/" },
+      { "label": { "en": "KVIC – Honey Mission", "hi": "केवीआईसी – हनी मिशन" }, "url": "https://www.kviconline.gov.in/" }
+    ]
+  },
+  {
+    "code": "mushroom_value_addition",
+    "kind": "vegetable",
+    "sector": "hybrid",
+    "origin": { "country": "IN", "note": { "en": "Oyster mushroom with drying, pickles and powder, as ICAR-DMR Solan trains growers", "hi": "सुखाने, अचार और पाउडर के साथ ढींगरी मशरूम, जैसा आईसीएआर-डीएमआर सोलन सिखाता है" } },
+    "label": { "en": "Mushrooms with drying and pickles", "hi": "सुखाने और अचार के साथ मशरूम" },
+    "summary": {
+      "en": "Fresh mushrooms spoil in two days, which is why growers sell cheap on a glut. Drying the surplus in a solar dryer and turning it into pickles, soup powder and dried packs means nothing is thrown away and you sell all year. The growing room can be any shed out of the sun; the processing needs an FSSAI licence.",
+      "hi": "ताज़े मशरूम दो दिन में ख़राब हो जाते हैं, इसीलिए ज़्यादा आवक पर उगाने वाले सस्ते में बेचते हैं। बचे हुए को सोलर ड्रायर में सुखाकर अचार, सूप पाउडर और सूखे पैकेट बनाने से कुछ फेंका नहीं जाता और आप साल भर बेचते हैं। उगाने का कमरा धूप से बचा कोई भी शेड हो सकता है; प्रसंस्करण के लिए एफ़एसएसएआई लाइसेंस चाहिए।"
+    },
+    "fit": {
+      "soilTypes": [],
+      "regions": ["all_india"],
+      "waterNeed": "low",
+      "salinityTolerance": "medium",
+      "requiresIrrigation": false,
+      "preferredIrrigation": [],
+      "maxWaterDepthMetres": 300
+    },
+    "sizing": { "mode": "unit", "unitsFromLand": false, "unitLabel": { "en": "Oyster mushroom room with a solar dryer and processing corner", "hi": "सोलर ड्रायर और प्रसंस्करण कोने के साथ ढींगरी मशरूम कक्ष" }, "landHaPerUnit": 0.03, "minUnits": 1, "maxUnits": 3 },
+    "economics": {
+      "capex": { "low": 300000, "high": 500000 },
+      "opexPerYear": { "low": 250000, "high": 350000 },
+      "revenuePerYear": { "low": 450000, "high": 700000 },
+      "gestationMonths": 2,
+      "fullYieldYear": 1,
+      "projectLifeYears": 6,
+      "riskLevel": "medium",
+      "labourDaysPerYear": 600
+    },
+    "export": { "potential": "none", "commodity": "dried_produce" },
+    "schemes": ["midh", "pmfme", "pmegp"],
+    "resources": [
+      { "label": { "en": "ICAR-Directorate of Mushroom Research, Solan", "hi": "आईसीएआर-खुंब अनुसंधान निदेशालय, सोलन" }, "url": "https://nrcmushroom.icar.gov.in/" },
+      { "label": { "en": "PM-FME – micro food processing support", "hi": "पीएम-एफएमई – सूक्ष्म खाद्य प्रसंस्करण सहायता" }, "url": "https://pmfme.mofpi.gov.in/" }
+    ]
+  },
+  {
+    "code": "farmstead_cheese",
+    "kind": "livestock",
+    "sector": "hybrid",
+    "origin": { "country": "CH", "note": { "en": "The Swiss and Alpine farmstead dairy, where the family that milks also makes the cheese", "hi": "स्विस और अल्पाइन फ़ार्म डेयरी, जहाँ दूध निकालने वाला परिवार ही चीज़ बनाता है" } },
+    "label": { "en": "Dairy with a farm cheese room", "hi": "फ़ार्म चीज़ कक्ष वाली डेयरी" },
+    "summary": {
+      "en": "Milk sold to a dairy society fetches the society's price; the same milk made into paneer, mozzarella and aged cheese sells for three or four times as much to cafés, hotels and city shops. Ten cows and a clean cheese room with a vat, press and cold store are enough to start. The cheese has to be good and the buyers found before the milk turns, so it suits farms within reach of a city or a tourist town.",
+      "hi": "दुग्ध समिति को बेचा दूध समिति का दाम पाता है; वही दूध पनीर, मोज़रेला और पुरानी चीज़ बनकर कैफ़े, होटलों और शहर की दुकानों पर तीन-चार गुना दाम पाता है। शुरुआत के लिए दस गायें और बर्तन, प्रेस और ठंडे भंडार वाला साफ़ चीज़ कक्ष काफ़ी है। चीज़ अच्छी होनी चाहिए और ख़रीदार पहले से तय, इसलिए यह किसी शहर या पर्यटन क़स्बे की पहुँच वाले फ़ार्म के लिए है।"
+    },
+    "fit": {
+      "soilTypes": [],
+      "regions": ["all_india"],
+      "waterNeed": "medium",
+      "salinityTolerance": "medium",
+      "requiresIrrigation": false,
+      "preferredIrrigation": [],
+      "maxWaterDepthMetres": 300
+    },
+    "sizing": { "mode": "unit", "unitsFromLand": true, "unitLabel": { "en": "10 cows with a farm cheese room", "hi": "फ़ार्म चीज़ कक्ष के साथ 10 गायें" }, "landHaPerUnit": 0.5, "minUnits": 1, "maxUnits": 3 },
+    "economics": {
+      "capex": { "low": 1600000, "high": 2400000 },
+      "opexPerYear": { "low": 900000, "high": 1200000 },
+      "revenuePerYear": { "low": 1500000, "high": 2200000 },
+      "gestationMonths": 6,
+      "fullYieldYear": 2,
+      "projectLifeYears": 10,
+      "riskLevel": "high",
+      "labourDaysPerYear": 1000
+    },
+    "export": { "potential": "none", "commodity": "cheese" },
+    "schemes": ["ahidf", "pmfme", "nlm"],
+    "resources": [
+      { "label": { "en": "National Dairy Development Board", "hi": "राष्ट्रीय डेयरी विकास बोर्ड" }, "url": "https://www.nddb.coop/" },
+      { "label": { "en": "FSSAI – food business licence", "hi": "एफ़एसएसएआई – खाद्य व्यवसाय लाइसेंस" }, "url": "https://foscos.fssai.gov.in/" }
+    ]
+  },
+  {
+    "code": "agriturismo_orchard",
+    "kind": "horticulture",
+    "sector": "hybrid",
+    "origin": { "country": "IT", "note": { "en": "Italy's agriturismo: a working farm that also lodges and feeds guests", "hi": "इटली का एग्रीटूरिज़्मो: चलता हुआ फ़ार्म जो मेहमानों को ठहराता और खिलाता भी है" } },
+    "label": { "en": "Orchard with a farm stay", "hi": "फ़ार्म स्टे के साथ बाग" },
+    "summary": {
+      "en": "City families pay to spend a weekend on a real farm — picking fruit, eating home food, sleeping quiet. An orchard with three simple rooms earns from the fruit and from the guests, and the guests buy jams, honey and pickles to take home. It needs a road, a tourist or city market within a few hours, and a family that enjoys hosting; most states run rural homestay schemes.",
+      "hi": "शहरी परिवार असली फ़ार्म पर सप्ताहांत बिताने के पैसे देते हैं — फल तोड़ना, घर का खाना, शांत नींद। तीन सादे कमरों वाला बाग फलों से भी कमाता है और मेहमानों से भी, और मेहमान घर ले जाने के लिए जैम, शहद और अचार ख़रीदते हैं। इसे सड़क, कुछ घंटों की दूरी पर पर्यटन या शहर का बाज़ार, और मेहमानों की ख़ातिर पसंद करने वाला परिवार चाहिए; ज़्यादातर राज्य ग्रामीण होमस्टे योजनाएँ चलाते हैं।"
+    },
+    "fit": {
+      "soilTypes": ["loamy", "red", "laterite", "alluvial", "mountain_forest", "black"],
+      "avoidSoilTypes": ["saline_alkaline", "peaty_marshy"],
+      "regions": ["himalayan", "coastal", "southern_humid", "deccan", "northeast"],
+      "waterNeed": "medium",
+      "salinityTolerance": "low",
+      "requiresIrrigation": true,
+      "preferredIrrigation": ["drip", "sprinkler"],
+      "maxWaterDepthMetres": 150
+    },
+    "sizing": { "mode": "area", "minHa": 0.8, "maxHa": 5 },
+    "economics": {
+      "capex": { "low": 1500000, "high": 2500000 },
+      "opexPerYear": { "low": 400000, "high": 600000 },
+      "revenuePerYear": { "low": 800000, "high": 1400000 },
+      "gestationMonths": 12,
+      "fullYieldYear": 3,
+      "projectLifeYears": 15,
+      "riskLevel": "high",
+      "labourDaysPerYear": 700
+    },
+    "export": { "potential": "none", "commodity": "tourism" },
+    "schemes": ["midh", "mudra", "pmegp"],
+    "resources": [
+      { "label": { "en": "Ministry of Tourism – rural tourism", "hi": "पर्यटन मंत्रालय – ग्रामीण पर्यटन" }, "url": "https://tourism.gov.in/" },
+      { "label": { "en": "NIDHI – registering a homestay", "hi": "निधि – होमस्टे पंजीकरण" }, "url": "https://nidhi.tourism.gov.in/" }
+    ]
+  },
+  {
+    "code": "aquaponics_farm_shop",
+    "kind": "protected",
+    "sector": "hybrid",
+    "origin": { "country": "US", "note": { "en": "Aquaponics as the University of the Virgin Islands system made it practical, sold from a farm-gate shop", "hi": "एक्वापोनिक्स, जैसा यूनिवर्सिटी ऑफ़ द वर्जिन आइलैंड्स पद्धति ने इसे व्यावहारिक बनाया, फ़ार्म की दुकान से बिक्री के साथ" } },
+    "label": { "en": "Aquaponics with a farm-gate shop", "hi": "फ़ार्म की दुकान के साथ एक्वापोनिक्स" },
+    "summary": {
+      "en": "Fish in tanks feed the vegetables with their waste, and the plants clean the water for the fish, so one small plot gives both fish and greens with a tenth of the water of a field. Selling them fresh from your own farm-gate shop, or by weekly box to city homes, earns far more than the mandi. Power must be reliable: the pumps cannot stop.",
+      "hi": "टैंकों की मछलियाँ अपने अपशिष्ट से सब्ज़ियों को पोषण देती हैं, और पौधे मछलियों के लिए पानी साफ़ करते हैं, इसलिए छोटी सी जगह से खेत के दसवें हिस्से पानी में मछली और हरी सब्ज़ी दोनों मिलती हैं। इन्हें अपने फ़ार्म की दुकान से ताज़ा, या शहर के घरों को हर हफ़्ते डिब्बे में बेचना मंडी से कहीं ज़्यादा कमाता है। बिजली भरोसेमंद होनी चाहिए: पंप रुक नहीं सकते।"
+    },
+    "fit": {
+      "soilTypes": [],
+      "regions": ["all_india"],
+      "waterNeed": "low",
+      "salinityTolerance": "low",
+      "requiresIrrigation": false,
+      "preferredIrrigation": [],
+      "maxWaterDepthMetres": 200
+    },
+    "sizing": { "mode": "unit", "unitsFromLand": true, "unitLabel": { "en": "Aquaponics unit: fish tanks, 400 m² grow beds and a shop", "hi": "एक्वापोनिक्स इकाई: मछली टैंक, 400 वर्ग मीटर क्यारियाँ और दुकान" }, "landHaPerUnit": 0.08, "minUnits": 1, "maxUnits": 3 },
+    "economics": {
+      "capex": { "low": 1200000, "high": 2000000 },
+      "opexPerYear": { "low": 400000, "high": 600000 },
+      "revenuePerYear": { "low": 700000, "high": 1100000 },
+      "gestationMonths": 4,
+      "fullYieldYear": 2,
+      "projectLifeYears": 10,
+      "riskLevel": "high",
+      "labourDaysPerYear": 600
+    },
+    "export": { "potential": "none", "commodity": "fish" },
+    "schemes": ["pmmsy", "midh", "mudra"],
+    "resources": [
+      { "label": { "en": "PM Matsya Sampada Yojana", "hi": "पीएम मत्स्य संपदा योजना" }, "url": "https://pmmsy.dof.gov.in/" },
+      { "label": { "en": "ICAR-CIFA, Bhubaneswar", "hi": "आईसीएआर-सीफ़ा, भुवनेश्वर" }, "url": "https://cifa.nic.in/" }
+    ]
+  },
+  {
+    "code": "shiitake_drying",
+    "kind": "vegetable",
+    "sector": "hybrid",
+    "origin": { "country": "JP", "note": { "en": "Shiitake growing and drying as Japan perfected it, on sawdust blocks", "hi": "शिटाके उगाना और सुखाना, जैसा जापान ने बुरादे के ब्लॉकों पर निखारा" } },
+    "label": { "en": "Shiitake mushrooms with a drying room", "hi": "सुखाने के कक्ष के साथ शिटाके मशरूम" },
+    "summary": {
+      "en": "Shiitake fetch many times the price of button or oyster mushrooms, and dried shiitake keep for a year and sell to restaurants, health shops and online. They grow on sawdust blocks in a cool, humid room, so they suit the hills or a well-insulated shed. The growing cycle is slow and the blocks need care, so learn it at a training centre before investing.",
+      "hi": "शिटाके का दाम बटन या ढींगरी मशरूम से कई गुना है, और सूखे शिटाके साल भर रहते हैं और रेस्टोरेंट, स्वास्थ्य दुकानों और ऑनलाइन बिकते हैं। ये ठंडे, नम कमरे में बुरादे के ब्लॉकों पर उगते हैं, इसलिए पहाड़ों या अच्छी तरह इन्सुलेटेड शेड के लिए ठीक हैं। उगने में समय लगता है और ब्लॉकों की देखभाल चाहिए, इसलिए निवेश से पहले किसी प्रशिक्षण केंद्र में सीखें।"
+    },
+    "fit": {
+      "soilTypes": [],
+      "regions": ["himalayan", "northeast"],
+      "waterNeed": "low",
+      "salinityTolerance": "medium",
+      "requiresIrrigation": false,
+      "preferredIrrigation": [],
+      "maxWaterDepthMetres": 300
+    },
+    "sizing": { "mode": "unit", "unitsFromLand": false, "unitLabel": { "en": "Shiitake room of 3,000 blocks with a drying room", "hi": "3,000 ब्लॉकों का शिटाके कक्ष और सुखाने का कक्ष" }, "landHaPerUnit": 0.04, "minUnits": 1, "maxUnits": 3 },
+    "economics": {
+      "capex": { "low": 600000, "high": 1000000 },
+      "opexPerYear": { "low": 400000, "high": 600000 },
+      "revenuePerYear": { "low": 700000, "high": 1100000 },
+      "gestationMonths": 6,
+      "fullYieldYear": 2,
+      "projectLifeYears": 8,
+      "riskLevel": "high",
+      "labourDaysPerYear": 700
+    },
+    "export": { "potential": "emerging", "commodity": "dried_produce" },
+    "schemes": ["midh", "pmfme", "pmegp"],
+    "resources": [
+      { "label": { "en": "ICAR-Directorate of Mushroom Research, Solan", "hi": "आईसीएआर-खुंब अनुसंधान निदेशालय, सोलन" }, "url": "https://nrcmushroom.icar.gov.in/" },
+      { "label": { "en": "PM-FME – micro food processing support", "hi": "पीएम-एफएमई – सूक्ष्म खाद्य प्रसंस्करण सहायता" }, "url": "https://pmfme.mofpi.gov.in/" }
+    ]
+  }
+]

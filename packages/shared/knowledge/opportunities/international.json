@@ -1,0 +1,300 @@
+[
+  {
+    "code": "avocado_hass",
+    "kind": "horticulture",
+    "origin": { "country": "MX", "note": { "en": "Hass avocado, bred in California from Mexican stock; now grown in Karnataka, Kerala and the Northeast", "hi": "हैस एवोकाडो, मेक्सिको की किस्म से कैलिफ़ोर्निया में विकसित; अब कर्नाटक, केरल और पूर्वोत्तर में उगाया जाता है" } },
+    "label": { "en": "Hass avocado orchard", "hi": "हैस एवोकाडो का बाग" },
+    "summary": {
+      "en": "India imports most of its avocados, and city demand grows every year. Grafted Hass trees on drip suit cool, well-drained hill slopes and the humid south; the first real crop comes in the fourth year. Waterlogging kills avocado, and the market is still thin outside big cities, so start small.",
+      "hi": "भारत अपने ज़्यादातर एवोकाडो आयात करता है, और शहरों में माँग हर साल बढ़ रही है। ड्रिप पर कलमी हैस पेड़ ठंडी, अच्छे निकास वाली पहाड़ी ढलानों और नम दक्षिण के लिए ठीक हैं; पहली अच्छी फ़सल चौथे साल आती है। पानी रुकने से एवोकाडो मर जाता है, और बड़े शहरों के बाहर बाज़ार अभी छोटा है, इसलिए छोटे से शुरू करें।"
+    },
+    "fit": {
+      "soilTypes": ["loamy", "red", "laterite", "mountain_forest", "alluvial"],
+      "avoidSoilTypes": ["clayey", "black", "saline_alkaline", "peaty_marshy"],
+      "regions": ["southern_humid", "himalayan", "northeast"],
+      "waterNeed": "medium",
+      "salinityTolerance": "low",
+      "requiresIrrigation": true,
+      "preferredIrrigation": ["drip"],
+      "maxWaterDepthMetres": 150
+    },
+    "sizing": { "mode": "area", "minHa": 0.4, "maxHa": 10 },
+    "economics": {
+      "capex": { "low": 600000, "high": 900000 },
+      "opexPerYear": { "low": 150000, "high": 250000 },
+      "revenuePerYear": { "low": 500000, "high": 1300000 },
+      "gestationMonths": 42,
+      "fullYieldYear": 6,
+      "projectLifeYears": 20,
+      "riskLevel": "high",
+      "labourDaysPerYear": 180
+    },
+    "export": { "potential": "none", "commodity": "avocado" },
+    "schemes": ["midh", "pmksy_pdmc", "agri_infra_fund"],
+    "resources": [
+      { "label": { "en": "ICAR-IIHR, Bengaluru – avocado", "hi": "आईसीएआर-आईआईएचआर, बेंगलुरु – एवोकाडो" }, "url": "https://www.iihr.res.in/" },
+      { "label": { "en": "National Horticulture Board", "hi": "राष्ट्रीय बागवानी बोर्ड" }, "url": "https://nhb.gov.in/" }
+    ]
+  },
+  {
+    "code": "kiwi_orchard",
+    "kind": "horticulture",
+    "origin": { "country": "NZ", "note": { "en": "Kiwifruit as New Zealand made it a crop, on T-bar trellis; grown in Himachal, Arunachal and Sikkim", "hi": "कीवी, जैसा न्यूज़ीलैंड ने इसे फ़सल बनाया, टी-बार जाल पर; हिमाचल, अरुणाचल और सिक्किम में उगाई जाती है" } },
+    "label": { "en": "Kiwifruit orchard", "hi": "कीवी का बाग" },
+    "summary": {
+      "en": "Kiwi needs winter chill and summer rain, so it belongs in the hills between about 900 and 2,000 metres. Vines on a T-bar trellis bear from the fourth year and keep bearing for decades; the fruit stores for weeks, which suits hill villages far from markets. Male and female vines must both be planted.",
+      "hi": "कीवी को सर्दियों की ठंड और गर्मियों की बारिश चाहिए, इसलिए यह लगभग 900 से 2,000 मीटर की पहाड़ियों के लिए है। टी-बार जाल पर बेलें चौथे साल से फल देती हैं और दशकों तक देती रहती हैं; फल हफ़्तों रखा जा सकता है, जो बाज़ार से दूर पहाड़ी गाँवों के लिए ठीक है। नर और मादा दोनों बेलें लगानी पड़ती हैं।"
+    },
+    "fit": {
+      "soilTypes": ["loamy", "mountain_forest", "alluvial", "red"],
+      "avoidSoilTypes": ["saline_alkaline", "sandy", "black"],
+      "regions": ["himalayan", "northeast"],
+      "waterNeed": "medium",
+      "salinityTolerance": "low",
+      "requiresIrrigation": false,
+      "preferredIrrigation": ["drip", "sprinkler"],
+      "maxWaterDepthMetres": 100
+    },
+    "sizing": { "mode": "area", "minHa": 0.2, "maxHa": 5 },
+    "economics": {
+      "capex": { "low": 550000, "high": 800000 },
+      "opexPerYear": { "low": 120000, "high": 200000 },
+      "revenuePerYear": { "low": 450000, "high": 1000000 },
+      "gestationMonths": 48,
+      "fullYieldYear": 7,
+      "projectLifeYears": 25,
+      "riskLevel": "medium",
+      "labourDaysPerYear": 200
+    },
+    "export": { "potential": "none", "commodity": "kiwifruit" },
+    "schemes": ["midh", "pmksy_pdmc", "rkvy"],
+    "resources": [
+      { "label": { "en": "Dr YS Parmar University of Horticulture, Nauni", "hi": "डॉ. वाई.एस. परमार बागवानी विश्वविद्यालय, नौणी" }, "url": "https://www.yspuniversity.ac.in/" },
+      { "label": { "en": "National Horticulture Board", "hi": "राष्ट्रीय बागवानी बोर्ड" }, "url": "https://nhb.gov.in/" }
+    ]
+  },
+  {
+    "code": "date_palm_tc",
+    "kind": "horticulture",
+    "origin": { "country": "AE", "note": { "en": "Tissue-culture Barhee date palms from the UAE, as grown in Kutch and western Rajasthan", "hi": "यूएई से टिश्यू कल्चर बरही खजूर, जैसे कच्छ और पश्चिमी राजस्थान में उगाए जाते हैं" } },
+    "label": { "en": "Tissue-culture date palm (Barhee)", "hi": "टिश्यू कल्चर खजूर (बरही)" },
+    "summary": {
+      "en": "Few crops pay on hot, sandy and somewhat salty land; the date palm does. Tissue-culture Barhee palms on drip are sold fresh as yellow 'doka' dates in June and July. Plants are costly and the first crop takes four years, but a palm bears for decades, and states pay a large share of the plant cost.",
+      "hi": "गर्म, रेतीली और कुछ खारी ज़मीन पर कम ही फ़सलें कमाती हैं; खजूर कमाता है। ड्रिप पर टिश्यू कल्चर बरही के ताज़े पीले 'डोका' खजूर जून-जुलाई में बिकते हैं। पौधे महँगे हैं और पहली फ़सल में चार साल लगते हैं, पर पेड़ दशकों तक फल देता है, और राज्य पौधों की लागत का बड़ा हिस्सा देते हैं।"
+    },
+    "fit": {
+      "soilTypes": ["sandy", "loamy", "saline_alkaline", "alluvial"],
+      "avoidSoilTypes": ["clayey", "peaty_marshy", "mountain_forest"],
+      "regions": ["arid_west"],
+      "alsoStates": ["24"],
+      "waterNeed": "medium",
+      "salinityTolerance": "high",
+      "requiresIrrigation": true,
+      "preferredIrrigation": ["drip"],
+      "maxWaterDepthMetres": 250
+    },
+    "sizing": { "mode": "area", "minHa": 0.5, "maxHa": 20 },
+    "economics": {
+      "capex": { "low": 800000, "high": 1100000 },
+      "opexPerYear": { "low": 100000, "high": 180000 },
+      "revenuePerYear": { "low": 450000, "high": 1100000 },
+      "gestationMonths": 48,
+      "fullYieldYear": 8,
+      "projectLifeYears": 30,
+      "riskLevel": "medium",
+      "labourDaysPerYear": 150
+    },
+    "export": { "potential": "none", "commodity": "dates" },
+    "schemes": ["midh", "pmksy_pdmc", "rkvy"],
+    "resources": [
+      { "label": { "en": "ICAR-CAZRI, Jodhpur – arid horticulture", "hi": "आईसीएआर-काज़री, जोधपुर – शुष्क बागवानी" }, "url": "https://www.cazri.res.in/" },
+      { "label": { "en": "National Horticulture Board", "hi": "राष्ट्रीय बागवानी बोर्ड" }, "url": "https://nhb.gov.in/" }
+    ]
+  },
+  {
+    "code": "hydroponic_greens",
+    "kind": "protected",
+    "origin": { "country": "NL", "note": { "en": "Soil-free NFT growing from Dutch greenhouse practice", "hi": "डच ग्रीनहाउस पद्धति से बिना मिट्टी की एनएफटी खेती" } },
+    "label": { "en": "Hydroponic leafy greens", "hi": "हाइड्रोपोनिक पत्तेदार सब्ज़ियाँ" },
+    "summary": {
+      "en": "Lettuce, basil and bok choy grown in water channels under a polyhouse, with no soil at all, so poor or salty land does not matter — only clean water and a buyer do. Hotels, cafés and online grocers in nearby cities pay well for clean greens every week. It is a precise business: power, pH and nutrients need daily attention.",
+      "hi": "पॉलीहाउस में पानी की नालियों में लेट्यूस, तुलसी और बोक चॉय, बिल्कुल बिना मिट्टी के — इसलिए ख़राब या खारी ज़मीन से फ़र्क नहीं पड़ता, बस साफ़ पानी और ख़रीदार चाहिए। पास के शहरों के होटल, कैफ़े और ऑनलाइन दुकानें साफ़ हरी सब्ज़ियों का हर हफ़्ते अच्छा दाम देती हैं। यह बारीक काम है: बिजली, पीएच और पोषक तत्वों पर रोज़ ध्यान देना पड़ता है।"
+    },
+    "fit": {
+      "soilTypes": [],
+      "regions": ["all_india"],
+      "waterNeed": "low",
+      "salinityTolerance": "low",
+      "requiresIrrigation": false,
+      "preferredIrrigation": [],
+      "maxWaterDepthMetres": 200
+    },
+    "sizing": { "mode": "unit", "unitsFromLand": true, "unitLabel": { "en": "500 m² NFT hydroponic polyhouse", "hi": "500 वर्ग मीटर का एनएफटी हाइड्रोपोनिक पॉलीहाउस" }, "landHaPerUnit": 0.06, "minUnits": 1, "maxUnits": 4 },
+    "economics": {
+      "capex": { "low": 1200000, "high": 1800000 },
+      "opexPerYear": { "low": 400000, "high": 600000 },
+      "revenuePerYear": { "low": 800000, "high": 1300000 },
+      "gestationMonths": 3,
+      "fullYieldYear": 1,
+      "projectLifeYears": 10,
+      "riskLevel": "high",
+      "labourDaysPerYear": 500
+    },
+    "export": { "potential": "none", "commodity": "vegetables" },
+    "schemes": ["midh", "agri_infra_fund", "mudra"],
+    "resources": [
+      { "label": { "en": "ICAR-IARI – protected cultivation", "hi": "आईसीएआर-आईएआरआई – संरक्षित खेती" }, "url": "https://www.iari.res.in/" },
+      { "label": { "en": "National Horticulture Board", "hi": "राष्ट्रीय बागवानी बोर्ड" }, "url": "https://nhb.gov.in/" }
+    ]
+  },
+  {
+    "code": "rice_fish_culture",
+    "kind": "field_crop",
+    "origin": { "country": "CN", "note": { "en": "An ancient Chinese system (Qingtian, a FAO heritage site); the Apatani of Arunachal farm this way too", "hi": "एक प्राचीन चीनी पद्धति (किंगतियान, एफ़एओ विरासत स्थल); अरुणाचल के आपातानी भी ऐसे ही खेती करते हैं" } },
+    "label": { "en": "Rice–fish farming", "hi": "धान के साथ मछली पालन" },
+    "summary": {
+      "en": "Fish are stocked in the paddy itself, with a deep trench at the edge to shelter them. They eat weeds and insects, the rice needs less spraying and fertiliser, and the same field gives a crop of fish on top of the grain. It needs a field that holds water through the kharif season and bunds high enough to keep the fish in.",
+      "hi": "धान के खेत में ही मछली छोड़ी जाती है, किनारे पर एक गहरी खाई बनाकर जहाँ वे छिप सकें। मछलियाँ खरपतवार और कीड़े खाती हैं, धान को कम दवा और खाद लगती है, और उसी खेत से अनाज के साथ मछली की फ़सल भी मिलती है। खेत ऐसा हो जो खरीफ़ भर पानी रोके और मेड़ इतनी ऊँची हो कि मछली बाहर न जाए।"
+    },
+    "fit": {
+      "soilTypes": ["clayey", "alluvial", "loamy"],
+      "avoidSoilTypes": ["sandy", "saline_alkaline"],
+      "regions": ["northeast", "central_east", "coastal", "southern_humid"],
+      "waterNeed": "high",
+      "salinityTolerance": "low",
+      "requiresIrrigation": false,
+      "preferredIrrigation": ["flood", "rainfed"],
+      "maxWaterDepthMetres": 60
+    },
+    "sizing": { "mode": "area", "minHa": 0.2, "maxHa": 10 },
+    "economics": {
+      "capex": { "low": 100000, "high": 180000 },
+      "opexPerYear": { "low": 90000, "high": 130000 },
+      "revenuePerYear": { "low": 190000, "high": 280000 },
+      "gestationMonths": 5,
+      "fullYieldYear": 1,
+      "projectLifeYears": 10,
+      "riskLevel": "medium",
+      "labourDaysPerYear": 150
+    },
+    "export": { "potential": "none", "commodity": "fish" },
+    "schemes": ["pmmsy", "rkvy", "kcc"],
+    "resources": [
+      { "label": { "en": "ICAR-CIFA, Bhubaneswar", "hi": "आईसीएआर-सीफ़ा, भुवनेश्वर" }, "url": "https://cifa.nic.in/" },
+      { "label": { "en": "ICAR-NRRI, Cuttack – rice-based systems", "hi": "आईसीएआर-एनआरआरआई, कटक – धान आधारित प्रणालियाँ" }, "url": "https://icar-nrri.in/" }
+    ]
+  },
+  {
+    "code": "export_pack_house",
+    "kind": "processing",
+    "origin": { "country": "NL", "note": { "en": "The Dutch grade–pre-cool–pack chain that fresh-produce exports run on", "hi": "छँटाई–प्री-कूलिंग–पैकिंग की डच श्रृंखला, जिस पर ताज़ी उपज का निर्यात चलता है" } },
+    "business": { "crops": ["fruit", "vegetable"], "catchmentVillages": 60 },
+    "label": { "en": "Grading and pre-cooling pack-house", "hi": "छँटाई और प्री-कूलिंग पैक-हाउस" },
+    "summary": {
+      "en": "Fruit and vegetables lose a third of their value between the field and the buyer. A pack-house that washes, grades, pre-cools and packs to order lets the farmers around you sell to exporters and big retailers instead of the nearest mandi; you earn packing and cooling charges, and a margin when you trade on your own account. It needs a steady flow of produce, so it belongs in a horticulture belt.",
+      "hi": "फल-सब्ज़ी खेत से ख़रीदार तक पहुँचते-पहुँचते एक-तिहाई दाम खो देते हैं। धोने, छाँटने, प्री-कूल करने और ऑर्डर के हिसाब से पैक करने वाला पैक-हाउस आसपास के किसानों को नज़दीकी मंडी के बजाय निर्यातकों और बड़े रिटेलरों को बेचने देता है; आप पैकिंग और कूलिंग का शुल्क कमाते हैं, और अपने खाते पर व्यापार में मुनाफ़ा। इसे उपज की लगातार आवक चाहिए, इसलिए यह बागवानी वाले इलाके के लिए है।"
+    },
+    "fit": {
+      "soilTypes": [],
+      "regions": ["all_india"],
+      "waterNeed": "low",
+      "salinityTolerance": "high",
+      "requiresIrrigation": false,
+      "preferredIrrigation": [],
+      "landless": true,
+      "maxWaterDepthMetres": 400
+    },
+    "sizing": { "mode": "unit", "unitsFromLand": false, "unitLabel": { "en": "Pack-house with 5 t/day pre-cooler", "hi": "5 टन/दिन प्री-कूलर वाला पैक-हाउस" }, "landHaPerUnit": 0.1, "minUnits": 1, "maxUnits": 2 },
+    "economics": {
+      "capex": { "low": 3000000, "high": 5000000 },
+      "opexPerYear": { "low": 2000000, "high": 3000000 },
+      "revenuePerYear": { "low": 3000000, "high": 4500000 },
+      "gestationMonths": 6,
+      "fullYieldYear": 2,
+      "projectLifeYears": 15,
+      "riskLevel": "medium",
+      "labourDaysPerYear": 1500
+    },
+    "export": { "potential": "none", "commodity": "fresh_produce" },
+    "schemes": ["midh", "agri_infra_fund", "apeda_taf"],
+    "resources": [
+      { "label": { "en": "APEDA – export pack-houses", "hi": "एपीडा – निर्यात पैक-हाउस" }, "url": "https://apeda.gov.in/" },
+      { "label": { "en": "Agriculture Infrastructure Fund", "hi": "कृषि अवसंरचना कोष" }, "url": "https://agriinfra.dac.gov.in/" }
+    ]
+  },
+  {
+    "code": "bamboo_processing",
+    "kind": "processing",
+    "origin": { "country": "CN", "note": { "en": "Village bamboo processing as China built it, for sticks, blinds and boards", "hi": "गाँव में बाँस प्रसंस्करण, जैसा चीन ने तीलियों, चिकों और बोर्डों के लिए खड़ा किया" } },
+    "business": { "crops": ["bamboo"], "catchmentVillages": 40 },
+    "label": { "en": "Bamboo sticks and craft unit", "hi": "बाँस की तीली और शिल्प इकाई" },
+    "summary": {
+      "en": "India grows a great deal of bamboo yet imported most of its incense sticks until recently. A small unit that splits, sizes and polishes bamboo into agarbatti sticks, skewers and blind slats turns a low-value crop into steady wages near home, and the rules now let farmers grow and sell bamboo freely. It needs bamboo within easy reach and power for the machines.",
+      "hi": "भारत में बाँस बहुत उगता है, फिर भी हाल तक अगरबत्ती की ज़्यादातर तीलियाँ आयात होती थीं। बाँस को चीरकर, नापकर और चिकना करके अगरबत्ती की तीलियाँ, सींकें और चिक की पट्टियाँ बनाने वाली छोटी इकाई कम दाम की फ़सल को घर के पास पक्की मज़दूरी में बदल देती है, और नियम अब किसानों को बाँस उगाने-बेचने की खुली छूट देते हैं। पास में बाँस और मशीनों के लिए बिजली चाहिए।"
+    },
+    "fit": {
+      "soilTypes": [],
+      "regions": ["northeast", "central_east", "southern_humid", "coastal"],
+      "waterNeed": "low",
+      "salinityTolerance": "high",
+      "requiresIrrigation": false,
+      "preferredIrrigation": [],
+      "landless": true,
+      "maxWaterDepthMetres": 400
+    },
+    "sizing": { "mode": "unit", "unitsFromLand": false, "unitLabel": { "en": "Bamboo stick-making unit (6 machines)", "hi": "बाँस तीली इकाई (6 मशीनें)" }, "landHaPerUnit": 0.05, "minUnits": 1, "maxUnits": 2 },
+    "economics": {
+      "capex": { "low": 800000, "high": 1500000 },
+      "opexPerYear": { "low": 1000000, "high": 1600000 },
+      "revenuePerYear": { "low": 1400000, "high": 2200000 },
+      "gestationMonths": 4,
+      "fullYieldYear": 2,
+      "projectLifeYears": 10,
+      "riskLevel": "medium",
+      "labourDaysPerYear": 1200
+    },
+    "export": { "potential": "none", "commodity": "bamboo" },
+    "schemes": ["pmegp", "mudra"],
+    "resources": [
+      { "label": { "en": "National Bamboo Mission", "hi": "राष्ट्रीय बाँस मिशन" }, "url": "https://nbm.nic.in/" },
+      { "label": { "en": "KVIC – village industries", "hi": "केवीआईसी – ग्रामोद्योग" }, "url": "https://www.kviconline.gov.in/" }
+    ]
+  },
+  {
+    "code": "bokashi_unit",
+    "kind": "service",
+    "origin": { "country": "JP", "note": { "en": "Bokashi fermented compost with effective micro-organisms, developed in Japan", "hi": "प्रभावी सूक्ष्मजीवों वाली बोकाशी किण्वित खाद, जापान में विकसित" } },
+    "business": { "crops": ["vegetable", "fruit", "spice"], "catchmentVillages": 30 },
+    "label": { "en": "Bokashi compost unit", "hi": "बोकाशी खाद इकाई" },
+    "summary": {
+      "en": "Bokashi ferments farm and kitchen waste with bran and effective micro-organisms in closed drums, and is ready in weeks rather than the months a compost heap takes. Vegetable and fruit growers, nurseries and city gardeners buy it, and organic-certification rules favour it. The skill is in keeping the drums airtight and the culture alive.",
+      "hi": "बोकाशी खेत और रसोई के कचरे को चोकर और प्रभावी सूक्ष्मजीवों के साथ बंद ड्रमों में सड़ाती है, और खाद के ढेर के महीनों के बजाय हफ़्तों में तैयार हो जाती है। सब्ज़ी और फल उगाने वाले, नर्सरियाँ और शहर के बागवान इसे ख़रीदते हैं, और जैविक प्रमाणन के नियम इसके पक्ष में हैं। हुनर ड्रमों को हवाबंद और कल्चर को ज़िंदा रखने में है।"
+    },
+    "fit": {
+      "soilTypes": [],
+      "regions": ["all_india"],
+      "waterNeed": "low",
+      "salinityTolerance": "high",
+      "requiresIrrigation": false,
+      "preferredIrrigation": [],
+      "maxWaterDepthMetres": 400
+    },
+    "sizing": { "mode": "unit", "unitsFromLand": false, "unitLabel": { "en": "Bokashi unit, about 100 t a year", "hi": "बोकाशी इकाई, लगभग 100 टन सालाना" }, "landHaPerUnit": 0.05, "minUnits": 1, "maxUnits": 3 },
+    "economics": {
+      "capex": { "low": 300000, "high": 500000 },
+      "opexPerYear": { "low": 300000, "high": 450000 },
+      "revenuePerYear": { "low": 500000, "high": 750000 },
+      "gestationMonths": 3,
+      "fullYieldYear": 1,
+      "projectLifeYears": 8,
+      "riskLevel": "low",
+      "labourDaysPerYear": 500
+    },
+    "export": { "potential": "none", "commodity": "compost" },
+    "schemes": ["pkvy", "pmegp", "mudra"],
+    "resources": [
+      { "label": { "en": "PGS-India organic farming", "hi": "पीजीएस-इंडिया जैविक खेती" }, "url": "https://pgsindia-ncof.gov.in/" },
+      { "label": { "en": "EM Research Organization, Japan", "hi": "ईएम रिसर्च ऑर्गनाइज़ेशन, जापान" }, "url": "https://www.emrojapan.com/" }
+    ]
+  }
+]

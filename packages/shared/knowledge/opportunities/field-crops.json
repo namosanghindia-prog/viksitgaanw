@@ -2,6 +2,7 @@
   {
     "code": "basmati_export_paddy",
     "kind": "field_crop",
+    "origin": { "country": "IN", "note": { "en": "Basmati of the Indo-Gangetic plains; Pusa varieties from IARI, New Delhi", "hi": "सिंधु-गंगा के मैदानों का बासमती; पूसा किस्में आईएआरआई, नई दिल्ली से" } },
     "label": { "en": "Export-grade basmati paddy", "hi": "निर्यात श्रेणी का बासमती धान" },
     "summary": {
       "en": "The same paddy season you already know, grown to a pesticide-residue standard that exporters will pay a premium for. Nothing about the field work changes much — what changes is the spray schedule, the record-keeping and who you sell to.",
@@ -39,6 +40,7 @@
   {
     "code": "makhana_foxnut",
     "kind": "field_crop",
+    "origin": { "country": "IN", "note": { "en": "Traditional in Mithila, Bihar; improved at ICAR's makhana centre, Darbhanga", "hi": "मिथिला, बिहार की परंपरा; आईसीएआर मखाना केंद्र, दरभंगा में सुधरी" } },
     "label": { "en": "Makhana (foxnut) in waterlogged land", "hi": "जलजमाव वाली ज़मीन में मखाना" },
     "summary": {
       "en": "Makhana turns the problem into the asset: it is grown in standing water, so a low field or pond that floods every year and grows nothing becomes the most valuable land you own. Popping the nut on the farm adds a second margin.",
@@ -77,6 +79,7 @@
   {
     "code": "seed_production_contract",
     "kind": "field_crop",
+    "origin": { "country": "IN", "note": { "en": "Indian seed companies' contract-growing model, under the Seeds Act", "hi": "बीज अधिनियम के तहत भारतीय बीज कंपनियों का अनुबंध मॉडल" } },
     "label": { "en": "Certified seed production on contract", "hi": "अनुबंध पर प्रमाणित बीज उत्पादन" },
     "summary": {
       "en": "Grow the crop you already grow, but as certified seed for a seed company or the state seed corporation. The same field earns roughly half again as much, and the buyer is fixed in writing before you sow. The cost is discipline: isolation distance, rogueing and inspection.",
@@ -113,6 +116,7 @@
   {
     "code": "organic_conversion",
     "kind": "field_crop",
+    "origin": { "country": "IN", "note": { "en": "India's own organic standards: NPOP and PGS-India", "hi": "भारत के अपने जैविक मानक: एनपीओपी और पीजीएस-इंडिया" } },
     "label": { "en": "Certified organic conversion", "hi": "प्रमाणित जैविक खेती में बदलाव" },
     "summary": {
       "en": "A three-year switch to certified organic under a farmer group. Yields dip in the first two years and the certificate only pays from the third, so this suits land that is already low-input, and a farmer who can hold on through the dip.",
@@ -149,6 +153,7 @@
   {
     "code": "fodder_and_silage",
     "kind": "field_crop",
+    "origin": { "country": "IN", "note": { "en": "Village silage for dairies, as NDDB promotes it", "hi": "डेयरी के लिए गाँव का साइलेज, जैसा एनडीडीबी बढ़ावा देता है" } },
     "label": { "en": "Green fodder and silage for sale", "hi": "बिक्री के लिए हरा चारा और साइलेज" },
     "summary": {
       "en": "In a dairy belt, fodder is short every summer and dairies pay cash for silage. Napier or maize cut for silage gives many cuts a year off one planting, and it sells within a few kilometres, so there is no transport problem.",

@@ -277,14 +277,30 @@ export interface Link {
   url: string;
 }
 
-/** Crops and allied (livestock, fish, bees), or processing, storage and services. */
-export type Sector = 'farm' | 'nonfarm';
+/**
+ * Crops and allied (livestock, fish, bees); processing, storage and services;
+ * or a hybrid that farms and runs a business on the same produce.
+ */
+export type Sector = 'farm' | 'nonfarm' | 'hybrid';
+
+/** Whether the model grew up in India or was brought here from abroad. */
+export type OriginScope = 'national' | 'international';
+
+export interface Origin {
+  /** ISO 3166 alpha-2, e.g. "IN", "NL". */
+  country: string;
+  countryName: string;
+  scope: OriginScope;
+  /** Where the model comes from and where it already works, in one line. */
+  note: string;
+}
 
 export interface Opportunity {
   code: string;
   kind: string;
   kindLabel: string;
   sector: Sector;
+  origin: Origin;
   name: string;
   summary: string;
   score: number;
@@ -579,7 +595,14 @@ export interface RequestListing {
     irrigationType?: string | null;
     existingCrops?: string[];
   };
-  opportunity: { code: string; kind: string; name: Label } | null;
+  opportunity: {
+    code: string;
+    kind: string;
+    name: Label;
+    /** Absent on listings published before origins were recorded. */
+    sector?: Sector;
+    origin?: { country: string; note: Label };
+  } | null;
   plan: {
     reportNumber?: string;
     reportLanguage?: string;

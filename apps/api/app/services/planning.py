@@ -21,6 +21,7 @@ from ..schemas import (
     LinkOut,
     MoneyBandOut,
     OpportunityOut,
+    OriginOut,
     SignalOut,
     SizingOut,
 )
@@ -230,6 +231,17 @@ def _export_summary(translator: Translator, opportunity: dict[str, Any]) -> Expo
     )
 
 
+def _origin(translator: Translator, opportunity: dict[str, Any]) -> OriginOut:
+    origin = knowledge.opportunity_origin(opportunity)
+    country = origin.get("country", knowledge.HOME_COUNTRY)
+    return OriginOut(
+        country=country,
+        country_name=translator.reference("countries", country),
+        scope=knowledge.opportunity_scope(opportunity),
+        note=translator.origin_note(opportunity),
+    )
+
+
 def to_schema(translator: Translator, assessment: Assessment) -> OpportunityOut:
     opportunity = assessment.opportunity
     economics = assessment.economics
@@ -252,6 +264,7 @@ def to_schema(translator: Translator, assessment: Assessment) -> OpportunityOut:
         kind=opportunity["kind"],
         kind_label=translator.reference("kinds", opportunity["kind"], kind.get("label")),
         sector=knowledge.opportunity_sector(opportunity),
+        origin=_origin(translator, opportunity),
         name=translator.opportunity_name(opportunity),
         summary=translator.summary(opportunity),
         score=assessment.score,

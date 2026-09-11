@@ -2,6 +2,7 @@
   {
     "code": "polyhouse_vegetables",
     "kind": "protected",
+    "origin": { "country": "NL", "note": { "en": "Greenhouse growing perfected in the Netherlands, adapted for India", "hi": "नीदरलैंड में निखरी ग्रीनहाउस खेती, भारत के हिसाब से ढली" } },
     "label": { "en": "Polyhouse for coloured capsicum / cucumber", "hi": "रंगीन शिमला मिर्च / खीरे के लिए पॉलीहाउस" },
     "summary": {
       "en": "A naturally ventilated polyhouse turns a tenth of an acre into a year-round vegetable business at city prices. It needs clean water, steady electricity and daily attention, and it is the one option here where a 50% government subsidy usually decides whether the numbers work.",
@@ -45,6 +46,7 @@
   {
     "code": "shadenet_vegetables",
     "kind": "protected",
+    "origin": { "country": "IN", "note": { "en": "Low-cost Indian shade-net houses, as the horticulture mission funds them", "hi": "कम लागत वाले भारतीय शेड-नेट घर, जैसे बागवानी मिशन मदद देता है" } },
     "label": { "en": "Shade-net house for vegetables and nursery", "hi": "सब्ज़ी और नर्सरी के लिए शेड-नेट हाउस" },
     "summary": {
       "en": "A shade-net house costs a third of a polyhouse and is far easier to run. It extends the season, cuts pest damage sharply, and doubles as a paid nursery raising seedlings for neighbouring farmers.",
@@ -87,6 +89,7 @@
   {
     "code": "open_field_vegetables",
     "kind": "vegetable",
+    "origin": { "country": "IN", "note": { "en": "Open-field vegetables with Indian public-sector varieties", "hi": "भारतीय सरकारी किस्मों के साथ खुले खेत की सब्ज़ियाँ" } },
     "label": { "en": "Year-round vegetable rotation", "hi": "साल भर की सब्ज़ी चक्र खेती" },
     "summary": {
       "en": "Three vegetable crops a year on the same land — say okra, then cauliflower, then onion — with drip and mulch. It needs no big investment and starts earning in the first season, which makes it the safest way to move off wheat and paddy.",
@@ -123,6 +126,7 @@
   {
     "code": "mushroom_oyster",
     "kind": "vegetable",
+    "origin": { "country": "IN", "note": { "en": "Oyster mushroom growing spread by ICAR-DMR, Solan", "hi": "आईसीएआर-डीएमआर, सोलन के फैलाए ढींगरी मशरूम" } },
     "label": { "en": "Oyster mushroom growing room", "hi": "ढींगरी (ऑयस्टर) मशरूम कक्ष" },
     "summary": {
       "en": "Mushrooms are grown on straw in a shaded room, not in a field, so this works for a family with almost no land. The first harvest comes in about six weeks, the work is light, and paddy or wheat straw is the main raw material.",
@@ -165,6 +169,7 @@
   {
     "code": "gherkin_contract",
     "kind": "vegetable",
+    "origin": { "country": "IN", "note": { "en": "Karnataka's contract-grown gherkins for export to Europe", "hi": "यूरोप निर्यात के लिए कर्नाटक का अनुबंध-खेती वाला खीरा" } },
     "label": { "en": "Gherkin on export buy-back contract", "hi": "निर्यात अनुबंध पर खीरा (गेरकिन)" },
     "summary": {
       "en": "Gherkins are grown almost entirely for export, on a written contract where the company supplies seed and takes the whole crop at an agreed rate. That removes price risk, which is why banks treat it kindly, but you must have a processor operating in your district.",
@@ -202,6 +207,7 @@
   {
     "code": "baby_corn",
     "kind": "vegetable",
+    "origin": { "country": "TH", "note": { "en": "Baby corn as a crop came from Thailand, still its largest exporter", "hi": "बेबी कॉर्न की खेती थाईलैंड से आई, जो आज भी सबसे बड़ा निर्यातक है" } },
     "label": { "en": "Baby corn for hotels and processors", "hi": "होटल और प्रसंस्करण के लिए बेबी कॉर्न" },
     "summary": {
       "en": "Baby corn is picked young, gives three or four crops a year, and the green stalk left behind is excellent cattle fodder — so one field feeds both a vegetable buyer and your animals. It works best within reach of a city or a food processor.",
@@ -237,6 +243,7 @@
   {
     "code": "marigold_flowers",
     "kind": "vegetable",
+    "origin": { "country": "IN", "note": { "en": "Indian marigold for temples and festivals, with Pusa varieties", "hi": "मंदिरों और त्योहारों के लिए भारतीय गेंदा, पूसा किस्मों के साथ" } },
     "label": { "en": "Marigold and loose flowers", "hi": "गेंदा और खुले फूल की खेती" },
     "summary": {
       "en": "Loose flowers sell every day of the year and peak at festivals and weddings, when prices multiply. Marigold needs little water, tolerates ordinary soil, and starts earning about two months after planting.",

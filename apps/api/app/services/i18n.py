@@ -152,6 +152,17 @@ class Translator:
                 return self.label(item.get("label")) or code
         return self.label(fallback) or code
 
+    def origin_note(self, opportunity: dict[str, Any]) -> str:
+        """Where the option's model comes from, in the reader's language."""
+        override = (
+            knowledge.load_catalogue(self.language)
+            .get("origins", {})
+            .get(opportunity["code"])
+        )
+        if override:
+            return override
+        return self.label((opportunity.get("origin") or {}).get("note"))
+
     def summary(self, opportunity: dict[str, Any]) -> str:
         """An option's descriptive paragraph, in the farmer's language."""
         override = (
