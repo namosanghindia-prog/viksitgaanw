@@ -20,6 +20,8 @@ __pycache__/
 *.db-shm
 apps/api/data/
 data/lgd/dump/
+# the development sync server's store holds other people's shared records
+apps/sync/data/
 
 # env / secrets
 .env

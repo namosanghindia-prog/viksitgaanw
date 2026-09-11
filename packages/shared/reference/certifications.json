@@ -1,0 +1,14 @@
+{
+  "key": "certifications",
+  "version": 1,
+  "multi": true,
+  "items": [
+    { "code": "organic_india", "label": { "en": "India Organic (NPOP)", "hi": "इंडिया ऑर्गेनिक (एनपीओपी)" } },
+    { "code": "organic_eu",    "label": { "en": "EU Organic",           "hi": "ईयू ऑर्गेनिक" } },
+    { "code": "organic_usda",  "label": { "en": "USDA Organic",         "hi": "यूएसडीए ऑर्गेनिक" } },
+    { "code": "globalgap",     "label": { "en": "GLOBALG.A.P.",         "hi": "ग्लोबलगैप" } },
+    { "code": "indgap",        "label": { "en": "IndGAP",               "hi": "इंडगैप" } },
+    { "code": "fairtrade",     "label": { "en": "Fairtrade",            "hi": "फ़ेयरट्रेड" } },
+    { "code": "rainforest",    "label": { "en": "Rainforest Alliance",  "hi": "रेनफ़ॉरेस्ट एलायंस" } }
+  ]
+}

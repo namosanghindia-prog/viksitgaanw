@@ -1,0 +1,86 @@
+{
+  "key": "insurance_schemes",
+  "version": 1,
+  "dataAsOf": "2026-09",
+  "items": [
+    {
+      "code": "pmfby",
+      "categories": ["crop"],
+      "label": { "en": "Pradhan Mantri Fasal Bima Yojana (PMFBY)", "hi": "प्रधानमंत्री फसल बीमा योजना (पीएमएफबीवाई)" },
+      "note": {
+        "en": "Farmer pays at most 2% of the sum insured for kharif food and oilseed crops, 1.5% for rabi, and 5% for commercial and horticultural crops. The government pays the rest.",
+        "hi": "किसान खरीफ़ की खाद्य व तिलहन फसलों के लिए बीमित राशि का अधिकतम 2%, रबी के लिए 1.5%, और व्यावसायिक व बागवानी फसलों के लिए 5% देता है। बाकी सरकार देती है।"
+      },
+      "url": "https://pmfby.gov.in/"
+    },
+    {
+      "code": "rwbcis",
+      "categories": ["crop"],
+      "label": { "en": "Restructured Weather Based Crop Insurance (RWBCIS)", "hi": "पुनर्गठित मौसम आधारित फसल बीमा (आरडब्ल्यूबीसीआईएस)" },
+      "note": {
+        "en": "Pays on measured rainfall, temperature or wind rather than a crop-cutting survey. Same farmer premium limits as PMFBY; common for orchards.",
+        "hi": "फसल कटाई सर्वे के बजाय मापी गई बारिश, तापमान या हवा के आधार पर भुगतान करता है। किसान का प्रीमियम पीएमएफबीवाई जितना ही; बागों के लिए आम।"
+      },
+      "url": "https://pmfby.gov.in/"
+    },
+    {
+      "code": "state_crop",
+      "categories": ["crop"],
+      "label": { "en": "State government crop scheme", "hi": "राज्य सरकार की फसल योजना" }
+    },
+    {
+      "code": "nlm_livestock",
+      "categories": ["livestock"],
+      "label": { "en": "National Livestock Mission – livestock insurance", "hi": "राष्ट्रीय पशुधन मिशन – पशुधन बीमा" },
+      "note": {
+        "en": "Subsidised premium for cattle, buffalo, sheep, goats and pigs, arranged through the district animal husbandry office.",
+        "hi": "गाय, भैंस, भेड़, बकरी और सुअर के लिए सब्सिडी वाला प्रीमियम, ज़िला पशुपालन कार्यालय के ज़रिए।"
+      }
+    },
+    {
+      "code": "pmsby",
+      "categories": ["accident"],
+      "label": { "en": "PM Suraksha Bima Yojana (PMSBY)", "hi": "प्रधानमंत्री सुरक्षा बीमा योजना (पीएमएसबीवाई)" },
+      "note": {
+        "en": "Rs 2 lakh accident cover for Rs 20 a year, auto-debited from a savings account. Ages 18 to 70.",
+        "hi": "₹20 सालाना में ₹2 लाख का दुर्घटना बीमा, बचत खाते से अपने आप कटता है। उम्र 18 से 70 वर्ष।"
+      },
+      "url": "https://jansuraksha.gov.in/"
+    },
+    {
+      "code": "pmjjby",
+      "categories": ["life"],
+      "label": { "en": "PM Jeevan Jyoti Bima Yojana (PMJJBY)", "hi": "प्रधानमंत्री जीवन ज्योति बीमा योजना (पीएमजेजेबीवाई)" },
+      "note": {
+        "en": "Rs 2 lakh life cover for Rs 436 a year, auto-debited from a savings account. Join between ages 18 and 50.",
+        "hi": "₹436 सालाना में ₹2 लाख का जीवन बीमा, बचत खाते से अपने आप कटता है। 18 से 50 वर्ष की उम्र में जुड़ सकते हैं।"
+      },
+      "url": "https://jansuraksha.gov.in/"
+    },
+    {
+      "code": "pmjay",
+      "categories": ["health"],
+      "label": { "en": "Ayushman Bharat PM-JAY", "hi": "आयुष्मान भारत पीएम-जेएवाई" },
+      "note": {
+        "en": "Up to Rs 5 lakh a year per eligible family for hospital treatment, with no premium.",
+        "hi": "पात्र परिवार को अस्पताल इलाज के लिए सालाना ₹5 लाख तक, बिना किसी प्रीमियम के।"
+      },
+      "url": "https://pmjay.gov.in/"
+    },
+    {
+      "code": "ecgc",
+      "categories": ["trade_credit"],
+      "label": { "en": "ECGC export credit insurance", "hi": "ईसीजीसी निर्यात ऋण बीमा" },
+      "note": {
+        "en": "Government of India cover for Indian exporters against a foreign buyer not paying.",
+        "hi": "विदेशी खरीदार के भुगतान न करने पर भारतीय निर्यातकों के लिए भारत सरकार का बीमा।"
+      },
+      "url": "https://www.ecgc.in/"
+    },
+    {
+      "code": "private",
+      "categories": ["crop", "livestock", "structure", "machinery", "property", "accident", "life", "health", "trade_credit", "cargo"],
+      "label": { "en": "Private policy from an insurance company", "hi": "किसी बीमा कंपनी की निजी पॉलिसी" }
+    }
+  ]
+}

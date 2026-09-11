@@ -35,6 +35,17 @@ ADDITIVE_COLUMNS: dict[str, dict[str, str]] = {
         "water_depth_unit": "VARCHAR(16)",
         "water_depth_metres": "FLOAT",
     },
+    # Added with "Share online": everything starts on the device only.
+    "profiles": {
+        "visibility": "VARCHAR(16) NOT NULL DEFAULT 'offline'",
+        "shared_at": "DATETIME",
+    },
+    "investment_requests": {
+        "visibility": "VARCHAR(16) NOT NULL DEFAULT 'offline'",
+        "shared_at": "DATETIME",
+        # Added with farmer groups.
+        "group_id": "VARCHAR(36)",
+    },
 }
 
 

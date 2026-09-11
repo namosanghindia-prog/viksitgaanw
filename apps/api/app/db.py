@@ -74,6 +74,10 @@ def init_db() -> None:
     """
     from . import models  # noqa: F401  (registers mappers)
     from .migrations import apply_additive_migrations
+    from .services.datacare import apply_pending_restore
 
+    # A restore uploaded in the last session is applied now, before anything
+    # has the database open.
+    apply_pending_restore(engine)
     models.Base.metadata.create_all(bind=engine)
     apply_additive_migrations(engine)

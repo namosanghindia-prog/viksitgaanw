@@ -1,0 +1,17 @@
+{
+  "key": "partnership_types",
+  "version": 1,
+  "multi": true,
+  "items": [
+    { "code": "contract_farming", "label": { "en": "Contract farming",                        "hi": "अनुबंध खेती" } },
+    { "code": "buy_back",         "label": { "en": "Buy-back of produce",                     "hi": "उपज की वापस खरीद" } },
+    { "code": "input_supply",     "label": { "en": "Seeds and inputs",                        "hi": "बीज व कृषि आदान" } },
+    { "code": "technical",        "label": { "en": "Technical advice",                        "hi": "तकनीकी सलाह" } },
+    { "code": "processing",       "label": { "en": "Processing / value addition",             "hi": "प्रसंस्करण / मूल्य संवर्धन" } },
+    { "code": "market_linkage",   "label": { "en": "Market linkage",                          "hi": "बाज़ार से जोड़ना" } },
+    { "code": "export",           "label": { "en": "Export linkage",                          "hi": "निर्यात से जोड़ना" } },
+    { "code": "equipment",        "label": { "en": "Machinery and equipment",                 "hi": "मशीनरी और उपकरण" } },
+    { "code": "training",         "label": { "en": "Training",                                "hi": "प्रशिक्षण" } },
+    { "code": "certification",    "label": { "en": "Certification support (organic, GAP)",    "hi": "प्रमाणन सहायता (जैविक, जीएपी)" } }
+  ]
+}

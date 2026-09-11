@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import type { LandParcelInput, LocationSelection } from '@viksitgaanw/shared';
+import { useNavigate, useParams } from 'react-router-dom';
+import type { LandParcel, LandParcelInput, LocationSelection } from '@viksitgaanw/shared';
 import {
   REFERENCE,
   findItem,
@@ -57,6 +57,35 @@ const INITIAL: FormState = {
   notes: '',
 };
 
+/** The form as a saved plot fills it in, for editing. */
+function fromParcel(parcel: LandParcel): FormState {
+  return {
+    location: {
+      stateCode: parcel.stateCode,
+      districtCode: parcel.districtCode,
+      subdistrictCode: parcel.subdistrictCode,
+      villageCode: parcel.villageCode,
+    },
+    label: parcel.label,
+    areaValue: String(parcel.areaValue),
+    areaUnit: parcel.areaUnit,
+    surveyNumber: parcel.surveyNumber ?? '',
+    ownershipType: parcel.ownershipType ?? null,
+    soilType: parcel.soilType ?? null,
+    waterSources: parcel.waterSources,
+    waterType: parcel.waterType ?? null,
+    waterDepthValue: parcel.waterDepthValue != null ? String(parcel.waterDepthValue) : '',
+    waterDepthUnit: parcel.waterDepthUnit ?? 'foot',
+    irrigationType: parcel.irrigationType ?? null,
+    existingCrops: parcel.existingCrops,
+    coordinates:
+      parcel.latitude != null && parcel.longitude != null
+        ? { latitude: parcel.latitude, longitude: parcel.longitude }
+        : null,
+    notes: parcel.notes ?? '',
+  };
+}
+
 /**
  * Three-step land intake.
  *
@@ -64,11 +93,44 @@ const INITIAL: FormState = {
  * lot more than saving clicks for a user who is reading slowly.
  */
 export function AddLandPage() {
+  return <LandForm initial={INITIAL} />;
+}
+
+/**
+ * Change a saved plot. Its place stays as it is -- a plot somewhere else is a
+ * new plot, and the place is on every report already made for this one -- so
+ * editing starts at the details.
+ */
+export function EditLandPage() {
+  const { t } = useI18n();
+  const { parcelId } = useParams();
+  const parcel = useAsync((signal) => api.getParcel(parcelId!, signal), [parcelId]);
+
+  if (parcel.error) {
+    return (
+      <div className="page">
+        <p className="callout callout--error">{parcel.error.message}</p>
+      </div>
+    );
+  }
+  if (!parcel.data) {
+    return (
+      <div className="page">
+        <p className="muted">{t('common.loading')}</p>
+      </div>
+    );
+  }
+  return <LandForm key={parcel.data.id} initial={fromParcel(parcel.data)} parcelId={parcel.data.id} />;
+}
+
+function LandForm({ initial, parcelId }: { initial: FormState; parcelId?: string }) {
   const { t, lang, rt } = useI18n();
   const navigate = useNavigate();
+  const editing = Boolean(parcelId);
+  const steps: Step[] = editing ? ['details', 'review'] : STEPS;
 
-  const [step, setStep] = useState<Step>('location');
-  const [form, setForm] = useState<FormState>(INITIAL);
+  const [step, setStep] = useState<Step>(steps[0]);
+  const [form, setForm] = useState<FormState>(initial);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -129,19 +191,16 @@ export function AddLandPage() {
 
   const goBack = () => {
     setErrors({});
-    if (step === 'details') setStep('location');
+    if (step === 'details' && !editing) setStep('location');
     else if (step === 'review') setStep('details');
   };
 
   const save = async () => {
     setSaving(true);
     setSaveError(null);
-    const payload: LandParcelInput = {
+    // Everything but the place, which an edit leaves alone.
+    const details: Omit<LandParcelInput, 'stateCode' | 'districtCode' | 'subdistrictCode' | 'villageCode'> = {
       label: form.label.trim(),
-      stateCode: form.location.stateCode!,
-      districtCode: form.location.districtCode!,
-      subdistrictCode: form.location.subdistrictCode,
-      villageCode: form.location.villageCode,
       surveyNumber: form.surveyNumber.trim() || null,
       ownershipType: form.ownershipType,
       areaValue: areaNumber,
@@ -159,7 +218,18 @@ export function AddLandPage() {
     };
 
     try {
-      const created = await api.createParcel(payload);
+      if (parcelId) {
+        await api.updateParcel(parcelId, details);
+        navigate('/');
+        return;
+      }
+      const created = await api.createParcel({
+        ...details,
+        stateCode: form.location.stateCode!,
+        districtCode: form.location.districtCode!,
+        subdistrictCode: form.location.subdistrictCode,
+        villageCode: form.location.villageCode,
+      });
       // Straight to the options: telling the farmer what the land could earn is
       // the point of having collected all of this.
       navigate(`/land/${created.id}/plan`, { state: { savedParcelId: created.id } });
@@ -173,12 +243,12 @@ export function AddLandPage() {
 
   return (
     <div className="page">
-      <ol className="stepper" aria-label={t('common.step', { n: STEPS.indexOf(step) + 1, total: STEPS.length })}>
-        {STEPS.map((entry, index) => (
+      <ol className="stepper" aria-label={t('common.step', { n: steps.indexOf(step) + 1, total: steps.length })}>
+        {steps.map((entry, index) => (
           <li
             key={entry}
             className={`stepper__item ${entry === step ? 'stepper__item--active' : ''} ${
-              STEPS.indexOf(step) > index ? 'stepper__item--done' : ''
+              steps.indexOf(step) > index ? 'stepper__item--done' : ''
             }`}
           >
             <span className="stepper__number">{index + 1}</span>
@@ -227,8 +297,16 @@ export function AddLandPage() {
 
       {step === 'details' ? (
         <section className="card">
-          <h2 className="card__title">{t('land.title')}</h2>
+          <h2 className="card__title">{editing ? t('land.editTitle') : t('land.title')}</h2>
           <p className="card__help">{t('land.help')}</p>
+
+          {editing ? (
+            <div className="field">
+              <p className="field__label">{t('review.location')}</p>
+              <ResolvedLocation location={form.location} />
+              <p className="field__hint">{t('land.placeFixed')}</p>
+            </div>
+          ) : null}
 
           <div className="field">
             <label className="field__label" htmlFor="label">
@@ -417,7 +495,7 @@ export function AddLandPage() {
       {saveError ? <p className="callout callout--error">{saveError}</p> : null}
 
       <div className="actions">
-        {step !== 'location' ? (
+        {step !== steps[0] ? (
           <button type="button" className="button button--ghost" onClick={goBack} disabled={saving}>
             {t('common.back')}
           </button>

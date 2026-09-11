@@ -10,6 +10,7 @@ from __future__ import annotations
 from functools import lru_cache
 from pathlib import Path
 
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 # .../apps/api/app/config.py -> app -> api -> apps -> repo root
@@ -44,6 +45,11 @@ class Settings(BaseSettings):
     #: reason the database is.
     reports_dir: Path = REPO_ROOT / "apps" / "api" / "data" / "reports"
 
+    #: Profile photos and equipment pictures. Left unset, they sit in a
+    #: ``media`` folder beside the database, so they follow it into the OS
+    #: user-data directory in a packaged build -- and into a test's temp dir.
+    media_dir_override: Path | None = Field(default=None, alias="VG_MEDIA_DIR")
+
     #: Optional offline map tile pack (MBTiles). When absent the map falls
     #: back to online imagery, which is fine for a prototype but not for a
     #: field device.
@@ -73,9 +79,25 @@ class Settings(BaseSettings):
     #: "find me" on a dead connection must get an answer, not a spinner.
     network_timeout_seconds: float = 6.0
 
+    #: Free key from data.gov.in, for pulling Agmarknet mandi prices. Without
+    #: one, prices can still be imported from a downloaded CSV.
+    data_gov_api_key: str | None = None
+
+    #: Where backups are written. Beside the database by default, which in a
+    #: packaged build is the OS user-data directory.
+    backups_dir_override: Path | None = Field(default=None, alias="VG_BACKUPS_DIR")
+
     @property
     def database_url(self) -> str:
         return f"sqlite:///{self.db_path.as_posix()}"
+
+    @property
+    def media_dir(self) -> Path:
+        return self.media_dir_override or self.db_path.parent / "media"
+
+    @property
+    def backups_dir(self) -> Path:
+        return self.backups_dir_override or self.db_path.parent / "backups"
 
 
 @lru_cache(maxsize=1)

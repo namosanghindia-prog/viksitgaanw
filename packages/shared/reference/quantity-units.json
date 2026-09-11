@@ -1,0 +1,17 @@
+{
+  "key": "quantity_units",
+  "version": 1,
+  "items": [
+    { "code": "kg",      "label": { "en": "kg",      "hi": "किलो" } },
+    { "code": "quintal", "label": { "en": "quintal", "hi": "क्विंटल" } },
+    { "code": "tonne",   "label": { "en": "tonne",   "hi": "टन" } },
+    { "code": "litre",   "label": { "en": "litre",   "hi": "लीटर" } },
+    { "code": "ml",      "label": { "en": "ml",      "hi": "मिली" } },
+    { "code": "gram",    "label": { "en": "gram",    "hi": "ग्राम" } },
+    { "code": "bag",     "label": { "en": "bag",     "hi": "बोरी" } },
+    { "code": "plants",  "label": { "en": "plants",  "hi": "पौधे" } },
+    { "code": "hour",    "label": { "en": "hours",   "hi": "घंटे" } },
+    { "code": "day",     "label": { "en": "days",    "hi": "दिन" } },
+    { "code": "acre",    "label": { "en": "acres",   "hi": "एकड़" } }
+  ]
+}

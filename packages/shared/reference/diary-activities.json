@@ -1,0 +1,17 @@
+{
+  "key": "diary_activities",
+  "version": 1,
+  "items": [
+    { "code": "land_preparation", "label": { "en": "Land preparation", "hi": "खेत की तैयारी" } },
+    { "code": "sowing",           "label": { "en": "Sowing / planting", "hi": "बुवाई / रोपाई" } },
+    { "code": "irrigation",       "label": { "en": "Irrigation",       "hi": "सिंचाई" } },
+    { "code": "fertiliser",       "label": { "en": "Fertiliser / manure", "hi": "खाद / उर्वरक" } },
+    { "code": "spray",            "label": { "en": "Spray (pest, disease, weed)", "hi": "छिड़काव (कीट, रोग, खरपतवार)" } },
+    { "code": "weeding",          "label": { "en": "Weeding",          "hi": "निराई" } },
+    { "code": "pruning",          "label": { "en": "Pruning / training", "hi": "छँटाई" } },
+    { "code": "harvest",          "label": { "en": "Harvest",          "hi": "कटाई / तुड़ाई" } },
+    { "code": "sale",             "label": { "en": "Sale",             "hi": "बिक्री" } },
+    { "code": "labour",           "label": { "en": "Labour / hire",    "hi": "मज़दूरी / किराया" } },
+    { "code": "other",            "label": { "en": "Other",            "hi": "अन्य" } }
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "key": "investor_types",
+  "version": 1,
+  "items": [
+    { "code": "individual",          "segments": ["investor_india", "investor_international"], "label": { "en": "Individual",                        "hi": "व्यक्तिगत" } },
+    { "code": "angel",               "segments": ["investor_india", "investor_international"], "label": { "en": "Angel investor",                    "hi": "एंजेल निवेशक" } },
+    { "code": "family_office",       "segments": ["investor_india", "investor_international"], "label": { "en": "Family office",                     "hi": "फ़ैमिली ऑफ़िस" } },
+    { "code": "company",             "segments": ["investor_india", "investor_international"], "label": { "en": "Company / corporate",               "hi": "कंपनी / कॉर्पोरेट" } },
+    { "code": "fund",                "segments": ["investor_india", "investor_international"], "label": { "en": "Venture / private equity fund",     "hi": "वेंचर / प्राइवेट इक्विटी फ़ंड" } },
+    { "code": "impact_fund",         "segments": ["investor_india", "investor_international"], "label": { "en": "Impact fund",                       "hi": "इम्पैक्ट फ़ंड" } },
+    { "code": "nbfc",                "segments": ["investor_india"],                           "label": { "en": "NBFC / microfinance",               "hi": "एनबीएफ़सी / सूक्ष्म वित्त" } },
+    { "code": "bank",                "segments": ["investor_india"],                           "label": { "en": "Bank / cooperative bank",           "hi": "बैंक / सहकारी बैंक" } },
+    { "code": "csr",                 "segments": ["investor_india"],                           "label": { "en": "CSR foundation",                    "hi": "सीएसआर फ़ाउंडेशन" } },
+    { "code": "nri",                 "segments": ["investor_international"],                   "label": { "en": "NRI / OCI (Indian living abroad)",  "hi": "प्रवासी भारतीय (एनआरआई / ओसीआई)" } },
+    { "code": "development_finance", "segments": ["investor_international"],                   "label": { "en": "Development finance institution",   "hi": "विकास वित्त संस्थान" } }
+  ]
+}

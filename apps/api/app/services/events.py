@@ -21,8 +21,61 @@ class EventType:
     PARCEL_UPDATED = "land_parcel.updated"
     PARCEL_DELETED = "land_parcel.deleted"
     FARMER_CREATED = "farmer.created"
-    # Reserved for the next slices of phase 1 / phase 2.
+    PROFILE_CREATED = "profile.created"
+    PROFILE_UPDATED = "profile.updated"
+    PROFILE_DELETED = "profile.deleted"
+    REQUEST_CREATED = "investment_request.created"
+    REQUEST_UPDATED = "investment_request.updated"
+    INTEREST_SENT = "investment_interest.sent"
+    INTEREST_UPDATED = "investment_interest.updated"
+    #: A farmer accepted an investor or partner. The unit the success fee
+    #: will eventually be measured against, so it is its own event rather than
+    #: a status inside INTEREST_UPDATED.
+    MATCH_MADE = "investment_interest.accepted"
+    #: Something moved from this device to the common timeline, or back.
+    SHARED_ONLINE = "visibility.shared_online"
+    TAKEN_OFFLINE = "visibility.taken_offline"
+    EQUIPMENT_CREATED = "equipment_listing.created"
+    EQUIPMENT_UPDATED = "equipment_listing.updated"
+    EQUIPMENT_DELETED = "equipment_listing.deleted"
+    ENQUIRY_SENT = "equipment_enquiry.sent"
+    ENQUIRY_UPDATED = "equipment_enquiry.updated"
+    #: A seller agreed to rent or sell to someone -- the equipment
+    #: marketplace's counterpart of MATCH_MADE, and its future billing unit.
+    ENQUIRY_ACCEPTED = "equipment_enquiry.accepted"
+    PARTNERSHIP_PROPOSED = "equipment_partnership.proposed"
+    PARTNERSHIP_UPDATED = "equipment_partnership.updated"
+    MESSAGE_SENT = "message.sent"
+    DEAL_PROPOSED = "deal.proposed"
+    DEAL_AGREED = "deal.agreed"
+    DEAL_CANCELLED = "deal.cancelled"
+    MILESTONE_SUBMITTED = "milestone.submitted"
+    MILESTONE_REJECTED = "milestone.rejected"
+    #: The investor approved a milestone and recorded paying its tranche.
+    TRANCHE_RELEASED = "milestone.released"
+    DISPUTE_OPENED = "dispute.opened"
+    DISPUTE_UPDATED = "dispute.updated"
+    DISPUTE_CLOSED = "dispute.closed"
+    RATING_GIVEN = "rating.given"
+    DIARY_RECORDED = "diary.recorded"
+    GROUP_CREATED = "group.created"
+    GROUP_UPDATED = "group.updated"
+    SCHEME_APPLICATION_UPDATED = "scheme_application.updated"
+    BACKUP_CREATED = "data.backup_created"
+    DATA_EXPORTED = "data.exported"
+    CONNECTION_REQUESTED = "connection.requested"
+    CONNECTION_ACCEPTED = "connection.accepted"
+    CONNECTION_DECLINED = "connection.declined"
+    CONNECTION_REMOVED = "connection.removed"
+    LAND_SHARED = "land_share.shared"
+    LAND_UNSHARED = "land_share.unshared"
+    UPDATE_POSTED = "farm_update.posted"
+    UPDATE_REMOVED = "farm_update.removed"
+    INSURANCE_ADDED = "insurance_policy.added"
+    INSURANCE_UPDATED = "insurance_policy.updated"
+    INSURANCE_REMOVED = "insurance_policy.removed"
     REPORT_GENERATED = "project_report.generated"
+    # Reserved: needs the milestone-based trust layer before real money moves.
     DEAL_COMPLETED = "deal.completed"
 
 

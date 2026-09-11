@@ -156,6 +156,29 @@ def get_export_market(commodity: str | None) -> dict[str, Any] | None:
 
 
 # --------------------------------------------------------------------------- #
+# Insurance
+# --------------------------------------------------------------------------- #
+
+
+@lru_cache(maxsize=1)
+def load_insurance_rules() -> dict[str, Any]:
+    """Which cover each kind of project must carry, and which is advised."""
+    return _read_json(_knowledge_dir() / "insurance-rules.json")
+
+
+@lru_cache(maxsize=1)
+def load_schemes() -> dict[str, Any]:
+    """Government schemes, with what the app can and cannot check."""
+    return _read_json(_knowledge_dir() / "schemes.json")
+
+
+@lru_cache(maxsize=1)
+def load_mandi_commodities() -> dict[str, Any]:
+    """How each crop is named in Agmarknet price data."""
+    return _read_json(_knowledge_dir() / "mandi-commodities.json")
+
+
+# --------------------------------------------------------------------------- #
 # Languages
 # --------------------------------------------------------------------------- #
 
@@ -247,6 +270,9 @@ def clear_caches() -> None:
         region_states,
         load_export_markets,
         _export_index,
+        load_insurance_rules,
+        load_schemes,
+        load_mandi_commodities,
         load_languages,
         language_index,
         _catalogue_dir,

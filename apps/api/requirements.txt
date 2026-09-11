@@ -8,5 +8,9 @@ pydantic-settings>=2.6.0
 # fonttools reads a font's character map and unpacks the Windows-bundled
 # Nirmala UI collection into a face fpdf2 can embed.
 fpdf2>=2.8.1
+# Profile photos and equipment pictures: checked, stripped of EXIF (which can
+# carry the GPS position of a farmer's house) and resized before storing.
+# fpdf2 already depends on it; listed here because the app now uses it directly.
+pillow>=10.4
 uharfbuzz>=0.39
 fonttools>=4.55

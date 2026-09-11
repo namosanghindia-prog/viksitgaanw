@@ -1,0 +1,12 @@
+{
+  "key": "government_levels",
+  "version": 1,
+  "items": [
+    { "code": "gram_panchayat",     "jurisdiction": "subdistrict", "label": { "en": "Gram Panchayat",                                   "hi": "ग्राम पंचायत" } },
+    { "code": "block",              "jurisdiction": "subdistrict", "label": { "en": "Block / tehsil office",                            "hi": "ब्लॉक / तहसील कार्यालय" } },
+    { "code": "district",           "jurisdiction": "district",    "label": { "en": "District office",                                  "hi": "ज़िला कार्यालय" } },
+    { "code": "state",              "jurisdiction": "state",       "label": { "en": "State department",                                 "hi": "राज्य विभाग" } },
+    { "code": "central",            "jurisdiction": "national",    "label": { "en": "Central ministry / department",                    "hi": "केंद्रीय मंत्रालय / विभाग" } },
+    { "code": "public_institution", "jurisdiction": "national",    "label": { "en": "Public institution (NABARD, SFAC, APEDA and similar)", "hi": "सार्वजनिक संस्था (नाबार्ड, एसएफ़एसी, एपीडा आदि)" } }
+  ]
+}

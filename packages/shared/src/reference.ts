@@ -1,26 +1,75 @@
+import opportunitiesMeta from '../knowledge/opportunities/_meta.json';
 import areaUnits from '../reference/area-units.json';
+import certifications from '../reference/certifications.json';
+import countries from '../reference/countries.json';
 import cropsRef from '../reference/crops.json';
 import depthUnits from '../reference/depth-units.json';
+import diaryActivities from '../reference/diary-activities.json';
+import disputeReasons from '../reference/dispute-reasons.json';
+import equipmentConditions from '../reference/equipment-conditions.json';
+import equipmentTypes from '../reference/equipment-types.json';
+import farmerNeeds from '../reference/farmer-needs.json';
+import governmentLevels from '../reference/government-levels.json';
+import groupKinds from '../reference/group-kinds.json';
+import insuranceSchemes from '../reference/insurance-schemes.json';
+import insuranceTypes from '../reference/insurance-types.json';
+import investmentModes from '../reference/investment-modes.json';
+import investorTypes from '../reference/investor-types.json';
 import irrigationTypes from '../reference/irrigation-types.json';
+import organisationTypes from '../reference/organisation-types.json';
 import ownershipTypes from '../reference/ownership-types.json';
+import partnerRoles from '../reference/partner-roles.json';
+import partnershipTypes from '../reference/partnership-types.json';
+import quantityUnits from '../reference/quantity-units.json';
+import rentUnits from '../reference/rent-units.json';
+import riskAppetites from '../reference/risk-appetites.json';
 import soilTypes from '../reference/soil-types.json';
+import userSegments from '../reference/user-segments.json';
 import waterSources from '../reference/water-sources.json';
 import waterTypes from '../reference/water-types.json';
+import schemesKnowledge from '../knowledge/schemes.json';
 
 import type { Label, LanguageCode, ReferenceItem, ReferenceList } from './types';
 
 export const REFERENCE = {
   area_units: areaUnits as ReferenceList,
+  certifications: certifications as ReferenceList,
+  countries: countries as ReferenceList,
   crops: cropsRef as ReferenceList,
   depth_units: depthUnits as ReferenceList,
+  diary_activities: diaryActivities as ReferenceList,
+  dispute_reasons: disputeReasons as ReferenceList,
+  equipment_conditions: equipmentConditions as ReferenceList,
+  equipment_types: equipmentTypes as ReferenceList,
+  farmer_needs: farmerNeeds as ReferenceList,
+  government_levels: governmentLevels as ReferenceList,
+  group_kinds: groupKinds as ReferenceList,
+  insurance_schemes: insuranceSchemes as ReferenceList,
+  insurance_types: insuranceTypes as ReferenceList,
+  investment_modes: investmentModes as ReferenceList,
+  investor_types: investorTypes as ReferenceList,
   irrigation_types: irrigationTypes as ReferenceList,
+  organisation_types: organisationTypes as ReferenceList,
   ownership_types: ownershipTypes as ReferenceList,
+  partner_roles: partnerRoles as ReferenceList,
+  partnership_types: partnershipTypes as ReferenceList,
+  quantity_units: quantityUnits as ReferenceList,
+  rent_units: rentUnits as ReferenceList,
+  risk_appetites: riskAppetites as ReferenceList,
   soil_types: soilTypes as ReferenceList,
+  user_segments: userSegments as ReferenceList,
   water_sources: waterSources as ReferenceList,
   water_types: waterTypes as ReferenceList,
+  /** Opportunity kinds from the knowledge base: what investors call sectors. */
+  opportunity_kinds: { key: 'opportunity_kinds', version: 1, items: opportunitiesMeta.kinds } as ReferenceList,
 } as const;
 
 export type ReferenceKey = keyof typeof REFERENCE;
+
+/** Items of a list that are offered to one profile segment. */
+export function itemsForSegment(key: ReferenceKey, segment: string): ReferenceItem[] {
+  return REFERENCE[key].items.filter((item) => !item.segments || item.segments.includes(segment));
+}
 
 /** Pick the label for a language, falling back to English then to the code. */
 export function labelOf(item: ReferenceItem | undefined, lang: LanguageCode): string {
@@ -65,3 +114,16 @@ export const METRES_PER_FOOT = 0.3048;
 export function hectaresToAcres(hectares: number): number {
   return hectares / HECTARES_PER_ACRE;
 }
+
+/** Insurance categories that may be recorded in one place (a plot, a profile, a request). */
+export function insuranceCategoriesFor(scope: string): ReferenceItem[] {
+  return REFERENCE.insurance_types.items.filter((item) => item.scopes?.includes(scope));
+}
+
+/** Schemes that cover one insurance category. */
+export function schemesFor(category: string): ReferenceItem[] {
+  return REFERENCE.insurance_schemes.items.filter((item) => item.categories?.includes(category));
+}
+
+/** Papers a government scheme may ask for, by code. */
+export const SCHEME_DOCUMENTS: ReferenceItem[] = schemesKnowledge.documents as ReferenceItem[];

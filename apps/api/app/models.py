@@ -8,16 +8,20 @@ Two families of tables live here:
 * The **user's own records** (farmers, land parcels) plus the plumbing that
   makes them safe to sync later: a durable ``sync_queue`` and an append-only
   ``app_events`` log.
+* The **marketplace**: profiles for all six user segments, farmers' investment
+  requests, and the interests investors and partners send back.
 """
 
 from __future__ import annotations
 
 import uuid
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 
 from sqlalchemy import (
     JSON,
     Boolean,
+    CheckConstraint,
+    Date,
     DateTime,
     Float,
     ForeignKey,
@@ -25,7 +29,9 @@ from sqlalchemy import (
     Integer,
     String,
     Text,
+    UniqueConstraint,
     func,
+    text,
 )
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 
@@ -303,3 +309,964 @@ class ProjectReport(Base):
     net_per_year: Mapped[float] = mapped_column(Float, default=0.0)
 
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+
+# --------------------------------------------------------------------------- #
+# People and organisations, and the investment marketplace
+# --------------------------------------------------------------------------- #
+
+
+class Profile(Base):
+    """Anyone taking part: a farmer, an investor, a partner organisation or a
+    government office.
+
+    Exactly one row per device is the **device owner** -- the person whose
+    laptop or phone this is. Every other row is a counterparty: the farmer
+    behind a request an investor is looking at, or the investor who answered a
+    farmer's request. Those arrive through cloud sync (or the demo seed until
+    sync exists), and are marked by ``origin``.
+
+    What differs between the six segments lives in ``details``, validated by
+    a per-segment schema in ``schemas.py``. Six near-identical tables would
+    mean six migrations every time a common field is added.
+    """
+
+    __tablename__ = "profiles"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    #: farmer | investor_india | investor_international | partner_national |
+    #: partner_international | government. Fixed once created.
+    segment: Mapped[str] = mapped_column(String(32), nullable=False, index=True)
+    is_device_owner: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    #: local (made on this device) | synced (from the cloud) | demo (seed data).
+    origin: Mapped[str] = mapped_column(String(16), default="local", nullable=False)
+
+    #: The person's own name. For an organisation, the contact person.
+    display_name: Mapped[str] = mapped_column(String(160), nullable=False)
+    organisation_name: Mapped[str | None] = mapped_column(String(200))
+    phone: Mapped[str | None] = mapped_column(String(20))
+    email: Mapped[str | None] = mapped_column(String(254))
+    preferred_language: Mapped[str] = mapped_column(String(8), default="hi", nullable=False)
+
+    # Where they are in India -- or, for a government office, what it covers.
+    state_code: Mapped[str | None] = mapped_column(String(8), index=True)
+    district_code: Mapped[str | None] = mapped_column(String(8), index=True)
+    subdistrict_code: Mapped[str | None] = mapped_column(String(8))
+    village_code: Mapped[str | None] = mapped_column(String(12))
+    #: ISO 3166-1 alpha-2. "IN" for every segment except the international ones.
+    country_code: Mapped[str] = mapped_column(String(2), default="IN", nullable=False)
+    city: Mapped[str | None] = mapped_column(String(120))
+
+    about: Mapped[str | None] = mapped_column(Text)
+    details: Mapped[dict] = mapped_column(JSON, default=dict)
+
+    # Identity verification. Aadhaar numbers are never stored here: eKYC goes
+    # through a UIDAI-authorised KUA, which hands back a reference, and that
+    # reference is all this row may keep. See services/kyc.py.
+    kyc_status: Mapped[str] = mapped_column(String(24), default="unverified", nullable=False)
+    kyc_method: Mapped[str | None] = mapped_column(String(32))
+    kyc_reference: Mapped[str | None] = mapped_column(String(128))
+    kyc_verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    #: For a farmer on their own device, the farmer row their land hangs off.
+    farmer_id: Mapped[str | None] = mapped_column(
+        ForeignKey("farmers.id", ondelete="SET NULL"), index=True
+    )
+
+    #: offline (only on this device) | online (shared to the common timeline).
+    #: Everything starts offline; the owner decides when to share.
+    visibility: Mapped[str] = mapped_column(String(16), default="offline", nullable=False)
+    shared_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    sync_state: Mapped[str] = mapped_column(String(16), default="local_only", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_now, onupdate=_now
+    )
+
+    __table_args__ = (
+        # One owner per device, enforced by SQLite rather than by hoping every
+        # code path remembers to check.
+        Index(
+            "ux_profiles_device_owner",
+            "is_device_owner",
+            unique=True,
+            sqlite_where=text("is_device_owner = 1"),
+        ),
+    )
+
+
+class InvestmentRequest(Base):
+    """A farmer asking for investment or a partner, for one plot.
+
+    ``listing`` is the public face of the request: a snapshot of the land and
+    the plan taken when it was published. It is what an investor on another
+    device sees, and that device has neither the parcel nor the report -- only
+    the synced request. It deliberately leaves out the phone number, survey
+    number and exact pin; those are shared only after the farmer accepts.
+    """
+
+    __tablename__ = "investment_requests"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    profile_id: Mapped[str] = mapped_column(
+        ForeignKey("profiles.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    #: Set when a group (FPO, cooperative) asks on behalf of its members.
+    group_id: Mapped[str | None] = mapped_column(
+        ForeignKey("farmer_groups.id", ondelete="SET NULL"), index=True
+    )
+    # Local links, present only on the farmer's own device.
+    parcel_id: Mapped[str | None] = mapped_column(
+        ForeignKey("land_parcels.id", ondelete="SET NULL"), index=True
+    )
+    report_id: Mapped[str | None] = mapped_column(
+        ForeignKey("project_reports.id", ondelete="SET NULL")
+    )
+    opportunity_code: Mapped[str | None] = mapped_column(String(64))
+    #: Denormalised from the snapshot so browsing can filter without JSON.
+    opportunity_kind: Mapped[str | None] = mapped_column(String(32), index=True)
+    state_code: Mapped[str] = mapped_column(String(8), nullable=False, index=True)
+    district_code: Mapped[str] = mapped_column(String(8), nullable=False, index=True)
+    subdistrict_code: Mapped[str | None] = mapped_column(String(8))
+
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    summary: Mapped[str | None] = mapped_column(Text)
+    #: Rupees.
+    amount_sought: Mapped[float] = mapped_column(Float, nullable=False)
+    own_contribution: Mapped[float | None] = mapped_column(Float)
+
+    #: ["investment"], ["partnership"] or both.
+    seeking: Mapped[list[str]] = mapped_column(JSON, default=list)
+    modes: Mapped[list[str]] = mapped_column(JSON, default=list)
+    partnership_types: Mapped[list[str]] = mapped_column(JSON, default=list)
+    #: Segments allowed to see this request. The farmer chooses; international
+    #: visibility and government visibility are both opt-in.
+    open_to: Mapped[list[str]] = mapped_column(JSON, default=list)
+
+    listing: Mapped[dict] = mapped_column(JSON, default=dict)
+
+    #: open | closed | withdrawn
+    status: Mapped[str] = mapped_column(String(16), default="open", nullable=False, index=True)
+    #: offline | online. A request is a private draft on the farmer's device
+    #: until they press "Share online".
+    visibility: Mapped[str] = mapped_column(
+        String(16), default="offline", nullable=False, index=True
+    )
+    shared_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    origin: Mapped[str] = mapped_column(String(16), default="local", nullable=False)
+    sync_state: Mapped[str] = mapped_column(String(16), default="local_only", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_now, onupdate=_now
+    )
+    closed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    profile: Mapped[Profile] = relationship()
+    interests: Mapped[list["InvestmentInterest"]] = relationship(
+        back_populates="request", cascade="all, delete-orphan"
+    )
+
+
+class InvestmentInterest(Base):
+    """An investor or partner answering a request.
+
+    Accepting one is a *match*, not a deal: no money moves through the app
+    until the milestone-based trust layer exists. ``deal.completed`` stays
+    reserved for that.
+    """
+
+    __tablename__ = "investment_interests"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    request_id: Mapped[str] = mapped_column(
+        ForeignKey("investment_requests.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    profile_id: Mapped[str] = mapped_column(
+        ForeignKey("profiles.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    #: investment | partnership, following the responder's segment.
+    kind: Mapped[str] = mapped_column(String(16), nullable=False)
+    #: Rupees, for investment interests.
+    amount_offered: Mapped[float | None] = mapped_column(Float)
+    mode: Mapped[str | None] = mapped_column(String(32))
+    partnership_type: Mapped[str | None] = mapped_column(String(32))
+    message: Mapped[str | None] = mapped_column(Text)
+
+    #: sent | accepted | declined | withdrawn
+    status: Mapped[str] = mapped_column(String(16), default="sent", nullable=False, index=True)
+    responded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+
+    origin: Mapped[str] = mapped_column(String(16), default="local", nullable=False)
+    sync_state: Mapped[str] = mapped_column(String(16), default="local_only", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_now, onupdate=_now
+    )
+
+    request: Mapped[InvestmentRequest] = relationship(back_populates="interests")
+    profile: Mapped[Profile] = relationship()
+
+    __table_args__ = (
+        # One answer per responder per request; a change of terms edits it.
+        UniqueConstraint("request_id", "profile_id", name="uq_interest_request_profile"),
+    )
+
+
+class InsurancePolicy(Base):
+    """One insurance cover, attached to exactly one thing it protects.
+
+    * a **land parcel** -- the crop, or a polyhouse standing on it;
+    * a **profile** -- a farmer's own accident, life or health cover, or a
+      partner's cargo and trade-credit cover;
+    * an **investment request** -- the cover the project itself carries, which
+      investors see.
+
+    Three nullable foreign keys rather than a generic owner column, so each
+    policy cascades away with the thing it covers and SQLite can check the
+    link. ``status = planned`` is the farmer's promise to insure before any
+    money is released; it is only meaningful on a request.
+    """
+
+    __tablename__ = "insurance_policies"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    parcel_id: Mapped[str | None] = mapped_column(
+        ForeignKey("land_parcels.id", ondelete="CASCADE"), index=True
+    )
+    profile_id: Mapped[str | None] = mapped_column(
+        ForeignKey("profiles.id", ondelete="CASCADE"), index=True
+    )
+    request_id: Mapped[str | None] = mapped_column(
+        ForeignKey("investment_requests.id", ondelete="CASCADE"), index=True
+    )
+
+    #: A code from insurance-types.json: crop, livestock, structure, ...
+    category: Mapped[str] = mapped_column(String(32), nullable=False)
+    #: insured | planned
+    status: Mapped[str] = mapped_column(String(16), default="insured", nullable=False)
+    #: A code from insurance-schemes.json (pmfby, pmsby, ecgc, private, ...).
+    scheme: Mapped[str | None] = mapped_column(String(32))
+    insurer: Mapped[str | None] = mapped_column(String(160))
+    policy_number: Mapped[str | None] = mapped_column(String(80))
+    sum_insured: Mapped[float | None] = mapped_column(Float)
+    premium: Mapped[float | None] = mapped_column(Float)
+    #: ISO 4217. Rupees except for partners trading abroad.
+    currency: Mapped[str] = mapped_column(String(3), default="INR", nullable=False)
+    valid_from: Mapped[date | None] = mapped_column(Date)
+    valid_until: Mapped[date | None] = mapped_column(Date)
+    #: Crop cover only: kharif | rabi | zaid | annual, and the year it started.
+    season: Mapped[str | None] = mapped_column(String(16))
+    season_year: Mapped[int | None] = mapped_column(Integer)
+    #: What is covered, in the farmer's words: "5 cows, ear tags 1101-1105".
+    covered: Mapped[str | None] = mapped_column(String(300))
+    notes: Mapped[str | None] = mapped_column(Text)
+
+    origin: Mapped[str] = mapped_column(String(16), default="local", nullable=False)
+    sync_state: Mapped[str] = mapped_column(String(16), default="local_only", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_now, onupdate=_now
+    )
+
+    __table_args__ = (
+        CheckConstraint(
+            "(parcel_id IS NOT NULL) + (profile_id IS NOT NULL) + (request_id IS NOT NULL) = 1",
+            name="ck_insurance_one_owner",
+        ),
+    )
+
+
+# --------------------------------------------------------------------------- #
+# Pictures
+# --------------------------------------------------------------------------- #
+
+
+class MediaFile(Base):
+    """A picture stored on the device: a profile photo or logo, or a machine.
+
+    The file lives in the media directory; this row says what it belongs to.
+    ``entity_type`` + ``entity_id`` rather than a foreign key, because two
+    different tables own pictures; the owner's delete removes both.
+    """
+
+    __tablename__ = "media_files"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    #: profile | equipment
+    entity_type: Mapped[str] = mapped_column(String(24), nullable=False)
+    entity_id: Mapped[str] = mapped_column(String(36), nullable=False)
+    #: Order among an entity's pictures; a profile has only position 0.
+    position: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    file_name: Mapped[str] = mapped_column(String(80), nullable=False)
+    mime_type: Mapped[str] = mapped_column(String(32), nullable=False)
+    width: Mapped[int] = mapped_column(Integer, default=0)
+    height: Mapped[int] = mapped_column(Integer, default=0)
+    size_bytes: Mapped[int] = mapped_column(Integer, default=0)
+    origin: Mapped[str] = mapped_column(String(16), default="local", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+    __table_args__ = (Index("ix_media_entity", "entity_type", "entity_id", "position"),)
+
+
+# --------------------------------------------------------------------------- #
+# Equipment: machines for sale or rent, and the seller's partner network
+# --------------------------------------------------------------------------- #
+
+
+class EquipmentListing(Base):
+    """A machine an agriculture organisation sells, rents out, or both."""
+
+    __tablename__ = "equipment_listings"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    profile_id: Mapped[str] = mapped_column(
+        ForeignKey("profiles.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    #: A code from equipment-types.json.
+    equipment_type: Mapped[str] = mapped_column(String(32), nullable=False, index=True)
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    brand: Mapped[str | None] = mapped_column(String(80))
+    model: Mapped[str | None] = mapped_column(String(80))
+    year_made: Mapped[int | None] = mapped_column(Integer)
+    #: new | like_new | good | fair
+    condition: Mapped[str] = mapped_column(String(16), default="new", nullable=False)
+    description: Mapped[str | None] = mapped_column(Text)
+
+    for_sale: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    #: Rupees.
+    sale_price: Mapped[float | None] = mapped_column(Float)
+    for_rent: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    rent_rate: Mapped[float | None] = mapped_column(Float)
+    #: hour | day | acre | season
+    rent_unit: Mapped[str | None] = mapped_column(String(16))
+    #: How many units the seller can supply or keeps for hire.
+    quantity: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
+    with_operator: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+    delivery: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
+
+    # Where the machine is. Required: a farmer renting a tractor needs to know
+    # whether it is in the next village or the next state.
+    state_code: Mapped[str] = mapped_column(String(8), nullable=False, index=True)
+    district_code: Mapped[str | None] = mapped_column(String(8), index=True)
+    subdistrict_code: Mapped[str | None] = mapped_column(String(8))
+
+    #: active | paused | sold
+    status: Mapped[str] = mapped_column(String(16), default="active", nullable=False, index=True)
+    visibility: Mapped[str] = mapped_column(
+        String(16), default="offline", nullable=False, index=True
+    )
+    shared_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    origin: Mapped[str] = mapped_column(String(16), default="local", nullable=False)
+    sync_state: Mapped[str] = mapped_column(String(16), default="local_only", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_now, onupdate=_now
+    )
+
+    profile: Mapped[Profile] = relationship()
+    enquiries: Mapped[list["EquipmentEnquiry"]] = relationship(
+        back_populates="listing", cascade="all, delete-orphan"
+    )
+
+
+class EquipmentEnquiry(Base):
+    """Someone asking to rent or buy a listed machine.
+
+    Like an investment interest, accepting shares contact details and records
+    the match; no money changes hands through the app.
+    """
+
+    __tablename__ = "equipment_enquiries"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    listing_id: Mapped[str] = mapped_column(
+        ForeignKey("equipment_listings.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    profile_id: Mapped[str] = mapped_column(
+        ForeignKey("profiles.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    #: rent | buy
+    kind: Mapped[str] = mapped_column(String(8), nullable=False)
+    quantity: Mapped[int] = mapped_column(Integer, default=1, nullable=False)
+    start_date: Mapped[date | None] = mapped_column(Date)
+    end_date: Mapped[date | None] = mapped_column(Date)
+    #: For per-acre hire: how much land.
+    area_acres: Mapped[float | None] = mapped_column(Float)
+    message: Mapped[str | None] = mapped_column(Text)
+    #: sent | accepted | declined | withdrawn
+    status: Mapped[str] = mapped_column(String(16), default="sent", nullable=False, index=True)
+    responded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    origin: Mapped[str] = mapped_column(String(16), default="local", nullable=False)
+    sync_state: Mapped[str] = mapped_column(String(16), default="local_only", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_now, onupdate=_now
+    )
+
+    listing: Mapped[EquipmentListing] = relationship(back_populates="enquiries")
+    profile: Mapped[Profile] = relationship()
+
+
+class EquipmentPartnership(Base):
+    """One link in an equipment seller's network.
+
+    The partner is a **farmer**, a **village**, a **district** or a
+    **distributor**. Farmers and distributors are usually people on the
+    platform (``partner_profile_id``); a village or district partner is a
+    place (LGD codes), optionally with a named contact -- the Gram Panchayat,
+    a district dealer -- who may not use the app at all. Either side can
+    start it: the seller appoints, or a farmer asks to become a partner.
+    """
+
+    __tablename__ = "equipment_partnerships"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    seller_profile_id: Mapped[str] = mapped_column(
+        ForeignKey("profiles.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    #: farmer | village | district | distributor
+    partner_kind: Mapped[str] = mapped_column(String(16), nullable=False)
+    partner_profile_id: Mapped[str | None] = mapped_column(
+        ForeignKey("profiles.id", ondelete="CASCADE"), index=True
+    )
+    #: For partners not on the platform.
+    contact_name: Mapped[str | None] = mapped_column(String(160))
+    contact_phone: Mapped[str | None] = mapped_column(String(20))
+
+    # The area the partnership covers.
+    state_code: Mapped[str | None] = mapped_column(String(8))
+    district_code: Mapped[str | None] = mapped_column(String(8), index=True)
+    subdistrict_code: Mapped[str | None] = mapped_column(String(8))
+    village_code: Mapped[str | None] = mapped_column(String(12))
+
+    #: A code from partner-roles.json.
+    role: Mapped[str] = mapped_column(String(24), nullable=False)
+    #: Equipment types the partnership covers; empty means all of them.
+    equipment_types: Mapped[list[str]] = mapped_column(JSON, default=list)
+    commission_percent: Mapped[float | None] = mapped_column(Float)
+    message: Mapped[str | None] = mapped_column(Text)
+
+    #: seller | partner
+    initiated_by: Mapped[str] = mapped_column(String(8), nullable=False)
+    #: proposed | active | declined | ended
+    status: Mapped[str] = mapped_column(String(16), default="proposed", nullable=False, index=True)
+    responded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    origin: Mapped[str] = mapped_column(String(16), default="local", nullable=False)
+    sync_state: Mapped[str] = mapped_column(String(16), default="local_only", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_now, onupdate=_now
+    )
+
+    seller: Mapped[Profile] = relationship(foreign_keys=[seller_profile_id])
+    partner: Mapped[Profile | None] = relationship(foreign_keys=[partner_profile_id])
+
+
+
+# --------------------------------------------------------------------------- #
+# Notifications and messages
+# --------------------------------------------------------------------------- #
+
+
+class Notification(Base):
+    """Something that happened to the device owner and wants their attention.
+
+    Only ever stored for the owner: a notification for someone on another
+    device is generated *there*, when their device receives the change by
+    sync. ``params`` carries names and figures, never sentences, so the app
+    renders it in whichever language is chosen when it is read.
+    """
+
+    __tablename__ = "notifications"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    profile_id: Mapped[str] = mapped_column(
+        ForeignKey("profiles.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    #: interest_received | interest_answered | enquiry_received | ...
+    kind: Mapped[str] = mapped_column(String(48), nullable=False)
+    params: Mapped[dict] = mapped_column(JSON, default=dict)
+    #: Where in the app it leads, e.g. "/requests".
+    link: Mapped[str | None] = mapped_column(String(200))
+    entity_type: Mapped[str | None] = mapped_column(String(48))
+    entity_id: Mapped[str | None] = mapped_column(String(64), index=True)
+    read_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_now, index=True
+    )
+
+
+class Message(Base):
+    """One message between two people who already have something in common.
+
+    There is one thread per pair of profiles; ``context_*`` says which
+    request, machine or deal a message was about, when it was about one.
+    """
+
+    __tablename__ = "messages"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    sender_profile_id: Mapped[str] = mapped_column(
+        ForeignKey("profiles.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    recipient_profile_id: Mapped[str] = mapped_column(
+        ForeignKey("profiles.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    body: Mapped[str] = mapped_column(Text, nullable=False)
+    context_type: Mapped[str | None] = mapped_column(String(32))
+    context_id: Mapped[str | None] = mapped_column(String(36))
+    read_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    origin: Mapped[str] = mapped_column(String(16), default="local", nullable=False)
+    sync_state: Mapped[str] = mapped_column(String(16), default="local_only", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_now, index=True
+    )
+
+
+# --------------------------------------------------------------------------- #
+# Trust: deals, milestones, ratings, disputes
+# --------------------------------------------------------------------------- #
+
+
+class Deal(Base):
+    """An accepted investment turned into a plan both sides agreed to.
+
+    The money is released milestone by milestone, *outside* the app: the
+    investor records each release here after approving the evidence. Real
+    escrow needs a regulated banking partner; until then this is the ledger
+    both sides and any mediator can point at.
+    """
+
+    __tablename__ = "deals"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    interest_id: Mapped[str] = mapped_column(
+        ForeignKey("investment_interests.id", ondelete="CASCADE"),
+        nullable=False,
+        unique=True,
+    )
+    request_id: Mapped[str] = mapped_column(
+        ForeignKey("investment_requests.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    farmer_profile_id: Mapped[str] = mapped_column(
+        ForeignKey("profiles.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    investor_profile_id: Mapped[str] = mapped_column(
+        ForeignKey("profiles.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    #: Rupees. The milestones add up to exactly this.
+    amount_total: Mapped[float] = mapped_column(Float, nullable=False)
+    mode: Mapped[str | None] = mapped_column(String(32))
+    terms: Mapped[str | None] = mapped_column(Text)
+    #: Who drew up the current plan; the other side agrees to it.
+    proposed_by: Mapped[str] = mapped_column(String(36), nullable=False)
+    #: drafting | active | disputed | completed | cancelled
+    status: Mapped[str] = mapped_column(String(16), default="drafting", nullable=False, index=True)
+    agreed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    completed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    origin: Mapped[str] = mapped_column(String(16), default="local", nullable=False)
+    sync_state: Mapped[str] = mapped_column(String(16), default="local_only", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_now, onupdate=_now
+    )
+
+    milestones: Mapped[list["Milestone"]] = relationship(
+        back_populates="deal", cascade="all, delete-orphan", order_by="Milestone.position"
+    )
+
+
+class Milestone(Base):
+    __tablename__ = "milestones"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    deal_id: Mapped[str] = mapped_column(
+        ForeignKey("deals.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    position: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
+    title: Mapped[str] = mapped_column(String(200), nullable=False)
+    description: Mapped[str | None] = mapped_column(Text)
+    #: Rupees released when this milestone is approved.
+    amount: Mapped[float] = mapped_column(Float, nullable=False)
+    due_date: Mapped[date | None] = mapped_column(Date)
+    #: planned | submitted | approved | rejected
+    status: Mapped[str] = mapped_column(String(16), default="planned", nullable=False)
+    evidence_note: Mapped[str | None] = mapped_column(Text)
+    submitted_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    review_note: Mapped[str | None] = mapped_column(Text)
+    reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    #: When the investor recorded paying this tranche, outside the app.
+    released_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    release_reference: Mapped[str | None] = mapped_column(String(120))
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_now, onupdate=_now
+    )
+
+    deal: Mapped[Deal] = relationship(back_populates="milestones")
+
+
+class Rating(Base):
+    """One side's rating of the other after working together. Public."""
+
+    __tablename__ = "ratings"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    rater_profile_id: Mapped[str] = mapped_column(
+        ForeignKey("profiles.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    rated_profile_id: Mapped[str] = mapped_column(
+        ForeignKey("profiles.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    #: deal | enquiry | partnership -- what they did together.
+    context_type: Mapped[str] = mapped_column(String(16), nullable=False)
+    context_id: Mapped[str] = mapped_column(String(36), nullable=False)
+    stars: Mapped[int] = mapped_column(Integer, nullable=False)
+    comment: Mapped[str | None] = mapped_column(Text)
+    origin: Mapped[str] = mapped_column(String(16), default="local", nullable=False)
+    sync_state: Mapped[str] = mapped_column(String(16), default="local_only", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+    __table_args__ = (
+        UniqueConstraint("rater_profile_id", "context_type", "context_id", name="uq_rating_once"),
+        CheckConstraint("stars BETWEEN 1 AND 5", name="ck_rating_stars"),
+    )
+
+
+class Dispute(Base):
+    """A disagreement about a deal or one of its milestones.
+
+    Opening one pauses the deal. It ends when the side that did not open it
+    accepts a resolution, or the opener withdraws it. A mediator -- a
+    government officer or, later, the platform -- is a phase-3 addition.
+    """
+
+    __tablename__ = "disputes"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    deal_id: Mapped[str] = mapped_column(
+        ForeignKey("deals.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    milestone_id: Mapped[str | None] = mapped_column(
+        ForeignKey("milestones.id", ondelete="SET NULL")
+    )
+    opened_by_profile_id: Mapped[str] = mapped_column(String(36), nullable=False)
+    #: A code from dispute-reasons.json.
+    reason: Mapped[str] = mapped_column(String(32), nullable=False)
+    description: Mapped[str] = mapped_column(Text, nullable=False)
+    #: open | resolved | withdrawn
+    status: Mapped[str] = mapped_column(String(16), default="open", nullable=False, index=True)
+    resolution: Mapped[str | None] = mapped_column(Text)
+    #: Proposed by one side; the dispute closes when the other confirms it.
+    resolution_proposed_by: Mapped[str | None] = mapped_column(String(36))
+    resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    origin: Mapped[str] = mapped_column(String(16), default="local", nullable=False)
+    sync_state: Mapped[str] = mapped_column(String(16), default="local_only", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_now, onupdate=_now
+    )
+
+
+# --------------------------------------------------------------------------- #
+# Farm diary
+# --------------------------------------------------------------------------- #
+
+
+class DiaryEntry(Base):
+    """One thing done on a plot: sown, sprayed, irrigated, harvested, sold.
+
+    Export buyers ask for exactly this record -- what was sprayed, when, and
+    whether the harvest waited out the pre-harvest interval -- and an investor
+    can see real progress from it.
+    """
+
+    __tablename__ = "diary_entries"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    parcel_id: Mapped[str] = mapped_column(
+        ForeignKey("land_parcels.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    #: A code from diary-activities.json.
+    activity: Mapped[str] = mapped_column(String(24), nullable=False)
+    entry_date: Mapped[date] = mapped_column(Date, nullable=False, index=True)
+    crop: Mapped[str | None] = mapped_column(String(32))
+    notes: Mapped[str | None] = mapped_column(Text)
+    quantity: Mapped[float | None] = mapped_column(Float)
+    unit: Mapped[str | None] = mapped_column(String(16))
+    #: Rupees spent (or, for a sale, received).
+    amount: Mapped[float | None] = mapped_column(Float)
+    #: Sprays and fertilisers.
+    product: Mapped[str | None] = mapped_column(String(160))
+    active_ingredient: Mapped[str | None] = mapped_column(String(160))
+    dose: Mapped[str | None] = mapped_column(String(80))
+    #: Days that must pass between this spray and harvest.
+    pre_harvest_days: Mapped[int | None] = mapped_column(Integer)
+    #: Harvests get a lot code that follows the produce to the buyer.
+    lot_code: Mapped[str | None] = mapped_column(String(40), unique=True)
+    origin: Mapped[str] = mapped_column(String(16), default="local", nullable=False)
+    sync_state: Mapped[str] = mapped_column(String(16), default="local_only", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_now, onupdate=_now
+    )
+
+
+# --------------------------------------------------------------------------- #
+# Weather, market prices and exchange rates
+# --------------------------------------------------------------------------- #
+
+
+class WeatherCache(Base):
+    """The last forecast fetched for a spot, kept so it still shows offline."""
+
+    __tablename__ = "weather_cache"
+
+    #: "lat,lon" rounded to 0.05 degrees (about 5 km).
+    key: Mapped[str] = mapped_column(String(32), primary_key=True)
+    latitude: Mapped[float] = mapped_column(Float, nullable=False)
+    longitude: Mapped[float] = mapped_column(Float, nullable=False)
+    payload: Mapped[dict] = mapped_column(JSON, default=dict)
+    source: Mapped[str] = mapped_column(String(64), nullable=False)
+    fetched_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+
+class MandiPrice(Base):
+    """One day's price for one commodity at one market (Agmarknet)."""
+
+    __tablename__ = "mandi_prices"
+
+    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
+    state_name: Mapped[str] = mapped_column(String(80), nullable=False, index=True)
+    district_name: Mapped[str] = mapped_column(String(80), nullable=False)
+    market: Mapped[str] = mapped_column(String(120), nullable=False)
+    commodity: Mapped[str] = mapped_column(String(80), nullable=False, index=True)
+    variety: Mapped[str | None] = mapped_column(String(80))
+    grade: Mapped[str | None] = mapped_column(String(40))
+    arrival_date: Mapped[date] = mapped_column(Date, nullable=False, index=True)
+    #: Rupees per quintal, as Agmarknet reports them.
+    min_price: Mapped[float | None] = mapped_column(Float)
+    max_price: Mapped[float | None] = mapped_column(Float)
+    modal_price: Mapped[float] = mapped_column(Float, nullable=False)
+    source: Mapped[str] = mapped_column(String(64), nullable=False)
+    imported_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+    __table_args__ = (
+        UniqueConstraint(
+            "market", "commodity", "variety", "grade", "arrival_date", name="uq_mandi_price_day"
+        ),
+    )
+
+
+class FxRate(Base):
+    """Rupees per one unit of a foreign currency, with where it came from."""
+
+    __tablename__ = "fx_rates"
+
+    currency: Mapped[str] = mapped_column(String(3), primary_key=True)
+    inr_per_unit: Mapped[float] = mapped_column(Float, nullable=False)
+    #: frankfurter (ECB reference rates) | manual
+    source: Mapped[str] = mapped_column(String(32), nullable=False)
+    as_of: Mapped[date] = mapped_column(Date, nullable=False)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_now, onupdate=_now
+    )
+
+
+# --------------------------------------------------------------------------- #
+# Government schemes
+# --------------------------------------------------------------------------- #
+
+
+class SchemeApplication(Base):
+    """The owner's progress applying to one government scheme."""
+
+    __tablename__ = "scheme_applications"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    profile_id: Mapped[str] = mapped_column(
+        ForeignKey("profiles.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    scheme_code: Mapped[str] = mapped_column(String(48), nullable=False)
+    #: planning | documents_ready | applied | approved | rejected
+    status: Mapped[str] = mapped_column(String(20), default="planning", nullable=False)
+    #: Document codes the applicant has ready.
+    documents_ready: Mapped[list[str]] = mapped_column(JSON, default=list)
+    applied_on: Mapped[date | None] = mapped_column(Date)
+    reference_number: Mapped[str | None] = mapped_column(String(80))
+    notes: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_now, onupdate=_now
+    )
+
+    __table_args__ = (
+        UniqueConstraint("profile_id", "scheme_code", name="uq_scheme_application"),
+    )
+
+
+# --------------------------------------------------------------------------- #
+# Farmer groups (FPOs, cooperatives, informal groups)
+# --------------------------------------------------------------------------- #
+
+
+class FarmerGroup(Base):
+    """Smallholders pooling land to qualify for deals none could get alone."""
+
+    __tablename__ = "farmer_groups"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    #: The profile that runs it: a farmer, or an FPO / cooperative.
+    owner_profile_id: Mapped[str] = mapped_column(
+        ForeignKey("profiles.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    #: fpo | cooperative | shg | informal
+    kind: Mapped[str] = mapped_column(String(16), nullable=False)
+    description: Mapped[str | None] = mapped_column(Text)
+    state_code: Mapped[str] = mapped_column(String(8), nullable=False)
+    district_code: Mapped[str] = mapped_column(String(8), nullable=False, index=True)
+    subdistrict_code: Mapped[str | None] = mapped_column(String(8))
+    #: Crops the group grows or plans to, together.
+    crops: Mapped[list[str]] = mapped_column(JSON, default=list)
+    visibility: Mapped[str] = mapped_column(String(16), default="offline", nullable=False)
+    shared_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    origin: Mapped[str] = mapped_column(String(16), default="local", nullable=False)
+    sync_state: Mapped[str] = mapped_column(String(16), default="local_only", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_now, onupdate=_now
+    )
+
+    members: Mapped[list["GroupMember"]] = relationship(
+        back_populates="group", cascade="all, delete-orphan"
+    )
+
+
+class GroupMember(Base):
+    """A member and the land they bring. Members may not use the app at all."""
+
+    __tablename__ = "group_members"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    group_id: Mapped[str] = mapped_column(
+        ForeignKey("farmer_groups.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    profile_id: Mapped[str | None] = mapped_column(
+        ForeignKey("profiles.id", ondelete="CASCADE"), index=True
+    )
+    #: For members not on the platform.
+    name: Mapped[str | None] = mapped_column(String(160))
+    phone: Mapped[str | None] = mapped_column(String(20))
+    village_code: Mapped[str | None] = mapped_column(String(12))
+    land_hectares: Mapped[float] = mapped_column(Float, default=0.0, nullable=False)
+    crops: Mapped[list[str]] = mapped_column(JSON, default=list)
+    #: requested (asked to join) | active | left
+    status: Mapped[str] = mapped_column(String(16), default="active", nullable=False)
+    origin: Mapped[str] = mapped_column(String(16), default="local", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+    group: Mapped[FarmerGroup] = relationship(back_populates="members")
+
+
+# --------------------------------------------------------------------------- #
+# Cloud sync
+# --------------------------------------------------------------------------- #
+
+
+class SyncSetting(Base):
+    """Small key/value store for the sync worker: server, device token, cursor."""
+
+    __tablename__ = "sync_settings"
+
+    key: Mapped[str] = mapped_column(String(48), primary_key=True)
+    value: Mapped[str | None] = mapped_column(Text)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_now, onupdate=_now
+    )
+
+
+# --------------------------------------------------------------------------- #
+# Connections, shared land and updates
+# --------------------------------------------------------------------------- #
+
+
+class Connection(Base):
+    """Two people who have agreed to follow each other's farm news.
+
+    One row per pair: whoever asked first is the requester. People who already
+    work together (an accepted offer, a rental, a partnership, a deal, the same
+    group) count as connected without a row here -- see services/connections.
+    """
+
+    __tablename__ = "connections"
+    __table_args__ = (
+        UniqueConstraint("requester_profile_id", "addressee_profile_id", name="uq_connection_pair"),
+        CheckConstraint("requester_profile_id <> addressee_profile_id", name="ck_connection_not_self"),
+    )
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    requester_profile_id: Mapped[str] = mapped_column(
+        ForeignKey("profiles.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    addressee_profile_id: Mapped[str] = mapped_column(
+        ForeignKey("profiles.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    message: Mapped[str | None] = mapped_column(Text)
+    #: requested | accepted | declined | removed
+    status: Mapped[str] = mapped_column(String(16), default="requested", nullable=False)
+    origin: Mapped[str] = mapped_column(String(16), default="local", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    responded_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, onupdate=_now)
+
+
+class LandShare(Base):
+    """A plot shown to the owner's connections on the timeline.
+
+    It carries a *snapshot* of the plot -- place names, size, soil, water,
+    crops -- never the survey number or the exact pin, and it is refreshed
+    whenever the owner edits a shared plot. The id is the plot's own id, so the
+    plot's pictures (media entity ``land``) belong to both. On other devices
+    there is no plot, only this card.
+    """
+
+    __tablename__ = "land_shares"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True)
+    profile_id: Mapped[str] = mapped_column(
+        ForeignKey("profiles.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    #: The plot on this device, for the owner's own shares only.
+    parcel_id: Mapped[str | None] = mapped_column(ForeignKey("land_parcels.id", ondelete="SET NULL"))
+    snapshot: Mapped[dict] = mapped_column(JSON, default=dict)
+    #: offline | online (online = visible to connections)
+    visibility: Mapped[str] = mapped_column(String(16), default="offline", nullable=False)
+    shared_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    #: When the plot's details last changed while shared.
+    changed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    origin: Mapped[str] = mapped_column(String(16), default="local", nullable=False)
+    sync_state: Mapped[str] = mapped_column(String(16), default="local_only", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+
+    profile: Mapped[Profile] = relationship()
+
+
+class FarmUpdate(Base):
+    """A short post -- "sowing done", "first harvest" -- for the owner's connections."""
+
+    __tablename__ = "farm_updates"
+
+    id: Mapped[str] = mapped_column(String(36), primary_key=True, default=_uuid)
+    profile_id: Mapped[str] = mapped_column(
+        ForeignKey("profiles.id", ondelete="CASCADE"), nullable=False, index=True
+    )
+    #: The shared plot this is about, if any (a LandShare id).
+    land_share_id: Mapped[str | None] = mapped_column(String(36), index=True)
+    body: Mapped[str] = mapped_column(Text, nullable=False)
+    #: online while it is shown; offline once taken down.
+    visibility: Mapped[str] = mapped_column(String(16), default="online", nullable=False)
+    origin: Mapped[str] = mapped_column(String(16), default="local", nullable=False)
+    sync_state: Mapped[str] = mapped_column(String(16), default="local_only", nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
+    updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, onupdate=_now)

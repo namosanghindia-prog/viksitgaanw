@@ -1,0 +1,10 @@
+{
+  "key": "rent_units",
+  "version": 1,
+  "items": [
+    { "code": "hour",   "label": { "en": "per hour",   "hi": "प्रति घंटा" } },
+    { "code": "day",    "label": { "en": "per day",    "hi": "प्रति दिन" } },
+    { "code": "acre",   "label": { "en": "per acre",   "hi": "प्रति एकड़" } },
+    { "code": "season", "label": { "en": "per season", "hi": "प्रति मौसम" } }
+  ]
+}

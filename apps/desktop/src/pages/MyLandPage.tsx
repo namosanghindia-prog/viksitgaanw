@@ -3,6 +3,9 @@ import { Link } from 'react-router-dom';
 import type { LandParcel } from '@viksitgaanw/shared';
 import { findItem } from '@viksitgaanw/shared';
 
+import { PhotoButton } from '../components/PhotoButton';
+import { ShareControl } from '../components/ShareControl';
+import { UpdateComposer } from '../components/SocialCards';
 import { useI18n } from '../i18n';
 import { api } from '../lib/api';
 import { formatDate, formatLocationPath, formatNumber } from '../lib/format';
@@ -12,6 +15,8 @@ export function MyLandPage() {
   const { t, lang, rt } = useI18n();
   const parcels = useAsync((signal) => api.listParcels(signal), []);
   const [busyId, setBusyId] = useState<string | null>(null);
+  const [posting, setPosting] = useState<string | null>(null);
+  const [posted, setPosted] = useState<string | null>(null);
 
   const remove = async (parcel: LandParcel) => {
     if (!window.confirm(t('list.confirmDelete', { label: parcel.label }))) return;
@@ -113,6 +118,77 @@ export function MyLandPage() {
                   </div>
                 ) : null}
               </dl>
+
+              {parcel.photos.length ? (
+                <div className="land-card__photos land-card__photos--small">
+                  {parcel.photos.map((photo) => (
+                    <span key={photo.id} className="photo-thumb">
+                      <img src={api.mediaUrl(photo.url) ?? undefined} alt="" />
+                      <button
+                        type="button"
+                        className="photo-thumb__remove"
+                        aria-label={t('common.delete')}
+                        onClick={async () => {
+                          await api.deleteParcelPhoto(parcel.id, photo.id);
+                          parcels.reload();
+                        }}
+                      >
+                        ✕
+                      </button>
+                    </span>
+                  ))}
+                </div>
+              ) : null}
+
+              <div className="parcel__share">
+                <ShareControl
+                  visibility={parcel.shareVisibility}
+                  sharedAt={parcel.sharedAt}
+                  audience="connections"
+                  onShare={() => api.shareParcel(parcel.id)}
+                  onUnshare={() => api.unshareParcel(parcel.id)}
+                  onChanged={parcels.reload}
+                />
+                {parcel.photos.length < 4 ? (
+                  <PhotoButton
+                    label={t('land.addPhoto')}
+                    onPick={async (file) => {
+                      await api.addParcelPhoto(parcel.id, file);
+                      parcels.reload();
+                    }}
+                  />
+                ) : null}
+                {parcel.shareVisibility === 'online' && posting !== parcel.id ? (
+                  <button
+                    type="button"
+                    className="button button--small"
+                    onClick={() => {
+                      setPosting(parcel.id);
+                      setPosted(null);
+                    }}
+                  >
+                    📣 {t('updates.postAbout')}
+                  </button>
+                ) : null}
+              </div>
+              <p className="muted small">
+                {parcel.shareVisibility === 'online' ? t('land.sharedNote') : t('land.privateNote')}
+              </p>
+              {posting === parcel.id ? (
+                <UpdateComposer
+                  lands={[parcel]}
+                  fixedLandId={parcel.id}
+                  onPosted={() => {
+                    setPosting(null);
+                    setPosted(parcel.id);
+                  }}
+                />
+              ) : null}
+              {posted === parcel.id ? (
+                <p className="callout callout--info">
+                  {t('updates.posted')} <Link to="/timeline">{t('nav.timeline')}</Link>
+                </p>
+              ) : null}
             </div>
 
             <div className="parcel__side">
@@ -122,10 +198,22 @@ export function MyLandPage() {
               >
                 {t('plan.seeOptions')}
               </Link>
+              <Link className="button button--small" to={`/land/${parcel.id}/invest`}>
+                {t('nav.findInvestors')}
+              </Link>
+              <Link className="button button--small" to={`/land/${parcel.id}/farm`}>
+                📒 {t('farm.open')}
+              </Link>
+              <Link className="button button--small button--ghost" to={`/land/${parcel.id}/insurance`}>
+                🛡 {t('insurance.title')}
+              </Link>
               <span className="badge" title={t('review.savedHelp')}>
                 {parcel.syncState === 'synced' ? '☁' : '💾'} {t('review.saved')}
               </span>
               <span className="muted small">{formatDate(parcel.createdAt, lang)}</span>
+              <Link className="button button--small button--ghost" to={`/land/${parcel.id}/edit`}>
+                ✏️ {t('common.edit')}
+              </Link>
               <button
                 type="button"
                 className="button button--danger button--small"

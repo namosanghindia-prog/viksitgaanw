@@ -1,0 +1,96 @@
+{
+  "key": "insurance_types",
+  "version": 1,
+  "items": [
+    {
+      "code": "crop",
+      "scopes": ["request", "parcel"],
+      "label": { "en": "Crop insurance", "hi": "फसल बीमा" },
+      "note": {
+        "en": "Pays out when the crop is lost to drought, flood, pests or hail, so one bad season does not become a debt the farmer cannot repay.",
+        "hi": "सूखा, बाढ़, कीट या ओले से फसल खराब होने पर भुगतान करता है, ताकि एक खराब मौसम ऐसा कर्ज़ न बन जाए जिसे किसान चुका न सके।"
+      }
+    },
+    {
+      "code": "livestock",
+      "scopes": ["request", "farmer"],
+      "label": { "en": "Animals, birds, fish and bees", "hi": "पशु, पक्षी, मछली और मधुमक्खी" },
+      "note": {
+        "en": "The animals are what the money buys. If one dies uninsured, the investment dies with it.",
+        "hi": "पैसे से पशु ही खरीदे जाते हैं। बिना बीमे के पशु मर जाए तो निवेश भी उसी के साथ डूब जाता है।"
+      }
+    },
+    {
+      "code": "structure",
+      "scopes": ["request", "parcel"],
+      "label": { "en": "Polyhouse / shade-net structure", "hi": "पॉलीहाउस / शेड-नेट ढाँचा" },
+      "note": {
+        "en": "A single storm can tear a polyhouse down, and the structure is most of the project's cost.",
+        "hi": "एक ही आँधी पॉलीहाउस गिरा सकती है, और परियोजना की ज़्यादातर लागत यही ढाँचा है।"
+      }
+    },
+    {
+      "code": "machinery",
+      "scopes": ["request", "farmer"],
+      "label": { "en": "Machinery and equipment", "hi": "मशीनरी और उपकरण" },
+      "note": {
+        "en": "Covers damage, theft and harm to other people. A tractor on a public road must by law carry third-party insurance, and so must a drone.",
+        "hi": "नुकसान, चोरी और दूसरों को हुई हानि को कवर करता है। सार्वजनिक सड़क पर चलने वाले ट्रैक्टर और ड्रोन का थर्ड-पार्टी बीमा कानूनन ज़रूरी है।"
+      }
+    },
+    {
+      "code": "property",
+      "scopes": ["request", "partner"],
+      "label": { "en": "Plant, building and stock (fire and allied perils)", "hi": "संयंत्र, भवन और माल (आग व संबद्ध जोखिम)" },
+      "note": {
+        "en": "Covers fire, flood, lightning and short-circuits at a processing unit, cold room or warehouse, including the stock inside.",
+        "hi": "प्रसंस्करण इकाई, कोल्ड रूम या गोदाम में आग, बाढ़, बिजली गिरने और शॉर्ट-सर्किट से नुकसान को कवर करता है, अंदर रखे माल सहित।"
+      }
+    },
+    {
+      "code": "accident",
+      "scopes": ["farmer"],
+      "label": { "en": "Personal accident", "hi": "दुर्घटना बीमा" },
+      "note": {
+        "en": "Pays the family if the farmer dies or is disabled in an accident.",
+        "hi": "दुर्घटना में किसान की मृत्यु या विकलांगता होने पर परिवार को भुगतान करता है।"
+      }
+    },
+    {
+      "code": "life",
+      "scopes": ["farmer"],
+      "label": { "en": "Life insurance", "hi": "जीवन बीमा" },
+      "note": {
+        "en": "Pays the family on the farmer's death, from any cause.",
+        "hi": "किसी भी कारण से किसान की मृत्यु होने पर परिवार को भुगतान करता है।"
+      }
+    },
+    {
+      "code": "health",
+      "scopes": ["farmer"],
+      "label": { "en": "Health insurance", "hi": "स्वास्थ्य बीमा" },
+      "note": {
+        "en": "Pays hospital bills, which are the most common reason farm families sell land.",
+        "hi": "अस्पताल का खर्च देता है — खेती करने वाले परिवारों के ज़मीन बेचने का सबसे आम कारण यही होता है।"
+      }
+    },
+    {
+      "code": "trade_credit",
+      "scopes": ["partner"],
+      "label": { "en": "Trade / export credit insurance", "hi": "व्यापार / निर्यात ऋण बीमा" },
+      "note": {
+        "en": "Pays the seller if a buyer, at home or abroad, does not pay.",
+        "hi": "देश या विदेश में खरीदार भुगतान न करे तो विक्रेता को भुगतान करता है।"
+      }
+    },
+    {
+      "code": "cargo",
+      "scopes": ["partner"],
+      "label": { "en": "Cargo / transit insurance", "hi": "माल / परिवहन बीमा" },
+      "note": {
+        "en": "Covers produce lost or damaged on the road, at the port or at sea.",
+        "hi": "सड़क, बंदरगाह या समुद्र में खोए या खराब हुए माल को कवर करता है।"
+      }
+    }
+  ]
+}

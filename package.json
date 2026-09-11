@@ -16,7 +16,10 @@
     "db:init": "python scripts/init_db.py",
     "db:import-sample": "python scripts/import_lgd.py --sample",
     "db:fetch": "python scripts/fetch_lgd.py",
-    "db:import": "python scripts/import_lgd.py --source data/lgd/dump --replace"
+    "db:import": "python scripts/import_lgd.py --source data/lgd/dump --replace",
+    "db:seed-demo": "python scripts/seed_demo_marketplace.py",
+    "prices:import": "python scripts/import_mandi_prices.py",
+    "sync-server": "python -m uvicorn server:app --app-dir apps/sync --host 127.0.0.1 --port 8900"
   },
   "engines": {
     "node": ">=18.18"

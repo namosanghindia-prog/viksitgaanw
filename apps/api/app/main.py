@@ -15,7 +15,28 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .config import get_settings
 from .db import init_db
-from .routers import geo, health, land, locations, opportunities, reports, tiles
+from .routers import (
+    data,
+    equipment,
+    farm,
+    geo,
+    groups,
+    health,
+    inbox,
+    insurance,
+    land,
+    locations,
+    marketplace,
+    markets,
+    media,
+    opportunities,
+    profiles,
+    reports,
+    social,
+    sync,
+    tiles,
+    trust,
+)
 
 logger = logging.getLogger("viksitgaanw")
 
@@ -54,6 +75,20 @@ def create_app() -> FastAPI:
     app.include_router(geo.router, prefix=API_PREFIX)
     app.include_router(opportunities.router, prefix=API_PREFIX)
     app.include_router(reports.router, prefix=API_PREFIX)
+    app.include_router(profiles.router, prefix=API_PREFIX)
+    app.include_router(marketplace.router, prefix=API_PREFIX)
+    app.include_router(insurance.router, prefix=API_PREFIX)
+    app.include_router(profiles.known_router, prefix=API_PREFIX)
+    app.include_router(media.router, prefix=API_PREFIX)
+    app.include_router(equipment.router, prefix=API_PREFIX)
+    app.include_router(inbox.router, prefix=API_PREFIX)
+    app.include_router(trust.router, prefix=API_PREFIX)
+    app.include_router(farm.router, prefix=API_PREFIX)
+    app.include_router(markets.router, prefix=API_PREFIX)
+    app.include_router(groups.router, prefix=API_PREFIX)
+    app.include_router(data.router, prefix=API_PREFIX)
+    app.include_router(sync.router, prefix=API_PREFIX)
+    app.include_router(social.router, prefix=API_PREFIX)
 
     @app.get("/", include_in_schema=False)
     def root() -> dict[str, str]:
