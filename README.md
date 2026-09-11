@@ -763,6 +763,31 @@ For development, `VG_PAYMENTS_SANDBOX=1` (with no Razorpay keys) opens a pretend
 payment page on the sync server, marked "TEST — no money moves", instead of
 Razorpay; everything after the payment runs as it would for real.
 
+### Message packs
+
+Messages are free between people who have something going on — a connection,
+an interest, an enquiry, a partnership, a deal, a group, a loan application —
+and any reply to someone who wrote first is free. Writing to anyone else (a
+farmer to an investor found in the directory, say) takes one message from a
+**message pack**, bought on the Subscription page like any other plan. The
+operator prices the packs; the price varies with the number of messages:
+
+```bash
+python apps/sync/admin.py set-plan messages-10 --kind messages --name "10 messages" --price 49  --credits 10
+python apps/sync/admin.py set-plan messages-20 --kind messages --name "20 messages" --price 89  --credits 20
+python apps/sync/admin.py set-plan messages-30 --kind messages --name "30 messages" --price 119 --credits 30
+python apps/sync/admin.py set-plan messages-40 --kind messages --name "40 messages" --price 149 --credits 40
+python apps/sync/admin.py give-messages <profile-id> 10   # free, by hand
+```
+
+The sync server keeps each profile's balance (`message_credits`) and takes
+one as each such message arrives, so no device can give itself messages; packs
+add up and do not expire. A message from a pack needs the internet: the app
+asks the server first, delivers it at once, and takes back one the server
+refuses rather than leaving it looking sent. The conversation screen says what
+a message will cost and how many are left. Devices record `message_pack.paid`
+(with the amount) and `message.paid_sent`.
+
 ### Loans
 
 Banks, NBFCs and cooperative banks join as partner organisations and publish

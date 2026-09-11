@@ -5,6 +5,7 @@ import { findItem, pickLabel } from '@viksitgaanw/shared';
 import { useI18n } from '../i18n';
 import type { StringKey } from '../i18n';
 import { formatDate, formatMoneyShort, formatNumber } from '../lib/format';
+import { MessageLink } from './MessageLink';
 import { PartyLine } from './RequestCard';
 
 const STATUS_BADGE: Record<LoanStatus, string> = {
@@ -75,7 +76,15 @@ export function LoanProductCard({ product, children }: { product: LoanProduct; c
           </span>
         ) : null}
       </header>
-      {!product.isMine ? <PartyLine party={product.lender} /> : null}
+      {!product.isMine ? (
+        <>
+          <PartyLine party={product.lender} />
+          {/* A question before applying: free once there is an application, otherwise from a message pack. */}
+          <div className="request__actions">
+            <MessageLink party={product.lender} />
+          </div>
+        </>
+      ) : null}
       {match && (match.reasons.length || match.misses.length) ? (
         <p className="small">
           {match.reasons.map((code) => `✓ ${t(`loans.match.${code}` as StringKey)}`).join(' · ')}

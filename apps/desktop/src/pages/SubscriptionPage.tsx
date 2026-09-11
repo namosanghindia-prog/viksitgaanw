@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import type { SubscriptionPayment, SubscriptionPlan } from '@viksitgaanw/shared';
+import type { MessagePack, SubscriptionPayment, SubscriptionPlan } from '@viksitgaanw/shared';
 
 import { forgetVideoPlan } from '../components/Video';
 import { useI18n } from '../i18n';
@@ -96,7 +96,7 @@ export function SubscriptionPage() {
     if (payment.url) window.open(payment.url, '_blank', 'noopener');
   };
 
-  const buy = async (plan: SubscriptionPlan) => {
+  const buy = async (plan: SubscriptionPlan | MessagePack) => {
     setBusy(plan.code);
     setError(null);
     setJustPaid(null);
@@ -162,7 +162,10 @@ export function SubscriptionPage() {
 
       {justPaid ? (
         <p className="callout callout--info">
-          ✓ {t('sub.paid', { date: justPaid.until ? formatDate(justPaid.until, lang) : '' })}
+          ✓{' '}
+          {justPaid.kind === 'messages'
+            ? t('packs.paid', { n: justPaid.credits ?? 0 })
+            : t('sub.paid', { date: justPaid.until ? formatDate(justPaid.until, lang) : '' })}
         </p>
       ) : null}
 
@@ -212,6 +215,31 @@ export function SubscriptionPage() {
         </section>
       ) : null}
       {canBuy ? <p className="muted small">{t('sub.howToPay')}</p> : null}
+
+      {data && (data.messagePacks.length > 0 || (data.messageCredits ?? 0) > 0) ? (
+        <section className="card" aria-label={t('packs.title')}>
+          <h3 className="card__title">💬 {t('packs.title')}</h3>
+          <p className="card__help">{t('packs.lede')}</p>
+          {data.messageCredits !== null ? (
+            <p className="sub-status__line">{t('packs.left', { n: data.messageCredits })}</p>
+          ) : null}
+          {data.paymentsAvailable && data.messagePacks.length ? (
+            <div className="plan-grid">
+              {data.messagePacks.map((pack) => (
+                <article key={pack.code} className="plan-card">
+                  <h3 className="plan-card__name">{t('packs.messages', { n: pack.credits })}</h3>
+                  <p className="plan-card__price">{rupees(pack.amountPaise)}</p>
+                  <p className="muted">{t('packs.each', { amount: rupees(Math.round(pack.amountPaise / pack.credits)) })}</p>
+                  <button type="button" className="button button--primary" disabled={busy !== null} onClick={() => buy(pack)}>
+                    {busy === pack.code ? t('common.loading') : t('sub.pay', { amount: rupees(pack.amountPaise) })}
+                  </button>
+                </article>
+              ))}
+            </div>
+          ) : null}
+          <p className="muted small">{t('packs.free')}</p>
+        </section>
+      ) : null}
 
       {error ? <p className="callout callout--error">{error}</p> : null}
 

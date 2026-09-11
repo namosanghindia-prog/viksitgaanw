@@ -82,6 +82,10 @@ class EventType:
     SUBSCRIPTION_CHECKOUT = "subscription.checkout_started"
     #: A subscription payment went through: revenue, with the amount in paise.
     SUBSCRIPTION_PAID = "subscription.paid"
+    #: A message from a pack reached someone the sender had nothing with.
+    MESSAGE_PAID = "message.paid_sent"
+    #: A message pack was paid for: revenue, with the amount in paise and the messages.
+    MESSAGES_PAID = "message_pack.paid"
     #: A farmer opened a payment page to promote a project.
     PROMOTION_CHECKOUT = "promotion.checkout_started"
     #: A promotion went through: advertising revenue, with the amount in paise.

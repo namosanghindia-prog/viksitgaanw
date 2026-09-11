@@ -21,6 +21,7 @@ import type {
   LoanDecision,
   LoanProduct,
   LoanProductInput,
+  MessageCost,
   ProjectInvite,
   Promotion,
   Subscription,
@@ -599,6 +600,10 @@ export const api = {
     request<SubscriptionPayment>('/subscription/checkout', { method: 'POST', body: { plan } }),
   checkPayment: (id: string) =>
     request<SubscriptionPayment>(`/subscription/payments/${id}/check`, { method: 'POST' }),
+
+  /* What a message to someone costs */
+  messageCost: (profileId: string, signal?: AbortSignal) =>
+    request<MessageCost>(`/conversations/${profileId}/cost`, { signal }),
 
   /* Loans */
   loanRoles: (signal?: AbortSignal) => request<{ lender: boolean; applicant: boolean }>('/loans/roles', { signal }),

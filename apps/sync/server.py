@@ -614,6 +614,17 @@ def push(body: PushIn, me: Device = Depends(device)) -> dict[str, Any]:
                         raise HTTPException(status_code=403, detail="only the applicant applies")
                     by_lender = existing is not None and existing["owner_profile_id"] != me.profile_id
                     payload = _loan_guard(existing, dict(record.payload), by_lender)
+                if record.entity_type == "message" and existing is None and owner == me.profile_id:
+                    # Writing to someone one has nothing with takes a message from a pack.
+                    recipient = payload.get("recipient_profile_id") or ""
+                    if recipient and not free_to_message(con, me.profile_id, recipient):
+                        if not _spend_message_credit(con, me.profile_id):
+                            raise HTTPException(
+                                status_code=402,
+                                detail="No messages left: buy a message pack to write to someone "
+                                       "you are not connected with.",
+                            )
+                        payload = {**payload, "paid": True}
 
                 was = json.loads(existing["payload"]).get("status") if existing is not None else None
 
@@ -1049,6 +1060,9 @@ def _credit(con: Conn, payment: Row, provider_payment_id: str | None) -> bool:
         )
         con.execute("UPDATE payments SET until_after = ? WHERE id = ?", (until, payment["id"]))
         return True
+    if payment["kind"] == "messages":
+        add_message_credits(con, payment["profile_id"], int(payment["credits"] or 0))
+        return True
     current = con.execute(
         "SELECT until FROM subscriptions WHERE profile_id = ?" + con.for_update, (payment["profile_id"],)
     ).fetchone()
@@ -1093,13 +1107,14 @@ def _payment_out(row: Row) -> dict[str, Any]:
         "alert": bool(row["alert"]),
         "targetType": row["target_type"],
         "targetId": row["target_id"],
+        "credits": row["credits"],
     }
 
 
 def _plan_out(row: Row) -> dict[str, Any]:
     return {
         "code": row["code"], "name": row["name"], "amountPaise": row["amount_paise"], "months": row["months"],
-        "kind": row["kind"], "days": row["days"], "alert": bool(row["alert"]),
+        "kind": row["kind"], "days": row["days"], "alert": bool(row["alert"]), "credits": row["credits"],
     }
 
 
@@ -1137,6 +1152,8 @@ def create_payment(body: CheckoutIn, me: Device = Depends(device)) -> dict[str, 
         if plan["kind"] == "promotion":
             _check_promotable(con, me.profile_id, body.target_type, body.target_id)
             target_type, target_id = body.target_type, body.target_id
+        elif plan["kind"] == "messages":
+            target_type = target_id = None  # a pack may be bought any time, and adds up
         else:
             target_type = target_id = None
             current = con.execute("SELECT until FROM subscriptions WHERE profile_id = ?", (me.profile_id,)).fetchone()
@@ -1167,11 +1184,11 @@ def create_payment(body: CheckoutIn, me: Device = Depends(device)) -> dict[str, 
     with db() as con:
         con.execute(
             "INSERT INTO payments (id, profile_id, plan, plan_name, amount_paise, months, link_id, url, status, "
-            "expires_at, created_at, kind, days, alert, target_type, target_id) "
-            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'created', ?, ?, ?, ?, ?, ?, ?)",
+            "expires_at, created_at, kind, days, alert, target_type, target_id, credits) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'created', ?, ?, ?, ?, ?, ?, ?, ?)",
             (payment_id, me.profile_id, plan["code"], plan["name"], plan["amount_paise"], plan["months"],
              link["id"], link["short_url"], datetime.fromtimestamp(expire_by, timezone.utc).isoformat(), _now(),
-             plan["kind"], plan["days"], plan["alert"], target_type, target_id),
+             plan["kind"], plan["days"], plan["alert"], target_type, target_id, plan["credits"]),
         )
         return _payment_out(con.execute("SELECT * FROM payments WHERE id = ?", (payment_id,)).fetchone())
 
@@ -1209,7 +1226,8 @@ def payment_status(payment_id: str, me: Device = Depends(device)) -> dict[str, A
     with db() as con:
         row = con.execute("SELECT * FROM payments WHERE id = ?", (payment_id,)).fetchone()
         promotion = _promotion_out(con, row["target_type"], row["target_id"]) if row["kind"] == "promotion" else None
-        return {**_payment_out(row), "subscription": subscription(con, me.profile_id), "promotion": promotion}
+        return {**_payment_out(row), "subscription": subscription(con, me.profile_id), "promotion": promotion,
+                "messageCredits": message_credits(con, me.profile_id)}
 
 
 @app.post("/v1/webhooks/razorpay")
@@ -1337,6 +1355,75 @@ def my_promotions(me: Device = Depends(device)) -> dict[str, Any]:
             "SELECT entity_type, entity_id FROM promotions WHERE profile_id = ? ORDER BY until DESC", (me.profile_id,)
         ).fetchall()
         return {"promotions": [_promotion_out(con, row["entity_type"], row["entity_id"]) for row in rows]}
+
+
+# --------------------------------------------------------------------------- #
+# Message packs: writing to people one is not connected with
+# --------------------------------------------------------------------------- #
+
+#: Records that mean two people already have something going on -- the server's
+#: side of the app's messages.related(). Between them, messages cost nothing.
+FREE_MESSAGE_TYPES = ("connection", "investment_interest", "equipment_enquiry", "equipment_partnership",
+                      "deal", "group_member", "loan_application", "project_invite")
+
+
+def message_credits(con: Conn, profile_id: str) -> int:
+    row = con.execute("SELECT balance FROM message_credits WHERE profile_id = ?", (profile_id,)).fetchone()
+    return int(row["balance"]) if row is not None else 0
+
+
+def add_message_credits(con: Conn, profile_id: str, credits: int) -> int:
+    """Add a pack's messages to the balance; packs add up. Returns the new balance."""
+    con.execute(
+        "INSERT INTO message_credits (profile_id, balance, updated_at) VALUES (?, ?, ?) "
+        "ON CONFLICT (profile_id) DO UPDATE SET balance = message_credits.balance + excluded.balance, "
+        "updated_at = excluded.updated_at",
+        (profile_id, max(0, credits), _now()),
+    )
+    return message_credits(con, profile_id)
+
+
+def free_to_message(con: Conn, sender: str, recipient: str) -> bool:
+    """Whether a message from ``sender`` to ``recipient`` costs nothing.
+
+    Free between people already connected or dealing with each other, and
+    for a reply to someone who wrote first: nobody pays to answer a stranger.
+    """
+    if _connected(con, sender, recipient):
+        return True
+    a, b = f'%"{sender}"%', f'%"{recipient}"%'
+    marks = ", ".join("?" for _ in FREE_MESSAGE_TYPES)
+    if con.execute(
+        f"SELECT 1 FROM records WHERE entity_type IN ({marks}) AND deleted = 0 "
+        "AND parties LIKE ? AND parties LIKE ? LIMIT 1",
+        (*FREE_MESSAGE_TYPES, a, b),
+    ).fetchone():
+        return True
+    return con.execute(
+        "SELECT 1 FROM records WHERE entity_type = 'message' AND owner_profile_id = ? AND parties LIKE ? LIMIT 1",
+        (recipient, a),
+    ).fetchone() is not None
+
+
+def _spend_message_credit(con: Conn, profile_id: str) -> bool:
+    """Take one message from the pack, if there is one. One guarded update, so never below nothing."""
+    return con.execute(
+        "UPDATE message_credits SET balance = balance - 1, updated_at = ? WHERE profile_id = ? AND balance > 0",
+        (_now(), profile_id),
+    ).rowcount == 1
+
+
+@app.get("/v1/message-credits")
+def my_message_credits(to: str | None = None, me: Device = Depends(device)) -> dict[str, Any]:
+    """Messages left in the owner's packs -- and, with ``to``, whether writing to that person is free."""
+    with db() as con:
+        packs = con.execute("SELECT 1 FROM plans WHERE active = 1 AND kind = 'messages' LIMIT 1").fetchone()
+        return {
+            "balance": message_credits(con, me.profile_id),
+            "free": free_to_message(con, me.profile_id, to) if to else None,
+            "packsOnSale": bool(packs),
+            "paymentsAvailable": razorpay.configured,
+        }
 
 
 # --------------------------------------------------------------------------- #

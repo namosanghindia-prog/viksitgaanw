@@ -119,6 +119,8 @@ Table(
     Column("days", Integer),
     #: A promotion that also alerts the investors and partners it suits, once.
     Column("alert", Integer, nullable=False, server_default="0"),
+    #: A message pack: how many messages to people one is not connected with.
+    Column("credits", Integer),
 )
 # Amount and months are copied from the plan when a link is made, so a later
 # price change never alters a link already out.
@@ -145,7 +147,17 @@ Table(
     #: For a promotion, the record it promotes.
     Column("target_type", Text),
     Column("target_id", Text),
+    #: For a message pack, the messages it buys.
+    Column("credits", Integer),
     Index("ix_payments_profile", "profile_id"),
+)
+#: Messages a profile may still send to people it is not connected with. The
+#: server alone keeps the count, and takes one as each such message arrives.
+Table(
+    "message_credits", metadata,
+    Column("profile_id", Text, primary_key=True),
+    Column("balance", Integer, nullable=False, server_default="0"),
+    Column("updated_at", Text, nullable=False),
 )
 #: A record paid (or granted) a place at the top of others' lists. The server
 #: alone decides this, and stamps it onto the record everyone pulls.

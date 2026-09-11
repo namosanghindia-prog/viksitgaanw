@@ -27,7 +27,7 @@ from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from ..models import SubscriptionPayment
-from ..schemas import PaymentOut, PlanOut, SubscriptionOut
+from ..schemas import MessagePackOut, PaymentOut, PlanOut, SubscriptionOut
 from . import videos
 from .events import EventType, record_event
 
@@ -113,6 +113,7 @@ def _save(session: Session, data: dict[str, Any]) -> tuple[SubscriptionPayment, 
     row.kind = data.get("kind") or "subscription"
     row.days = data.get("days")
     row.target_id = data.get("targetId")
+    row.credits = data.get("credits")
     session.flush()
 
     went_through = row.status == "paid" and was != "paid"
@@ -120,6 +121,17 @@ def _save(session: Session, data: dict[str, Any]) -> tuple[SubscriptionPayment, 
         from . import promotion  # noqa: PLC0415 - promotion imports this module
 
         promotion.on_paid(session, row, data.get("promotion"))
+    elif went_through and row.kind == "messages":
+        record_event(
+            session, EventType.MESSAGES_PAID, entity_type="subscription_payment", entity_id=row.id,
+            payload={"plan": row.plan, "amount_paise": row.amount_paise, "credits": row.credits},
+        )
+        owner = get_owner(session)
+        notify(
+            session, owner.id if owner else None, "messages_paid",
+            params={"n": row.credits or 0, "left": data.get("messageCredits") or row.credits or 0},
+            link="/subscription", entity_type="subscription_payment", entity_id=row.id,
+        )
     elif went_through:
         record_event(
             session, EventType.SUBSCRIPTION_PAID, entity_type="subscription_payment", entity_id=row.id,
@@ -151,6 +163,7 @@ def serialise(row: SubscriptionPayment) -> PaymentOut:
         kind=row.kind or "subscription",  # type: ignore[arg-type]
         days=row.days,
         target_id=row.target_id,
+        credits=row.credits,
     )
 
 
@@ -212,6 +225,19 @@ def overview(session: Session, transport: Any = None) -> SubscriptionOut:
         answer = None
         reason = "sync_off" if exc.status == 409 else "offline"
     status = videos.plan(session, transport)
+    packs: list[MessagePackOut] = []
+    credits: int | None = None
+    if answer is not None:
+        packs = [
+            MessagePackOut(code=p["code"], name=p["name"], amount_paise=p["amountPaise"], credits=p.get("credits") or 0)
+            for p in answer.get("plans") or []
+            if p.get("kind") == "messages"
+        ]
+        packs.sort(key=lambda pack: pack.credits)
+        try:
+            credits = int(_call(session, transport, "GET", "/v1/message-credits").get("balance") or 0)
+        except SubscriptionError:
+            credits = None  # an older server, or gone offline between two calls
     if answer is not None:
         available = bool(answer.get("paymentsAvailable"))
         plans = [
@@ -227,5 +253,6 @@ def overview(session: Session, transport: Any = None) -> SubscriptionOut:
         elif not plans:
             reason = "no_plans"
     return SubscriptionOut(
-        status=status, payments_available=available, plans=plans, payments=_receipts(session), reason=reason
+        status=status, payments_available=available, plans=plans, payments=_receipts(session), reason=reason,
+        message_packs=packs, message_credits=credits,
     )

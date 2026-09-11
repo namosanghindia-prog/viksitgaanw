@@ -4,6 +4,8 @@
     python apps/sync/admin.py set-plan video-month --name "Video uploads, 1 month" --price 99 --months 1
     python apps/sync/admin.py set-plan feature-week --kind promotion --name "Featured for 7 days" --price 99 --days 7
     python apps/sync/admin.py set-plan spotlight-week --kind promotion --name "Featured 7 days + investor alert" --price 199 --days 7 --alert
+    python apps/sync/admin.py set-plan messages-10 --kind messages --name "10 messages" --price 49 --credits 10
+    python apps/sync/admin.py give-messages <profile-id> 10
     python apps/sync/admin.py retire-plan video-month
     python apps/sync/admin.py plans
     python apps/sync/admin.py payments [--profile <profile-id>]
@@ -99,13 +101,17 @@ def to_paise(price: str) -> int:
 
 
 def set_plan(code: str, name: str, price: str, months: int | None, kind: str = "subscription",
-             days: int | None = None, alert: bool = False) -> None:
+             days: int | None = None, alert: bool = False, credits: int | None = None) -> None:
     if not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,31}", code):
         sys.exit("A plan code is up to 32 lower-case letters, digits and dashes, like video-month.")
     if kind == "promotion":
         if days is None or not 1 <= days <= 90:
             sys.exit("A promotion lasts 1 to 90 days: give --days.")
-        months = 0
+        months, credits = 0, None
+    elif kind == "messages":
+        if credits is None or not 1 <= credits <= 1000:
+            sys.exit("A message pack has 1 to 1000 messages: give --credits.")
+        months, days, alert = 0, None, False
     else:
         if months is None or not 1 <= months <= 36:
             sys.exit("A plan lasts 1 to 36 months: give --months.")
@@ -113,15 +119,32 @@ def set_plan(code: str, name: str, price: str, months: int | None, kind: str = "
     paise = to_paise(price)
     with server.db() as con:
         con.execute(
-            "INSERT INTO plans (code, name, amount_paise, months, active, created_at, kind, days, alert) "
-            "VALUES (?, ?, ?, ?, 1, ?, ?, ?, ?) "
+            "INSERT INTO plans (code, name, amount_paise, months, active, created_at, kind, days, alert, credits) "
+            "VALUES (?, ?, ?, ?, 1, ?, ?, ?, ?, ?) "
             "ON CONFLICT (code) DO UPDATE SET name = excluded.name, amount_paise = excluded.amount_paise, "
-            "months = excluded.months, active = 1, kind = excluded.kind, days = excluded.days, alert = excluded.alert",
-            (code, name, paise, months, server._now(), kind, days, int(alert)),
+            "months = excluded.months, active = 1, kind = excluded.kind, days = excluded.days, "
+            "alert = excluded.alert, credits = excluded.credits",
+            (code, name, paise, months, server._now(), kind, days, int(alert), credits),
         )
-    length = f"{days} day{'s' if days != 1 else ''}" if kind == "promotion" else f"{months} month{'s' if months > 1 else ''}"
+    if kind == "messages":
+        length = f"{credits} messages"
+    elif kind == "promotion":
+        length = f"{days} day{'s' if days != 1 else ''}"
+    else:
+        length = f"{months} month{'s' if months > 1 else ''}"
     extra = ", alerts matching investors" if alert else ""
     print(f"{code}: {name}, {_rupees(paise)} for {length}{extra} -- on sale")
+
+
+def give_messages(profile_id: str, credits: int) -> None:
+    """Add messages to a profile's balance by hand: a launch offer, a refund made good."""
+    if not 1 <= credits <= 1000:
+        sys.exit("Give 1 to 1000 messages.")
+    with server.db() as con:
+        if not con.execute("SELECT 1 FROM devices WHERE profile_id = ?", (profile_id,)).fetchone():
+            sys.exit(f"No device has registered profile {profile_id} here yet. Sync from it once first.")
+        balance = server.add_message_credits(con, profile_id, credits)
+    print(f"{profile_id}: +{credits} messages, {balance} left")
 
 
 def retire_plan(code: str) -> None:
@@ -137,8 +160,12 @@ def list_plans() -> None:
     if not rows:
         print("No plans yet. Add one with set-plan.")
     for row in rows:
-        length = f"{row['days']:>3} d " if row["kind"] == "promotion" else f"{row['months']:>3} mo"
-        kind = "promotion" + ("+alert" if row["alert"] else "") if row["kind"] == "promotion" else "subscription"
+        if row["kind"] == "messages":
+            length, kind = f"{row['credits']:>3} msg", "message pack"
+        elif row["kind"] == "promotion":
+            length, kind = f"{row['days']:>3} d ", "promotion" + ("+alert" if row["alert"] else "")
+        else:
+            length, kind = f"{row['months']:>3} mo", "subscription"
         print(f"{row['code']:24} {_rupees(row['amount_paise']):>10} {length}  {kind:16} "
               f"{'on sale' if row['active'] else 'retired':8} {row['name']}")
 
@@ -339,10 +366,14 @@ def main() -> None:
     plan.add_argument("code")
     plan.add_argument("--name", required=True)
     plan.add_argument("--price", required=True, help="in rupees, e.g. 99")
-    plan.add_argument("--kind", choices=("subscription", "promotion"), default="subscription")
+    plan.add_argument("--kind", choices=("subscription", "promotion", "messages"), default="subscription")
     plan.add_argument("--months", type=int, help="a subscription's length")
     plan.add_argument("--days", type=int, help="a promotion's length")
     plan.add_argument("--alert", action="store_true", help="a promotion that also alerts matching investors")
+    plan.add_argument("--credits", type=int, help="a message pack's messages to people one is not connected with")
+    msg = commands.add_parser("give-messages", help="add messages to a profile's balance by hand")
+    msg.add_argument("profile_id")
+    msg.add_argument("credits", type=int)
     pro = commands.add_parser("promote", help="feature a shared project free of charge")
     pro.add_argument("entity_id")
     pro.add_argument("--days", type=int, default=7)
@@ -381,7 +412,9 @@ def main() -> None:
     elif args.command == "unsubscribe":
         unsubscribe(args.profile_id)
     elif args.command == "set-plan":
-        set_plan(args.code, args.name, args.price, args.months, args.kind, args.days, args.alert)
+        set_plan(args.code, args.name, args.price, args.months, args.kind, args.days, args.alert, args.credits)
+    elif args.command == "give-messages":
+        give_messages(args.profile_id, args.credits)
     elif args.command == "promote":
         promote(args.entity_id, args.days, args.alert)
     elif args.command == "unpromote":

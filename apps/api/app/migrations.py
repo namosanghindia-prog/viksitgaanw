@@ -61,6 +61,8 @@ ADDITIVE_COLUMNS: dict[str, dict[str, str]] = {
         "kind": "VARCHAR(16) NOT NULL DEFAULT 'subscription'",
         "days": "INTEGER",
         "target_id": "VARCHAR(36)",
+        # Added with message packs.
+        "credits": "INTEGER",
     },
     # Added with introduction videos.
     "equipment_listings": {"intro_video": "JSON"},

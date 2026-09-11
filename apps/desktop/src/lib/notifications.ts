@@ -47,6 +47,7 @@ const KNOWN = new Set([
   'loan_sanctioned',
   'loan_disbursed',
   'loan_declined',
+  'messages_paid',
 ]);
 
 export const NOTE_ICON: Record<string, string> = {
@@ -79,6 +80,7 @@ export const NOTE_ICON: Record<string, string> = {
   loan_sanctioned: '✅',
   loan_disbursed: '💰',
   loan_declined: '🏦',
+  messages_paid: '💬',
 };
 
 /**

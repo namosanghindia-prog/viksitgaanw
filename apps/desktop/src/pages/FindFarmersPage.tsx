@@ -4,6 +4,7 @@ import type { FarmerListing } from '@viksitgaanw/shared';
 import { findItem } from '@viksitgaanw/shared';
 
 import { Picker } from '../components/Picker';
+import { MessageLink } from '../components/MessageLink';
 import { PartyLine } from '../components/RequestCard';
 import { VideoPlayer } from '../components/Video';
 import { useI18n } from '../i18n';
@@ -80,6 +81,9 @@ function FarmerCard({ listing }: { listing: FarmerListing }) {
     <article className="request farmer-card">
       {/* The biodata video is shown large here, so not again as a button. */}
       <PartyLine party={{ ...profile, biodataVideo: null }} />
+      <div className="request__actions">
+        <MessageLink party={profile} />
+      </div>
       {facts.length ? <p className="muted small">{facts.join(' · ')}</p> : null}
       {listing.about ? <p>{listing.about}</p> : null}
       {video ? <VideoPlayer video={video} title={t('video.biodataShort')} compact /> : null}

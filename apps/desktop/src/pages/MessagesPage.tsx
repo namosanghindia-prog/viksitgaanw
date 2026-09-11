@@ -65,6 +65,10 @@ export function ThreadPage() {
   const { refresh } = useInbox();
   const thread = useAsync((signal) => api.thread(profileId, signal), [profileId]);
   const conversations = useAsync((signal) => api.conversations(signal), [profileId]);
+  // Free with people one has something with; otherwise one message from a pack.
+  const cost = useAsync((signal) => api.messageCost(profileId, signal), [profileId]);
+  const paid = cost.data !== null && cost.data !== undefined && !cost.data.free;
+  const blocked = paid && (cost.data?.reason !== null || (cost.data?.credits ?? 0) < 1);
   const [draft, setDraft] = useState('');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -92,6 +96,7 @@ export function ThreadPage() {
       setDraft('');
       thread.reload();
       conversations.reload();
+      cost.reload();
     } catch (cause) {
       setError(cause instanceof Error ? cause.message : String(cause));
     } finally {
@@ -121,6 +126,21 @@ export function ThreadPage() {
         <div ref={bottom} />
       </div>
 
+      {paid && cost.data ? (
+        <p className={`callout ${blocked ? 'callout--warn' : 'callout--info'}`}>
+          💬{' '}
+          {cost.data.reason === 'sync_off'
+            ? t('packs.needSync')
+            : cost.data.reason === 'offline'
+              ? t('packs.needInternet')
+              : (cost.data.credits ?? 0) > 0
+                ? t('packs.costsOne', { n: cost.data.credits ?? 0 })
+                : t('packs.noneLeft')}{' '}
+          {!cost.data.reason ? <Link to="/subscription">{t('packs.buy')} →</Link> : null}
+          {cost.data.reason === 'sync_off' ? <Link to="/settings">{t('nav.myData')} →</Link> : null}
+        </p>
+      ) : null}
+
       <div className="composer">
         <textarea
           className="input input--textarea"
@@ -133,7 +153,7 @@ export function ThreadPage() {
             if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) void send();
           }}
         />
-        <button type="button" className="button button--primary" disabled={busy || !draft.trim()} onClick={send}>
+        <button type="button" className="button button--primary" disabled={busy || !draft.trim() || blocked} onClick={send}>
           {t('messages.send')}
         </button>
       </div>

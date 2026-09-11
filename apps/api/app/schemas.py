@@ -1471,6 +1471,18 @@ class MessageOut(ApiModel):
     created_at: datetime
 
 
+class MessageCostOut(ApiModel):
+    """What writing to someone costs: nothing, or one message from a pack."""
+
+    free: bool
+    #: Messages left in the owner's packs; None when not asked (free) or unknown.
+    credits: int | None = None
+    #: Whether packs can be bought right now.
+    packs_on_sale: bool = False
+    #: Why the server could not be asked: sync_off | offline | None.
+    reason: str | None = None
+
+
 class ConversationOut(ApiModel):
     other: ProfileCardOut
     last_message: MessageOut | None = None
@@ -2434,11 +2446,22 @@ class PaymentOut(ApiModel):
     expires_at: datetime | None = None
     created_at: datetime
     paid_at: datetime | None = None
-    #: subscription | promotion
-    kind: Literal["subscription", "promotion"] = "subscription"
+    #: subscription | promotion | messages
+    kind: Literal["subscription", "promotion", "messages"] = "subscription"
     #: For a promotion: how many days, and the project it promotes.
     days: int | None = None
     target_id: str | None = None
+    #: For a message pack: how many messages it buys.
+    credits: int | None = None
+
+
+class MessagePackOut(ApiModel):
+    """A message pack on sale: messages to people one is not connected with."""
+
+    code: str
+    name: str
+    amount_paise: int
+    credits: int
 
 
 class PromotionPlanOut(ApiModel):
@@ -2483,6 +2506,9 @@ class SubscriptionOut(ApiModel):
     #: Why nothing can be bought right now: sync_off | offline | no_profile |
     #: payments_off | no_plans | no_end | None.
     reason: str | None = None
+    #: Message packs on sale, and the messages left -- None when the server could not be asked.
+    message_packs: list[MessagePackOut] = Field(default_factory=list)
+    message_credits: int | None = None
 
 
 class CheckoutInput(ApiModel):

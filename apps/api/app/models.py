@@ -1381,6 +1381,8 @@ class SubscriptionPayment(Base):
     #: A promotion's length, and the project it promotes.
     days: Mapped[int | None] = mapped_column(Integer)
     target_id: Mapped[str | None] = mapped_column(String(36), index=True)
+    #: A message pack's messages.
+    credits: Mapped[int | None] = mapped_column(Integer)
 
 
 # --------------------------------------------------------------------------- #

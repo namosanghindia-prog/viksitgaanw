@@ -82,11 +82,13 @@ def test_insurance_about_to_lapse_is_a_reminder_once(client):
 # --------------------------------------------------------------------------- #
 
 
-def test_no_messages_to_strangers(client):
+def test_no_free_messages_to_strangers(client):
+    """Writing to someone one has nothing with takes a message pack, through the sync server (test_message_packs)."""
     make_owner(client, farmer_body())
     stranger = insert_profile("investor_india")
     response = client.post(f"/api/v1/conversations/{stranger}/messages", json={"body": "Hello"})
-    assert response.status_code == 403
+    assert response.status_code == 409 and "sync" in response.json()["detail"]
+    assert client.get(f"/api/v1/conversations/{stranger}/cost").json()["reason"] == "sync_off"
 
 
 def test_a_conversation(client, matched):

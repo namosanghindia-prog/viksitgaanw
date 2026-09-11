@@ -4,6 +4,7 @@ import type { InvestmentRequest, InvestorListing } from '@viksitgaanw/shared';
 import { findItem } from '@viksitgaanw/shared';
 
 import { Picker } from '../components/Picker';
+import { MessageLink } from '../components/MessageLink';
 import { PartyLine } from '../components/RequestCard';
 import { VideoPlayer } from '../components/Video';
 import { useI18n } from '../i18n';
@@ -137,6 +138,10 @@ function InvestorCard({
       <header className="request__head">
         <div className="request__heading">
           <PartyLine party={listing.profile} />
+          {/* Free once there is something between you; otherwise one message from a pack. */}
+          <div className="request__actions">
+            <MessageLink party={listing.profile} />
+          </div>
         </div>
         {listing.fit ? (
           <span className={`badge badge--fit ${listing.fit.score >= 70 ? 'badge--fit-good' : ''}`}>

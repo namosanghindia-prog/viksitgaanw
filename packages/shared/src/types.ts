@@ -1403,10 +1403,30 @@ export interface SubscriptionPayment {
   expiresAt: string | null;
   createdAt: string;
   paidAt: string | null;
-  kind: 'subscription' | 'promotion';
+  kind: 'subscription' | 'promotion' | 'messages';
   /** For a promotion: its length, and the project it promotes. */
   days: number | null;
   targetId: string | null;
+  /** For a message pack: the messages it buys. */
+  credits: number | null;
+}
+
+/** A message pack on sale: messages to people one is not connected with. */
+export interface MessagePack {
+  code: string;
+  name: string;
+  amountPaise: number;
+  credits: number;
+}
+
+/** What writing to someone costs: nothing, or one message from a pack. */
+export interface MessageCost {
+  free: boolean;
+  /** Messages left, when a message would use one. */
+  credits: number | null;
+  packsOnSale: boolean;
+  /** sync_off | offline, or null. */
+  reason: string | null;
 }
 
 /** A promotion package on sale, as the sync server's operator priced it. */
@@ -1438,6 +1458,9 @@ export interface Subscription {
   payments: SubscriptionPayment[];
   /** sync_off | offline | payments_off | no_plans | no_end, or null. */
   reason: string | null;
+  /** Message packs on sale, and the messages left (null when the server could not be asked). */
+  messagePacks: MessagePack[];
+  messageCredits: number | null;
 }
 
 /* ------------------------------------------------------------------ *

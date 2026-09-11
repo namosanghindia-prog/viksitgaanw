@@ -7,7 +7,15 @@ from sqlalchemy.orm import Session
 
 from ..db import get_session
 from ..models import Profile
-from ..schemas import ConversationOut, InboxCounts, MessageInput, MessageOut, NotificationOut, ReadInput
+from ..schemas import (
+    ConversationOut,
+    InboxCounts,
+    MessageCostOut,
+    MessageInput,
+    MessageOut,
+    NotificationOut,
+    ReadInput,
+)
 from ..services import messages, notify
 from .deps import fail, owner
 
@@ -56,11 +64,19 @@ def read_thread(
     profile_id: str, me: Profile = Depends(owner), session: Session = Depends(get_session)
 ) -> list[MessageOut]:
     other = _other(session, profile_id)
-    if not messages.related(session, me.id, other.id):
-        raise HTTPException(status_code=404, detail="Person not found.")
+    # Anyone may be written to now (from a message pack), so any thread may be opened;
+    # it holds only what passed between the two of them.
     rows = messages.thread(session, me, other)
     session.commit()
     return rows
+
+
+@router.get("/conversations/{profile_id}/cost", response_model=MessageCostOut)
+def message_cost(profile_id: str, me: Profile = Depends(owner), session: Session = Depends(get_session)) -> MessageCostOut:
+    """Whether writing to this person is free, or takes one from a message pack -- and how many are left."""
+    result = messages.cost(session, me, _other(session, profile_id))
+    session.commit()  # the device's registration with the server, if this was its first call
+    return result
 
 
 @router.post(
@@ -78,6 +94,7 @@ def send_message(
     try:
         message = messages.send(session, me, other, payload)
     except messages.MessageError as exc:
+        session.commit()  # a message the server refused is already taken back
         raise fail(exc) from exc
     session.commit()
     return messages.serialise(message, me)
