@@ -18,15 +18,16 @@
     "coastal": ["24", "27", "30", "29", "32", "33", "28", "21", "19", "34", "38", "35", "31"],
     "all_india": []
   },
+  "sectorsNote": "Every kind is farm or nonfarm, as NABARD and NRLM split livelihoods: crops and allied activities (livestock, fisheries, beekeeping) are the farm sector; processing, storage and services are non-farm. An option may override its kind's sector with its own \"sector\".",
   "kinds": [
-    { "code": "horticulture", "label": { "en": "Orchard / horticulture", "hi": "बागवानी" } },
-    { "code": "protected", "label": { "en": "Protected cultivation", "hi": "संरक्षित खेती" } },
-    { "code": "vegetable", "label": { "en": "Vegetables", "hi": "सब्ज़ी की खेती" } },
-    { "code": "spice", "label": { "en": "Spices / medicinal", "hi": "मसाले / औषधीय" } },
-    { "code": "field_crop", "label": { "en": "Field crop", "hi": "खेत की फसल" } },
-    { "code": "livestock", "label": { "en": "Livestock / allied", "hi": "पशुपालन / सहायक" } },
-    { "code": "processing", "label": { "en": "Processing unit", "hi": "प्रसंस्करण इकाई" } },
-    { "code": "service", "label": { "en": "Farm service business", "hi": "कृषि सेवा व्यवसाय" } }
+    { "code": "horticulture", "sector": "farm", "label": { "en": "Orchard / horticulture", "hi": "बागवानी" } },
+    { "code": "protected", "sector": "farm", "label": { "en": "Protected cultivation", "hi": "संरक्षित खेती" } },
+    { "code": "vegetable", "sector": "farm", "label": { "en": "Vegetables", "hi": "सब्ज़ी की खेती" } },
+    { "code": "spice", "sector": "farm", "label": { "en": "Spices / medicinal", "hi": "मसाले / औषधीय" } },
+    { "code": "field_crop", "sector": "farm", "label": { "en": "Field crop", "hi": "खेत की फसल" } },
+    { "code": "livestock", "sector": "farm", "label": { "en": "Livestock / allied", "hi": "पशुपालन / सहायक" } },
+    { "code": "processing", "sector": "nonfarm", "label": { "en": "Processing unit", "hi": "प्रसंस्करण इकाई" } },
+    { "code": "service", "sector": "nonfarm", "label": { "en": "Farm service business", "hi": "कृषि सेवा व्यवसाय" } }
   ],
   "riskLevels": [
     { "code": "low", "label": { "en": "Low risk", "hi": "कम जोखिम" } },

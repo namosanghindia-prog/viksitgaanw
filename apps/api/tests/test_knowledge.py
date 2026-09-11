@@ -44,6 +44,19 @@ def test_every_option_names_a_kind_that_exists(options):
         assert item["kind"] in kinds, item["code"]
 
 
+def test_every_option_is_farming_or_non_farming(options):
+    """The plan page shows the two side by side; an option in neither would vanish."""
+    for kind in knowledge.kind_index().values():
+        assert kind.get("sector") in knowledge.SECTORS, kind["code"]
+    for item in options:
+        assert item.get("sector", "farm") in knowledge.SECTORS, item["code"]
+    counts = {sector: 0 for sector in knowledge.SECTORS}
+    for item in options:
+        counts[knowledge.opportunity_sector(item)] += 1
+    # Someone with no land still needs a real choice of non-farming projects.
+    assert counts["nonfarm"] >= 5 and counts["farm"] >= 20, counts
+
+
 def test_every_scheme_reference_resolves(options):
     """A dangling scheme code would silently drop a subsidy from the report."""
     schemes = set(knowledge.scheme_index())

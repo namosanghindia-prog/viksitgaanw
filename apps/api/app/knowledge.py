@@ -125,6 +125,20 @@ def kind_index() -> dict[str, dict[str, Any]]:
     return {kind["code"]: kind for kind in opportunity_meta().get("kinds", [])}
 
 
+#: Farm (crops and allied: livestock, fisheries, beekeeping) or non-farm
+#: (processing, storage, services), as NABARD and NRLM split livelihoods.
+SECTORS = ("farm", "nonfarm")
+
+
+def opportunity_sector(item: dict[str, Any]) -> str:
+    """Whether an option is a farming or a non-farming project.
+
+    Its kind decides, unless the option says otherwise -- a sapling nursery is
+    filed as a service business but is plants growing on land.
+    """
+    return item.get("sector") or kind_index()[item["kind"]]["sector"]
+
+
 @lru_cache(maxsize=1)
 def region_states() -> dict[str, frozenset[str]]:
     """Region name -> the LGD state codes in it. An empty set means all-India."""

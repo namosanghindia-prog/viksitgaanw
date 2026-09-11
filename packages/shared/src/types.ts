@@ -270,10 +270,14 @@ export interface Link {
   url: string;
 }
 
+/** Crops and allied (livestock, fish, bees), or processing, storage and services. */
+export type Sector = 'farm' | 'nonfarm';
+
 export interface Opportunity {
   code: string;
   kind: string;
   kindLabel: string;
+  sector: Sector;
   name: string;
   summary: string;
   score: number;

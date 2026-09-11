@@ -975,6 +975,61 @@ code {
 
 .opportunities--muted { opacity: 0.75; }
 
+/* The plan page: farming projects on the left, non-farming on the right, each
+   ranked on its own. Tinted so the two read apart at a glance. */
+.plan-columns {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.plan-column {
+  min-width: 0;
+  padding: 18px;
+  border-radius: var(--radius-lg);
+  border-top: 5px solid var(--leaf);
+  background: var(--leaf-light);
+}
+
+.plan-column--nonfarm {
+  border-top-color: var(--sky);
+  background: #e8f1f8;
+}
+
+.plan-column__head p {
+  margin: 4px 0 0;
+}
+
+.plan-column__title {
+  font-size: 1.3rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.plan-column__count {
+  font-size: 0.85rem;
+  font-weight: 700;
+  padding: 1px 10px;
+  border-radius: 999px;
+  background: var(--white);
+  color: var(--ink-muted);
+}
+
+.plan-column .section__title {
+  margin-top: 1.1rem;
+}
+
+.opportunities--column {
+  grid-template-columns: 1fr;
+}
+
+@media (max-width: 900px) {
+  .plan-columns { grid-template-columns: 1fr; }
+}
+
 .opp {
   border: 1px solid var(--rule, #ddd);
   border-radius: 10px;

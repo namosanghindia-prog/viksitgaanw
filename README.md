@@ -68,7 +68,7 @@ The download is ~10 MB and the import takes about a minute, producing a
 ```bash
 npm run api          # local FastAPI backend on 127.0.0.1:8756 (docs at /docs)
 npm run dev:web      # Vite dev server on 127.0.0.1:5273, in a normal browser
-cd apps/api && python -m pytest    # API test suite (446 tests)
+cd apps/api && python -m pytest    # API test suite (448 tests)
 npm run typecheck    # TypeScript
 npm run build        # production frontend build
 python scripts/check_translations.py   # report translation coverage
@@ -298,6 +298,16 @@ engine, not a model, and it answers three questions in order.
 Every point awarded or removed carries a reason string, rendered by the API in
 the farmer's language, so the recommendation can always be interrogated — and
 so the project report can answer the credit officer's "why this crop".
+
+**Farming and non-farming projects.** The plan page shows two columns, each
+ranked on its own: *farming projects* — crops, orchards, vegetables, spices,
+livestock and fish — and *non-farming projects* — processing, storage and
+services, most of which need little or no land. The split follows NABARD and
+NRLM: crops and allied activities are the farm sector. Each kind in
+`opportunities/_meta.json` carries `"sector": "farm"` or `"nonfarm"`, and an
+option can override its kind (the sapling nursery is filed as a service but is
+plants on land, so it is `farm`). Every option the API returns says which it
+is.
 
 Two things the engine is careful about, because both produce plausible-looking
 nonsense if you get them wrong:

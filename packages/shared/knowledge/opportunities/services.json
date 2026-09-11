@@ -88,6 +88,7 @@
   {
     "code": "grafted_sapling_nursery",
     "kind": "service",
+    "sector": "farm",
     "label": { "en": "Grafted fruit sapling nursery", "hi": "कलमी फल पौध नर्सरी" },
     "summary": {
       "en": "Every orchard planted in your district starts with saplings bought from somewhere. A registered nursery raising grafted mango, guava, lime or pomegranate plants sells to those farmers and to government planting schemes.",

@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import type { Opportunity, Verdict } from '@viksitgaanw/shared';
+import type { Opportunity, Sector, Verdict } from '@viksitgaanw/shared';
 
 import { DprDialog } from '../components/DprDialog';
 import { OpportunityCard } from '../components/OpportunityCard';
 import { useI18n } from '../i18n';
+import type { StringKey } from '../i18n';
 import { api } from '../lib/api';
 import { formatLocationPath, formatNumber } from '../lib/format';
 import { useAsync } from '../lib/hooks';
@@ -19,6 +20,10 @@ type Tab = 'all' | 'export';
  * grown or built on it, what that would cost, and what it would earn -- and
  * then turn the chosen option into a report a bank will read.
  *
+ * Farming projects (crops, orchards, livestock, fish) and non-farming ones
+ * (processing, storage, services) stand side by side in two columns: the
+ * second is often the answer for a family with little land.
+ *
  * Options that do not suit the land are kept, not hidden, but collapsed behind
  * a disclosure. A farmer who wonders why the app did not suggest pomegranate
  * deserves to be told that the water is too salty for it.
@@ -28,7 +33,6 @@ export function PlanPage() {
   const { t, lang } = useI18n();
 
   const [tab, setTab] = useState<Tab>('all');
-  const [showUnsuitable, setShowUnsuitable] = useState(false);
   const [chosen, setChosen] = useState<Opportunity | null>(null);
 
   const parcel = useAsync((signal) => api.getParcel(parcelId, signal), [parcelId], {
@@ -47,13 +51,11 @@ export function PlanPage() {
     { enabled: Boolean(parcelId) },
   );
 
-  const grouped = useMemo(() => {
+  const bySector = useMemo(() => {
     const items = plan.data?.items ?? [];
-    const by = (verdict: Verdict) => items.filter((item) => item.verdict === verdict);
     return {
-      recommended: by('recommended'),
-      possible: by('possible'),
-      unsuitable: by('unsuitable'),
+      farm: items.filter((item) => item.sector === 'farm'),
+      nonfarm: items.filter((item) => item.sector === 'nonfarm'),
     };
   }, [plan.data]);
 
@@ -62,7 +64,7 @@ export function PlanPage() {
   const land = parcel.data;
 
   return (
-    <div className="page">
+    <div className="page page--wide">
       <header className="page__header">
         <div>
           <h2 className="page__title">{t('plan.title')}</h2>
@@ -159,60 +161,21 @@ export function PlanPage() {
         </section>
       ) : null}
 
-      {grouped.recommended.length > 0 ? (
-        <section>
-          <h3 className="section__title">
-            {t('plan.recommended')}{' '}
-            <span className="muted small">({grouped.recommended.length})</span>
-          </h3>
-          <div className="opportunities">
-            {grouped.recommended.map((item) => (
-              <OpportunityCard
-                key={item.code}
-                opportunity={item}
-                onChoose={() => setChosen(item)}
-              />
-            ))}
-          </div>
-        </section>
-      ) : null}
-
-      {grouped.possible.length > 0 ? (
-        <section>
-          <h3 className="section__title">
-            {t('plan.possible')} <span className="muted small">({grouped.possible.length})</span>
-          </h3>
-          <div className="opportunities">
-            {grouped.possible.map((item) => (
-              <OpportunityCard
-                key={item.code}
-                opportunity={item}
-                onChoose={() => setChosen(item)}
-              />
-            ))}
-          </div>
-        </section>
-      ) : null}
-
-      {grouped.unsuitable.length > 0 ? (
-        <section>
-          <button
-            type="button"
-            className="button button--ghost button--small"
-            onClick={() => setShowUnsuitable((value) => !value)}
-            aria-expanded={showUnsuitable}
-          >
-            {showUnsuitable ? '▾' : '▸'}{' '}
-            {t('plan.showUnsuitable', { n: grouped.unsuitable.length })}
-          </button>
-          {showUnsuitable ? (
-            <div className="opportunities opportunities--muted">
-              {grouped.unsuitable.map((item) => (
-                <OpportunityCard key={item.code} opportunity={item} />
-              ))}
-            </div>
-          ) : null}
-        </section>
+      {plan.data ? (
+        <div className="plan-columns">
+          <PlanColumn
+            sector="farm"
+            items={bySector.farm}
+            exportOnly={tab === 'export'}
+            onChoose={setChosen}
+          />
+          <PlanColumn
+            sector="nonfarm"
+            items={bySector.nonfarm}
+            exportOnly={tab === 'export'}
+            onChoose={setChosen}
+          />
+        </div>
       ) : null}
 
       {plan.data ? (
@@ -233,5 +196,88 @@ export function PlanPage() {
         />
       ) : null}
     </div>
+  );
+}
+
+const COLUMN: Record<Sector, { icon: string; title: StringKey; hint: StringKey }> = {
+  farm: { icon: '🌾', title: 'plan.farm', hint: 'plan.farmHint' },
+  nonfarm: { icon: '🏭', title: 'plan.nonfarm', hint: 'plan.nonfarmHint' },
+};
+
+/**
+ * One side of the plan: farming projects, or non-farming ones -- best suited
+ * first, then worth considering, and what does not suit the land folded away.
+ * Each side is ranked on its own, so a strong dal mill is not buried under
+ * twenty crops, nor a strong crop under a cold room.
+ */
+function PlanColumn({
+  sector,
+  items,
+  exportOnly,
+  onChoose,
+}: {
+  sector: Sector;
+  items: Opportunity[];
+  exportOnly: boolean;
+  onChoose: (item: Opportunity) => void;
+}) {
+  const { t } = useI18n();
+  const [showUnsuitable, setShowUnsuitable] = useState(false);
+  const by = (verdict: Verdict) => items.filter((item) => item.verdict === verdict);
+  const recommended = by('recommended');
+  const possible = by('possible');
+  const unsuitable = by('unsuitable');
+  const column = COLUMN[sector];
+
+  const group = (title: StringKey, rows: Opportunity[]) =>
+    rows.length > 0 ? (
+      <section>
+        <h4 className="section__title">
+          {t(title)} <span className="muted small">({rows.length})</span>
+        </h4>
+        <div className="opportunities opportunities--column">
+          {rows.map((item) => (
+            <OpportunityCard key={item.code} opportunity={item} onChoose={() => onChoose(item)} />
+          ))}
+        </div>
+      </section>
+    ) : null;
+
+  return (
+    <section className={`plan-column plan-column--${sector}`} aria-labelledby={`plan-column-${sector}`}>
+      <header className="plan-column__head">
+        <h3 id={`plan-column-${sector}`} className="plan-column__title">
+          <span aria-hidden="true">{column.icon}</span> {t(column.title)}{' '}
+          <span className="plan-column__count">{recommended.length + possible.length}</span>
+        </h3>
+        <p className="muted small">{t(column.hint)}</p>
+      </header>
+
+      {recommended.length + possible.length === 0 ? (
+        <p className="muted">{t(exportOnly && items.length === 0 ? 'plan.noneExport' : 'plan.noneSuit')}</p>
+      ) : null}
+      {group('plan.recommended', recommended)}
+      {group('plan.possible', possible)}
+
+      {unsuitable.length > 0 ? (
+        <section>
+          <button
+            type="button"
+            className="button button--ghost button--small"
+            onClick={() => setShowUnsuitable((value) => !value)}
+            aria-expanded={showUnsuitable}
+          >
+            {showUnsuitable ? '▾' : '▸'} {t('plan.showUnsuitable', { n: unsuitable.length })}
+          </button>
+          {showUnsuitable ? (
+            <div className="opportunities opportunities--column opportunities--muted">
+              {unsuitable.map((item) => (
+                <OpportunityCard key={item.code} opportunity={item} />
+              ))}
+            </div>
+          ) : null}
+        </section>
+      ) : null}
+    </section>
   );
 }

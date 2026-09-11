@@ -146,6 +146,7 @@ def to_schema(translator: Translator, assessment: Assessment) -> OpportunityOut:
         code=opportunity["code"],
         kind=opportunity["kind"],
         kind_label=translator.reference("kinds", opportunity["kind"], kind.get("label")),
+        sector=knowledge.opportunity_sector(opportunity),
         name=translator.opportunity_name(opportunity),
         summary=translator.summary(opportunity),
         score=assessment.score,

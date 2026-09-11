@@ -2178,6 +2178,9 @@ class OpportunityOut(ApiModel):
     code: str
     kind: str
     kind_label: str
+    #: A farming project (crops, livestock, fish) or a non-farming one
+    #: (processing, storage, services). See knowledge.opportunity_sector.
+    sector: Literal["farm", "nonfarm"]
     name: str
     summary: str
     score: int

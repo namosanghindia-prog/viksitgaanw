@@ -294,6 +294,19 @@ def test_the_options_endpoint_answers_for_a_saved_parcel(client, parcel_id):
     assert sum(body["counts"].values()) == len(body["items"])
 
 
+def test_every_option_says_whether_it_is_farming_or_not(client, parcel_id):
+    """The plan page puts farming and non-farming projects in two columns."""
+    body = client.get(
+        f"/api/v1/land-parcels/{parcel_id}/opportunities", params={"lang": "en"}
+    ).json()
+    sector = {item["code"]: item["sector"] for item in body["items"]}
+    assert set(sector.values()) == {"farm", "nonfarm"}
+    assert sector["dairy_crossbred"] == "farm"
+    assert sector["modular_cold_room"] == "nonfarm"
+    assert sector["custom_hiring_centre"] == "nonfarm"
+    assert sector["grafted_sapling_nursery"] == "farm", "a nursery is plants growing on land"
+
+
 def test_every_reason_arrives_as_a_finished_sentence(client, parcel_id):
     """The API renders reasons; the UI must never have to build one."""
     body = client.get(
