@@ -100,5 +100,6 @@ def feed(
                     )
                 )
 
-    items.sort(key=lambda item: _when(item.shared_at), reverse=True)
+    # Promoted projects lead the feed -- each labelled as promoted -- then newest first.
+    items.sort(key=lambda item: (bool(item.project and item.project.featured), _when(item.shared_at)), reverse=True)
     return items[:limit]

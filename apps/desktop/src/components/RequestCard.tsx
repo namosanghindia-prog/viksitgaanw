@@ -119,7 +119,15 @@ export function RequestCard({ request, showRequester = true, children }: Request
     .join('. ');
 
   return (
-    <article className={`request ${request.status !== 'open' ? 'request--closed' : ''}`}>
+    <article
+      className={`request ${request.status !== 'open' ? 'request--closed' : ''} ${request.featured ? 'request--featured' : ''}`}
+    >
+      {request.featured ? (
+        // An advertisement must look like one: always labelled, never only highlighted.
+        <p className="request__promoted" title={t('promote.labelHint')}>
+          ⭐ {t('promote.label')}
+        </p>
+      ) : null}
       <header className="request__head">
         <div className="request__heading">
           <h3 className="request__title">{request.title}</h3>

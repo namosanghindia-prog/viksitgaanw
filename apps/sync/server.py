@@ -42,6 +42,12 @@ checks the link -- and it counts exactly once, whichever comes first. Plans
 and their prices are set by whoever runs the server, with
 ``python apps/sync/admin.py``, which can also grant a subscription by hand.
 
+The same payments buy **promotions**: a farmer pays for days at the top of
+others' lists for one of their shared projects -- optionally with a one-off
+alert to the investors and partners it suits. The server alone records a
+promotion and stamps it onto the project everyone pulls, so no device can
+feature itself; every app labels it as promoted.
+
 And it runs **identity checks** (identity.py). The villager signs in on
 DigiLocker in the browser and agrees; DigiLocker tells this server their name
 as registered, and a profile is verified while that name matches its own.
@@ -73,7 +79,7 @@ import urllib.error
 import urllib.parse
 import urllib.request
 from base64 import b64encode
-from datetime import date, datetime, timezone
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
 
@@ -531,6 +537,8 @@ def push(body: PushIn, me: Device = Depends(device)) -> dict[str, Any]:
                 payload = dict(record.payload)
                 if record.entity_type == "profile":
                     payload = _with_kyc(con, payload)
+                elif record.entity_type in PROMOTABLE:
+                    payload = _with_promotion(con, record.entity_type, payload)
                 owner, parties = _rules(con, record.entity_type, payload)
                 parties = [p for p in parties if p]
                 if existing is not None and existing["owner_profile_id"] != me.profile_id:
@@ -886,8 +894,74 @@ class RazorpayClient:
         return hmac.compare_digest(expected, signature)
 
 
+class SandboxPayments:
+    """A pretend Razorpay for development: ``VG_PAYMENTS_SANDBOX=1`` with no keys set.
+
+    Its payment page is on this server and says plainly that it is a test;
+    pressing Pay marks the link paid, and everything after that -- crediting,
+    receipts, promotions -- runs as it would for real. Links live in this
+    process's memory. Never set it where real people pay.
+    """
+
+    configured = True
+    webhook_secret = ""
+
+    def __init__(self, base_url: str) -> None:
+        self.base_url = base_url.rstrip("/")
+        self.links: dict[str, dict] = {}
+
+    def create_link(self, *, amount_paise: int, reference_id: str, description: str, expire_by: int,
+                    notes: dict[str, str]) -> dict:
+        link_id = f"plink_test_{secrets.token_hex(6)}"
+        self.links[link_id] = {
+            "id": link_id, "short_url": f"{self.base_url}/v1/sandbox/pay/{link_id}", "status": "created",
+            "amount": amount_paise, "amount_paid": 0, "reference_id": reference_id, "description": description,
+            "expire_by": expire_by, "notes": notes, "payments": None,
+        }
+        return self.links[link_id]
+
+    def get_link(self, link_id: str) -> dict:
+        link = self.links.get(link_id)
+        if link is None:  # the server restarted: the pretend link is gone
+            return {"id": link_id, "status": "expired", "amount_paid": 0}
+        return link
+
+    def signature_ok(self, body: bytes, signature: str) -> bool:
+        return False
+
+
+def _payments_client() -> Any:
+    if os.environ.get("VG_PAYMENTS_SANDBOX", "") == "1" and not RazorpayClient().configured:
+        return SandboxPayments(os.environ.get("VG_SYNC_PUBLIC_URL", "") or "http://127.0.0.1:8900")
+    return RazorpayClient()
+
+
 #: Replaced in tests.
-razorpay = RazorpayClient()
+razorpay = _payments_client()
+
+
+@app.get("/v1/sandbox/pay/{link_id}", response_class=HTMLResponse)
+def sandbox_pay_page(link_id: str, action: str = "") -> HTMLResponse:
+    """The pretend payment page. Pay or cancel; nothing real happens."""
+    if not isinstance(razorpay, SandboxPayments) or link_id not in razorpay.links:
+        raise HTTPException(status_code=404, detail="Not found.")
+    link = razorpay.links[link_id]
+    if action == "pay" and link["status"] == "created":
+        link.update(status="paid", amount_paid=link["amount"],
+                    payments=[{"payment_id": f"pay_test_{secrets.token_hex(6)}", "status": "captured",
+                               "amount": link["amount"]}])
+    elif action == "cancel" and link["status"] == "created":
+        link["status"] = "cancelled"
+    rupees = f"Rs {link['amount'] // 100}" + (f".{link['amount'] % 100:02d}" if link["amount"] % 100 else "")
+    if link["status"] == "created":
+        body = (f"<p><strong>{html.escape(link['description'])}</strong></p><p style='font-size:2rem'>{rupees}</p>"
+                "<p><a href='?action=pay' style='background:#2f7d4f;color:#fff;padding:12px 20px;border-radius:8px;"
+                "text-decoration:none'>Pay (test)</a> &nbsp; <a href='?action=cancel'>Cancel</a></p>")
+    else:
+        body = (f"<p>This test payment is <strong>{html.escape(link['status'])}</strong>. "
+                "Go back to the app; it checks by itself.</p>")
+    return _html("Test payment", "<h1>Test payment</h1><p style='background:#fff4e5;padding:12px;border-radius:8px'>"
+                 "<strong>TEST — no money moves.</strong> This server is in payments sandbox mode.</p>" + body)
 
 
 def _add_months(day: date, months: int) -> date:
@@ -915,6 +989,13 @@ def _credit(con: Conn, payment: Row, provider_payment_id: str | None) -> bool:
     ).rowcount
     if claimed != 1:
         return False
+    if payment["kind"] == "promotion":
+        until = _extend_promotion(
+            con, payment["target_type"], payment["target_id"], payment["profile_id"],
+            payment["days"], bool(payment["alert"]),
+        )
+        con.execute("UPDATE payments SET until_after = ? WHERE id = ?", (until, payment["id"]))
+        return True
     current = con.execute(
         "SELECT until FROM subscriptions WHERE profile_id = ?" + con.for_update, (payment["profile_id"],)
     ).fetchone()
@@ -954,18 +1035,29 @@ def _payment_out(row: Row) -> dict[str, Any]:
         "expiresAt": row["expires_at"],
         "createdAt": row["created_at"],
         "paidAt": row["paid_at"],
+        "kind": row["kind"],
+        "days": row["days"],
+        "alert": bool(row["alert"]),
+        "targetType": row["target_type"],
+        "targetId": row["target_id"],
     }
 
 
 def _plan_out(row: Row) -> dict[str, Any]:
-    return {"code": row["code"], "name": row["name"], "amountPaise": row["amount_paise"], "months": row["months"]}
+    return {
+        "code": row["code"], "name": row["name"], "amountPaise": row["amount_paise"], "months": row["months"],
+        "kind": row["kind"], "days": row["days"], "alert": bool(row["alert"]),
+    }
 
 
 @app.get("/v1/plans")
-def list_plans(me: Device = Depends(device)) -> dict[str, Any]:
-    """What is on sale, whether payments are switched on, and the owner's subscription."""
+def list_plans(kind: str | None = None, me: Device = Depends(device)) -> dict[str, Any]:
+    """What is on sale -- subscriptions, promotions, or both -- and the owner's subscription."""
+    query, params = "SELECT * FROM plans WHERE active = 1", ()
+    if kind:
+        query, params = query + " AND kind = ?", (kind,)
     with db() as con:
-        rows = con.execute("SELECT * FROM plans WHERE active = 1 ORDER BY months, amount_paise").fetchall()
+        rows = con.execute(query + " ORDER BY kind, months, days, amount_paise", params).fetchall()
         return {
             "paymentsAvailable": razorpay.configured,
             "plans": [_plan_out(row) for row in rows],
@@ -975,6 +1067,9 @@ def list_plans(me: Device = Depends(device)) -> dict[str, Any]:
 
 class CheckoutIn(BaseModel):
     plan: str = Field(min_length=1, max_length=32)
+    #: For a promotion: what to promote.
+    target_type: str | None = Field(default=None, max_length=32)
+    target_id: str | None = Field(default=None, max_length=36)
 
 
 @app.post("/v1/payments")
@@ -986,34 +1081,44 @@ def create_payment(body: CheckoutIn, me: Device = Depends(device)) -> dict[str, 
         plan = con.execute("SELECT * FROM plans WHERE code = ? AND active = 1", (body.plan,)).fetchone()
         if plan is None:
             raise HTTPException(status_code=404, detail="That plan is not on sale.")
-        current = con.execute("SELECT until FROM subscriptions WHERE profile_id = ?", (me.profile_id,)).fetchone()
-        if current is not None and current["until"] is None:
-            raise HTTPException(status_code=409, detail="Your subscription has no end date: there is nothing to pay.")
+        if plan["kind"] == "promotion":
+            _check_promotable(con, me.profile_id, body.target_type, body.target_id)
+            target_type, target_id = body.target_type, body.target_id
+        else:
+            target_type = target_id = None
+            current = con.execute("SELECT until FROM subscriptions WHERE profile_id = ?", (me.profile_id,)).fetchone()
+            if current is not None and current["until"] is None:
+                raise HTTPException(status_code=409, detail="Your subscription has no end date: there is nothing to pay.")
         # Pressing Pay twice hands back the link already open, not a second
         # one that could be paid as well.
         still_open = con.execute(
             "SELECT * FROM payments WHERE profile_id = ? AND plan = ? AND amount_paise = ? AND status = 'created' "
-            "AND expires_at > ? ORDER BY created_at DESC LIMIT 1",
-            (me.profile_id, plan["code"], plan["amount_paise"], _now()),
+            "AND expires_at > ? AND COALESCE(target_id, '') = ? ORDER BY created_at DESC LIMIT 1",
+            (me.profile_id, plan["code"], plan["amount_paise"], _now(), target_id or ""),
         ).fetchone()
         if still_open is not None:
             return _payment_out(still_open)
 
     payment_id = f"vg_{secrets.token_hex(10)}"  # also Razorpay's reference_id: 40 characters at most
     expire_by = int(time.time()) + LINK_LIFETIME_SECONDS
+    notes = {"profile_id": me.profile_id, "plan": plan["code"]}
+    if target_id:
+        notes["promotes"] = f"{target_type}:{target_id}"
     link = razorpay.create_link(
         amount_paise=plan["amount_paise"],
         reference_id=payment_id,
         description=f"ViksitGaanw: {plan['name']}",
         expire_by=expire_by,
-        notes={"profile_id": me.profile_id, "plan": plan["code"]},
+        notes=notes,
     )
     with db() as con:
         con.execute(
             "INSERT INTO payments (id, profile_id, plan, plan_name, amount_paise, months, link_id, url, status, "
-            "expires_at, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'created', ?, ?)",
+            "expires_at, created_at, kind, days, alert, target_type, target_id) "
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?, 'created', ?, ?, ?, ?, ?, ?, ?)",
             (payment_id, me.profile_id, plan["code"], plan["name"], plan["amount_paise"], plan["months"],
-             link["id"], link["short_url"], datetime.fromtimestamp(expire_by, timezone.utc).isoformat(), _now()),
+             link["id"], link["short_url"], datetime.fromtimestamp(expire_by, timezone.utc).isoformat(), _now(),
+             plan["kind"], plan["days"], plan["alert"], target_type, target_id),
         )
         return _payment_out(con.execute("SELECT * FROM payments WHERE id = ?", (payment_id,)).fetchone())
 
@@ -1050,7 +1155,8 @@ def payment_status(payment_id: str, me: Device = Depends(device)) -> dict[str, A
                 con.execute("UPDATE payments SET status = ? WHERE id = ? AND status = 'created'", (state, payment_id))
     with db() as con:
         row = con.execute("SELECT * FROM payments WHERE id = ?", (payment_id,)).fetchone()
-        return {**_payment_out(row), "subscription": subscription(con, me.profile_id)}
+        promotion = _promotion_out(con, row["target_type"], row["target_id"]) if row["kind"] == "promotion" else None
+        return {**_payment_out(row), "subscription": subscription(con, me.profile_id), "promotion": promotion}
 
 
 @app.post("/v1/webhooks/razorpay")
@@ -1085,6 +1191,99 @@ async def razorpay_webhook(request: Request) -> dict[str, str]:
                 "UPDATE payments SET status = ? WHERE id = ? AND status = 'created'", (kind.split(".")[1], row["id"])
             )
     return {"status": "ok"}
+
+
+# --------------------------------------------------------------------------- #
+# Promotions: a paid place at the top of others' lists
+# --------------------------------------------------------------------------- #
+
+#: What may be promoted. The records are public already; promotion only moves
+#: them up, labels them, and -- for an alerting promotion -- tells those they
+#: suit, once.
+PROMOTABLE = {"investment_request"}
+
+
+def _check_promotable(con: Conn, profile_id: str, target_type: str | None, target_id: str | None) -> None:
+    """Refuse a promotion of anything but the payer's own open, shared project."""
+    if target_type not in PROMOTABLE or not target_id:
+        raise HTTPException(status_code=422, detail="Say which of your shared projects to promote.")
+    row = _stored(con, target_type, target_id)
+    if row is None or row["deleted"]:
+        raise HTTPException(status_code=409, detail="Share the project online first, then promote it.")
+    if row["owner_profile_id"] != profile_id:
+        raise HTTPException(status_code=403, detail="You can promote only your own projects.")
+    if json.loads(row["payload"]).get("status") != "open":
+        raise HTTPException(status_code=409, detail="Only an open project can be promoted.")
+
+
+def _promotion_out(con: Conn, entity_type: str | None, entity_id: str | None) -> dict[str, Any] | None:
+    row = con.execute(
+        "SELECT * FROM promotions WHERE entity_type = ? AND entity_id = ?", (entity_type, entity_id)
+    ).fetchone()
+    if row is None:
+        return None
+    return {"entityType": row["entity_type"], "entityId": row["entity_id"], "until": row["until"],
+            "alertAt": row["alert_at"], "active": row["until"] >= date.today().isoformat()}
+
+
+def _extend_promotion(con: Conn, entity_type: str, entity_id: str, profile_id: str, days: int,
+                      alert: bool) -> str:
+    """Add ``days`` after the current last day (or from today), and stamp the record. Returns the last day.
+
+    The row is locked while its new last day is worked out, as a subscription's
+    is, so two payments for one project both count.
+    """
+    row = con.execute(
+        "SELECT * FROM promotions WHERE entity_type = ? AND entity_id = ?" + con.for_update, (entity_type, entity_id)
+    ).fetchone()
+    today = date.today()
+    start = today
+    if row is not None and date.fromisoformat(row["until"]) >= today:
+        start = date.fromisoformat(row["until"]) + timedelta(days=1)
+    until = (start + timedelta(days=max(1, days) - 1)).isoformat()
+    alert_at = _now() if alert else (row["alert_at"] if row is not None else None)
+    con.execute(
+        "INSERT INTO promotions (entity_type, entity_id, profile_id, until, alert_at, updated_at) "
+        "VALUES (?, ?, ?, ?, ?, ?) ON CONFLICT (entity_type, entity_id) DO UPDATE SET "
+        "until = excluded.until, alert_at = excluded.alert_at, updated_at = excluded.updated_at",
+        (entity_type, entity_id, profile_id, until, alert_at, _now()),
+    )
+    _stamp_promotion(con, entity_type, entity_id)
+    return until
+
+
+def _with_promotion(con: Conn, entity_type: str, payload: dict[str, Any]) -> dict[str, Any]:
+    """A pushed record with the server's own promotion fields, whatever the device said."""
+    out = {key: value for key, value in payload.items() if key not in ("promoted_until", "promotion_alert_at")}
+    row = con.execute(
+        "SELECT until, alert_at FROM promotions WHERE entity_type = ? AND entity_id = ?",
+        (entity_type, payload.get("id", "")),
+    ).fetchone()
+    out["promoted_until"] = row["until"] if row is not None else None
+    out["promotion_alert_at"] = row["alert_at"] if row is not None else None
+    return out
+
+
+def _stamp_promotion(con: Conn, entity_type: str, entity_id: str) -> None:
+    """Re-stamp a stored record after its promotion changed, so every device pulls it."""
+    row = _stored(con, entity_type, entity_id)
+    if row is None or row["deleted"]:
+        return
+    payload = _with_promotion(con, entity_type, json.loads(row["payload"]))
+    con.execute(
+        "UPDATE records SET payload = ?, rev = ?, updated_at = ? WHERE entity_type = ? AND entity_id = ?",
+        (json.dumps(payload), _next_rev(con), _now(), entity_type, entity_id),
+    )
+
+
+@app.get("/v1/promotions")
+def my_promotions(me: Device = Depends(device)) -> dict[str, Any]:
+    """This owner's promotions -- paid, or granted by the operator."""
+    with db() as con:
+        rows = con.execute(
+            "SELECT entity_type, entity_id FROM promotions WHERE profile_id = ? ORDER BY until DESC", (me.profile_id,)
+        ).fetchall()
+        return {"promotions": [_promotion_out(con, row["entity_type"], row["entity_id"]) for row in rows]}
 
 
 # --------------------------------------------------------------------------- #

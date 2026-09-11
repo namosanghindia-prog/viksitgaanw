@@ -16,7 +16,7 @@ interest is recorded as a *match* and nothing more.
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import date, datetime, timezone
 from typing import Any
 
 from sqlalchemy import select
@@ -341,9 +341,21 @@ def serialise_request(
         fully_insured=cover.summary(policies, rule.required)["fully_insured"],
         visibility=request.visibility,
         shared_at=request.shared_at,
+        featured=is_featured(request),
+        promoted_until=request.promoted_until,
         origin=request.origin,
         created_at=request.created_at,
         updated_at=request.updated_at,
+    )
+
+
+def is_featured(request: InvestmentRequest, today: date | None = None) -> bool:
+    """A promotion is running on an open, shared project."""
+    return (
+        request.status == "open"
+        and request.visibility == "online"
+        and request.promoted_until is not None
+        and request.promoted_until >= (today or date.today())
     )
 
 
@@ -503,7 +515,8 @@ def browse(
         if visible_to(request, viewer)
         and (seeking is None or seeking in (request.seeking or []))
     ]
-    rows.sort(key=lambda row: row.fit.score if row.fit else 0, reverse=True)
+    # Promoted projects first -- labelled as such on every card -- then best fit.
+    rows.sort(key=lambda row: (row.featured, row.fit.score if row.fit else 0), reverse=True)
     return rows[:limit]
 
 

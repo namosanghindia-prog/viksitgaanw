@@ -52,6 +52,15 @@ ADDITIVE_COLUMNS: dict[str, dict[str, str]] = {
         "group_id": "VARCHAR(36)",
         # Added with introduction videos.
         "intro_video": "JSON",
+        # Added with paid promotions.
+        "promoted_until": "DATE",
+        "promotion_alert_at": "DATETIME",
+    },
+    # Added with paid promotions: one receipt table for everything paid.
+    "subscription_payments": {
+        "kind": "VARCHAR(16) NOT NULL DEFAULT 'subscription'",
+        "days": "INTEGER",
+        "target_id": "VARCHAR(36)",
     },
     # Added with introduction videos.
     "equipment_listings": {"intro_video": "JSON"},

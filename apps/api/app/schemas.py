@@ -1059,6 +1059,9 @@ class InvestmentRequestOut(ApiModel):
     fully_insured: bool = False
     visibility: Visibility = "offline"
     shared_at: datetime | None = None
+    #: A paid promotion is running: shown first, and always labelled as promoted.
+    featured: bool = False
+    promoted_until: date | None = None
     origin: str
     created_at: datetime
     updated_at: datetime
@@ -2426,11 +2429,47 @@ class PaymentOut(ApiModel):
     #: The payment page. Only while the payment can still be made.
     url: str | None = None
     status: Literal["created", "paid", "expired", "cancelled"]
-    #: The subscription's last day once this payment counted.
+    #: The subscription's (or promotion's) last day once this payment counted.
     until: date | None = None
     expires_at: datetime | None = None
     created_at: datetime
     paid_at: datetime | None = None
+    #: subscription | promotion
+    kind: Literal["subscription", "promotion"] = "subscription"
+    #: For a promotion: how many days, and the project it promotes.
+    days: int | None = None
+    target_id: str | None = None
+
+
+class PromotionPlanOut(ApiModel):
+    """A promotion on sale, as the sync server's operator priced it."""
+
+    code: str
+    name: str
+    amount_paise: int
+    days: int
+    #: Also alerts, once, the investors and partners the project suits.
+    alert: bool = False
+
+
+class PromotionOut(ApiModel):
+    """One project's promotion: where it stands, what can be bought, what was paid."""
+
+    request_id: str
+    #: Featured through this day (inclusive); None when never promoted.
+    promoted_until: date | None = None
+    featured: bool = False
+    #: Whether the server takes payments at all.
+    payments_available: bool = False
+    plans: list[PromotionPlanOut] = Field(default_factory=list)
+    payments: list[PaymentOut] = Field(default_factory=list)
+    #: Why nothing can be bought right now: sync_off | offline | not_shared |
+    #: closed | payments_off | no_plans | None.
+    reason: str | None = None
+
+
+class PromotionCheckoutInput(ApiModel):
+    plan: str = Field(min_length=1, max_length=32)
 
 
 class SubscriptionOut(ApiModel):

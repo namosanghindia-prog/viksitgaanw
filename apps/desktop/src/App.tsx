@@ -40,6 +40,7 @@ import { OnboardingPage } from './pages/OnboardingPage';
 import { ParcelInsurancePage } from './pages/ParcelInsurancePage';
 import { PlanPage } from './pages/PlanPage';
 import { ProfilePage } from './pages/ProfilePage';
+import { PromotePage } from './pages/PromotePage';
 import { RequestInvestmentPage } from './pages/RequestInvestmentPage';
 
 /** The top-bar links each kind of user gets. The first is their home screen. */
@@ -238,7 +239,10 @@ export function App() {
               </>
             ) : null}
             {isPartner(profile.segment) && canOrganise(profile) ? (
-              <Route path="/requests" element={<MyRequestsPage />} />
+              <>
+                <Route path="/requests" element={<MyRequestsPage />} />
+                <Route path="/requests/:requestId/promote" element={<PromotePage />} />
+              </>
             ) : null}
             {isPartner(profile.segment) ? (
               <>
@@ -258,6 +262,7 @@ export function App() {
                 <Route path="/land/:parcelId/insurance" element={<ParcelInsurancePage />} />
                 <Route path="/land/:parcelId/farm" element={<FarmPage />} />
                 <Route path="/requests" element={<MyRequestsPage />} />
+                <Route path="/requests/:requestId/promote" element={<PromotePage />} />
                 <Route path="/investors" element={<FindInvestorsPage />} />
                 <Route path="/machines" element={<MachinesPage />} />
                 <Route path="*" element={<MyLandPage />} />

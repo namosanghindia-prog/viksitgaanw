@@ -113,6 +113,12 @@ Table(
     Column("months", Integer, nullable=False),
     Column("active", Integer, nullable=False, server_default="1"),
     Column("created_at", Text, nullable=False),
+    #: subscription (months of video uploads) | promotion (days at the top of the lists)
+    Column("kind", Text, nullable=False, server_default="subscription"),
+    #: A promotion's length. Subscriptions keep theirs in months.
+    Column("days", Integer),
+    #: A promotion that also alerts the investors and partners it suits, once.
+    Column("alert", Integer, nullable=False, server_default="0"),
 )
 # Amount and months are copied from the plan when a link is made, so a later
 # price change never alters a link already out.
@@ -132,7 +138,29 @@ Table(
     Column("expires_at", Text, nullable=False),
     Column("created_at", Text, nullable=False),
     Column("paid_at", Text),
+    #: Copied from the plan, like the amount: what the payment buys.
+    Column("kind", Text, nullable=False, server_default="subscription"),
+    Column("days", Integer),
+    Column("alert", Integer, nullable=False, server_default="0"),
+    #: For a promotion, the record it promotes.
+    Column("target_type", Text),
+    Column("target_id", Text),
     Index("ix_payments_profile", "profile_id"),
+)
+#: A record paid (or granted) a place at the top of others' lists. The server
+#: alone decides this, and stamps it onto the record everyone pulls.
+Table(
+    "promotions", metadata,
+    Column("entity_type", Text, nullable=False),
+    Column("entity_id", Text, nullable=False),
+    Column("profile_id", Text, nullable=False),
+    #: The last day it is featured (inclusive), YYYY-MM-DD.
+    Column("until", Text, nullable=False),
+    #: When an alerting promotion last went through: devices alert once per value.
+    Column("alert_at", Text),
+    Column("updated_at", Text, nullable=False),
+    PrimaryKeyConstraint("entity_type", "entity_id"),
+    Index("ix_promotions_profile", "profile_id"),
 )
 Table("webhook_events", metadata, Column("id", Text, primary_key=True), Column("received_at", Text, nullable=False))
 #: A profile's identity check, as this server did it. The server is the only
@@ -266,7 +294,14 @@ class Store:
                 for column in table.columns:
                     if column.name not in have:
                         kind = column.type.compile(dialect=self.engine.dialect)
-                        connection.execute(text(f'ALTER TABLE {table.name} ADD COLUMN {column.name} {kind}'))
+                        ddl = f"ALTER TABLE {table.name} ADD COLUMN {column.name} {kind}"
+                        # Rows already there take the default, rather than NULL.
+                        default = column.server_default.arg if column.server_default is not None else None
+                        if isinstance(default, str):
+                            ddl += " DEFAULT '" + default.replace("'", "''") + "'"
+                            if not column.nullable:
+                                ddl += " NOT NULL"
+                        connection.execute(text(ddl))
             connection.execute(text("INSERT INTO counters (name, value) VALUES ('rev', 0) ON CONFLICT DO NOTHING"))
 
 

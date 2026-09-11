@@ -464,6 +464,12 @@ class InvestmentRequest(Base):
         String(16), default="offline", nullable=False, index=True
     )
     shared_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    #: Paid (or granted) a place at the top of others' lists through this day.
+    #: Only the sync server sets it -- on pulled copies it arrives stamped; on
+    #: the owner's device from the payment. See services/promotion.py.
+    promoted_until: Mapped[date | None] = mapped_column(Date)
+    #: When an alerting promotion went through: a device alerts once per value.
+    promotion_alert_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     origin: Mapped[str] = mapped_column(String(16), default="local", nullable=False)
     sync_state: Mapped[str] = mapped_column(String(16), default="local_only", nullable=False)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
@@ -1364,9 +1370,14 @@ class SubscriptionPayment(Base):
     url: Mapped[str | None] = mapped_column(Text)
     #: created | paid | expired | cancelled
     status: Mapped[str] = mapped_column(String(16), default="created", nullable=False, index=True)
-    #: The subscription's last day once this payment counted.
+    #: The subscription's (or promotion's) last day once this payment counted.
     until: Mapped[date | None] = mapped_column(Date)
     expires_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now)
     paid_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
     updated_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=_now, onupdate=_now)
+    #: subscription | promotion
+    kind: Mapped[str] = mapped_column(String(16), default="subscription", nullable=False)
+    #: A promotion's length, and the project it promotes.
+    days: Mapped[int | None] = mapped_column(Integer)
+    target_id: Mapped[str | None] = mapped_column(String(36), index=True)

@@ -17,6 +17,7 @@ import type {
   KycState,
   LandShare,
   ProjectInvite,
+  Promotion,
   Subscription,
   SubscriptionPayment,
   Video,
@@ -593,6 +594,15 @@ export const api = {
     request<SubscriptionPayment>('/subscription/checkout', { method: 'POST', body: { plan } }),
   checkPayment: (id: string) =>
     request<SubscriptionPayment>(`/subscription/payments/${id}/check`, { method: 'POST' }),
+
+  /* Promoting a project */
+  promotion: (requestId: string, signal?: AbortSignal) =>
+    request<Promotion>(`/investment-requests/${requestId}/promotion`, { signal }),
+  promote: (requestId: string, plan: string) =>
+    request<SubscriptionPayment>(`/investment-requests/${requestId}/promotion/checkout`, {
+      method: 'POST',
+      body: { plan },
+    }),
 
   /* Checking the owner's identity */
   kyc: (signal?: AbortSignal) => request<KycState>('/kyc', { signal }),

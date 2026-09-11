@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Link, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import type { Opportunity, Sector, Verdict } from '@viksitgaanw/shared';
 
 import { DprDialog } from '../components/DprDialog';
@@ -31,6 +31,9 @@ type Tab = 'all' | 'export';
 export function PlanPage() {
   const { parcelId = '' } = useParams();
   const { t, lang } = useI18n();
+  const navigate = useNavigate();
+  // Straight from a suggestion to investors and partners, with or without a report.
+  const ask = (item: Opportunity) => navigate(`/land/${parcelId}/invest?option=${encodeURIComponent(item.code)}`);
 
   const [tab, setTab] = useState<Tab>('all');
   const [chosen, setChosen] = useState<Opportunity | null>(null);
@@ -168,12 +171,14 @@ export function PlanPage() {
             items={bySector.farm}
             exportOnly={tab === 'export'}
             onChoose={setChosen}
+            onAsk={ask}
           />
           <PlanColumn
             sector="nonfarm"
             items={bySector.nonfarm}
             exportOnly={tab === 'export'}
             onChoose={setChosen}
+            onAsk={ask}
           />
         </div>
       ) : null}
@@ -215,11 +220,13 @@ function PlanColumn({
   items,
   exportOnly,
   onChoose,
+  onAsk,
 }: {
   sector: Sector;
   items: Opportunity[];
   exportOnly: boolean;
   onChoose: (item: Opportunity) => void;
+  onAsk: (item: Opportunity) => void;
 }) {
   const { t } = useI18n();
   const [showUnsuitable, setShowUnsuitable] = useState(false);
@@ -237,7 +244,12 @@ function PlanColumn({
         </h4>
         <div className="opportunities opportunities--column">
           {rows.map((item) => (
-            <OpportunityCard key={item.code} opportunity={item} onChoose={() => onChoose(item)} />
+            <OpportunityCard
+              key={item.code}
+              opportunity={item}
+              onChoose={() => onChoose(item)}
+              onAsk={() => onAsk(item)}
+            />
           ))}
         </div>
       </section>

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import type { Interest, InvestmentRequest } from '@viksitgaanw/shared';
 import { findItem } from '@viksitgaanw/shared';
 
@@ -20,8 +20,11 @@ import { useAsync } from '../lib/hooks';
  * farmer's phone number to someone -- so it asks first, and says so plainly.
  */
 export function MyRequestsPage() {
-  const { t } = useI18n();
+  const { t, lang } = useI18n();
   const requests = useAsync((signal) => api.myRequests(signal), []);
+  // Just published from the request form: offer promotion as the next step.
+  const [searchParams] = useSearchParams();
+  const published = searchParams.get('published');
   const [busy, setBusy] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -63,7 +66,8 @@ export function MyRequestsPage() {
       ) : null}
 
       <div className="requests">
-        {rows.map((request) => (
+        {/* The one just published first, where its promote offer is seen. */}
+        {[...rows].sort((a, b) => Number(b.id === published) - Number(a.id === published)).map((request) => (
           <RequestCard key={request.id} request={request} showRequester={false}>
             <ShareControl
               visibility={request.visibility}
@@ -82,6 +86,20 @@ export function MyRequestsPage() {
               showPlayer={false}
             />
             {request.visibility === 'offline' ? <p className="muted small">{t('share.draftNote')}</p> : null}
+            {request.status === 'open' && request.visibility === 'online' ? (
+              <div className={`promote-row ${published === request.id ? 'promote-row--new' : ''}`}>
+                <span className="promote-row__text">
+                  {request.featured && request.promotedUntil
+                    ? `⭐ ${t('promote.featuredUntil', { date: formatDate(request.promotedUntil, lang) })}`
+                    : published === request.id
+                      ? `✓ ${t('promote.justPublished')}`
+                      : t('promote.nudge')}
+                </span>
+                <Link className="button button--small button--promote" to={`/requests/${request.id}/promote`}>
+                  ⭐ {request.featured ? t('promote.extend') : t('promote.button')}
+                </Link>
+              </div>
+            ) : null}
             <section className="answers">
               <h4 className="answers__title">{t('insurance.requestTitle')}</h4>
               <InsuranceManager

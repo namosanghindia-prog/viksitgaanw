@@ -520,6 +520,36 @@ def _name(session: Session, profile_id: str | None) -> str:
     return (profile.organisation_name or profile.display_name) if profile else ""
 
 
+#: A promoted project alerts only those it suits better than an even match: a
+#: viewer who stated no preferences scores exactly 50, and is not alerted.
+ALERT_MIN_FIT = 51
+
+
+def _promotion_alert(session: Session, request: InvestmentRequest, before: dict | None, owner: Profile) -> None:
+    """An alerting promotion that is new to this device: tell its owner, once, if the project suits them."""
+    from . import marketplace  # noqa: PLC0415
+
+    def moment(value: datetime | str | None) -> datetime | None:
+        # The snapshot before a pull holds text; SQLite hands times back without
+        # a zone. Either way they were written in UTC.
+        if isinstance(value, str):
+            value = datetime.fromisoformat(value)
+        return value.replace(tzinfo=timezone.utc) if value is not None and value.tzinfo is None else value
+
+    alert_at = moment(request.promotion_alert_at)
+    if alert_at is None or moment((before or {}).get("promotion_alert_at")) == alert_at:
+        return
+    if not marketplace.is_featured(request) or not marketplace.visible_to(request, owner):
+        return
+    match = marketplace.fit(request, owner)
+    if match is None or match.score < ALERT_MIN_FIT:
+        return
+    place = ((request.listing or {}).get("location") or {}).get("district") or {}
+    notify(session, owner.id, "project_featured",
+           params={"title": request.title, "place": place.get("name", ""), "score": match.score},
+           link="/", entity_type="investment_request", entity_id=request.id)
+
+
 def _hooks(session: Session, entity_type: str, row: Any, before: dict | None, owner: Profile) -> None:
     """Turn what the other side did into a notification for the owner."""
     from . import connections, directory  # noqa: PLC0415
@@ -541,6 +571,8 @@ def _hooks(session: Session, entity_type: str, row: Any, before: dict | None, ow
         notify(session, owner.id, "update_posted",
                params={"name": _name(session, row.profile_id), "text": row.body[:80]},
                link="/timeline", entity_type=entity_type, entity_id=row.id)
+    elif entity_type == "investment_request" and row.profile_id != owner.id:
+        _promotion_alert(session, row, before, owner)
     elif entity_type == "investment_interest":
         request = session.get(InvestmentRequest, row.request_id)
         if before is None and request and request.profile_id == owner.id:

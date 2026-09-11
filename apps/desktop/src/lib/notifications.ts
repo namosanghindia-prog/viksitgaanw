@@ -38,6 +38,8 @@ const KNOWN = new Set([
   'video_ready',
   'enquiry_completed',
   'subscription_paid',
+  'promotion_paid',
+  'project_featured',
 ]);
 
 export const NOTE_ICON: Record<string, string> = {
@@ -61,6 +63,8 @@ export const NOTE_ICON: Record<string, string> = {
   video_ready: '🎬',
   enquiry_completed: '✅',
   subscription_paid: '⭐',
+  promotion_paid: '⭐',
+  project_featured: '🔔',
 };
 
 /**

@@ -110,10 +110,17 @@ def _save(session: Session, data: dict[str, Any]) -> tuple[SubscriptionPayment, 
     row.expires_at = _when(data.get("expiresAt"))
     row.created_at = _when(data.get("createdAt")) or datetime.now(timezone.utc)
     row.paid_at = _when(data.get("paidAt"))
+    row.kind = data.get("kind") or "subscription"
+    row.days = data.get("days")
+    row.target_id = data.get("targetId")
     session.flush()
 
     went_through = row.status == "paid" and was != "paid"
-    if went_through:
+    if went_through and row.kind == "promotion":
+        from . import promotion  # noqa: PLC0415 - promotion imports this module
+
+        promotion.on_paid(session, row, data.get("promotion"))
+    elif went_through:
         record_event(
             session, EventType.SUBSCRIPTION_PAID, entity_type="subscription_payment", entity_id=row.id,
             payload={"plan": row.plan, "amount_paise": row.amount_paise, "months": row.months},
@@ -141,6 +148,9 @@ def serialise(row: SubscriptionPayment) -> PaymentOut:
         expires_at=row.expires_at,
         created_at=row.created_at,
         paid_at=row.paid_at,
+        kind=row.kind or "subscription",  # type: ignore[arg-type]
+        days=row.days,
+        target_id=row.target_id,
     )
 
 
@@ -168,7 +178,7 @@ def check(session: Session, payment_id: str, transport: Any = None) -> Subscript
     if row.status != "created":
         return row
     row, went_through = _save(session, _call(session, transport, "GET", f"/v1/payments/{payment_id}"))
-    if went_through:
+    if went_through and row.kind == "subscription":
         # Upload rights follow the subscription; refresh them now, not at the next look.
         videos.plan(session, transport)
     return row
@@ -207,6 +217,8 @@ def overview(session: Session, transport: Any = None) -> SubscriptionOut:
         plans = [
             PlanOut(code=p["code"], name=p["name"], amount_paise=p["amountPaise"], months=p["months"])
             for p in answer.get("plans") or []
+            # Promotions are bought from the project they promote, not here.
+            if p.get("kind", "subscription") == "subscription"
         ]
         if status.subscribed and status.until is None:
             reason = "no_end"

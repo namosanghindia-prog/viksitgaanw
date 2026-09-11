@@ -5,7 +5,7 @@ import { AUDIENCE_SEGMENTS, REFERENCE } from '@viksitgaanw/shared';
 
 import { ChoiceGroup } from '../components/ChoiceGroup';
 import { RequestInsurance } from '../components/RequestInsurance';
-import { TextField } from '../components/TextField';
+import { CheckField, TextField } from '../components/TextField';
 import { useI18n } from '../i18n';
 import { api } from '../lib/api';
 import { formatLocationPath, formatMoneyShort, formatNumber } from '../lib/format';
@@ -36,6 +36,13 @@ export function RequestInvestmentPage() {
   });
 
   const [reportId, setReportId] = useState<string | null>(searchParams.get('report'));
+  // Straight from a suggestion card: that option, with its report if there is one.
+  const optionCode = searchParams.get('option');
+  const options = useAsync((signal) => api.opportunities(parcelId, { lang }, signal), [parcelId, lang], {
+    enabled: Boolean(parcelId && optionCode),
+  });
+  const option = options.data?.items.find((item) => item.code === optionCode) ?? null;
+  const [shareNow, setShareNow] = useState(true);
   const [title, setTitle] = useState('');
   const [summary, setSummary] = useState('');
   const [amount, setAmount] = useState('');
@@ -51,9 +58,20 @@ export function RequestInvestmentPage() {
   const [saveError, setSaveError] = useState<string | null>(null);
 
   const report = reports.data?.find((entry) => entry.id === reportId) ?? null;
+  // The option chosen on its own, when no report is picked for it.
+  const bareOption = !report && option ? option : null;
+
+  // Arriving from a suggestion card: pick that option's newest report, if any.
+  const pickedReport = useRef(false);
+  useEffect(() => {
+    if (pickedReport.current || !optionCode || !reports.data || searchParams.get('report')) return;
+    pickedReport.current = true;
+    const match = reports.data.find((entry) => entry.opportunityCode === optionCode);
+    if (match) setReportId(match.id);
+  }, [reports.data, optionCode, searchParams]);
 
   const [cover, setCover] = useState<Record<string, InsuranceInput>>({});
-  const opportunityCode = report?.opportunityCode ?? null;
+  const opportunityCode = report?.opportunityCode ?? bareOption?.code ?? null;
   const requirement = useAsync(
     (signal) => api.insuranceRequirements(opportunityCode, signal),
     [opportunityCode],
@@ -68,17 +86,26 @@ export function RequestInvestmentPage() {
   const autofilled = useRef({ title: '', amount: '', own: '' });
   useEffect(() => {
     if (!parcel.data) return;
-    const next = {
-      title: report ? `${report.opportunityName} — ${parcel.data.label}` : parcel.data.label,
-      amount: report ? String(Math.round(report.termLoan)) : '',
-      own: report ? String(Math.round(report.totalProjectCost - report.termLoan)) : '',
-    };
+    const next = report
+      ? {
+          title: `${report.opportunityName} — ${parcel.data.label}`,
+          amount: String(Math.round(report.termLoan)),
+          own: String(Math.round(report.totalProjectCost - report.termLoan)),
+        }
+      : bareOption
+        ? {
+            // No report yet: ask for what the whole project costs, by the estimate.
+            title: `${bareOption.name} — ${parcel.data.label}`,
+            amount: String(Math.round(bareOption.economics.totalProjectCost)),
+            own: '',
+          }
+        : { title: parcel.data.label, amount: '', own: '' };
     const last = autofilled.current;
     setTitle((current) => (current === last.title ? next.title : current));
     setAmount((current) => (current === last.amount ? next.amount : current));
     setOwn((current) => (current === last.own ? next.own : current));
     autofilled.current = next;
-  }, [parcel.data, report]);
+  }, [parcel.data, report, bareOption]);
 
   // A report the URL pointed at but which does not exist is not a choice.
   useEffect(() => {
@@ -143,9 +170,10 @@ export function RequestInvestmentPage() {
     setSaveError(null);
     const ownNumber = Number.parseFloat(own);
     try {
-      await api.createRequest({
+      const created = await api.createRequest({
         parcelId,
         reportId: reportId && reportId !== NO_REPORT ? reportId : null,
+        opportunityCode: bareOption?.code ?? null,
         title: title.trim(),
         summary: summary.trim() || null,
         amountSought: Number.parseFloat(amount),
@@ -156,7 +184,14 @@ export function RequestInvestmentPage() {
         openTo: openTo as Segment[],
         insurance: Object.values(cover),
       });
-      navigate('/requests');
+      if (shareNow) {
+        try {
+          await api.shareRequest(created.id);
+        } catch {
+          // Saved all the same; "Share online" on My requests tries again.
+        }
+      }
+      navigate(`/requests?published=${created.id}`);
     } catch (error) {
       setSaveError(t('error.saveFailed', { detail: error instanceof Error ? error.message : String(error) }));
       setBusy(false);
@@ -203,6 +238,14 @@ export function RequestInvestmentPage() {
               cost: formatMoneyShort(report.totalProjectCost, lang, t),
               loan: formatMoneyShort(report.termLoan, lang, t),
             })}
+          </p>
+        ) : bareOption ? (
+          <p className="callout callout--info">
+            {t('request.fromOption', {
+              name: bareOption.name,
+              cost: formatMoneyShort(bareOption.economics.totalProjectCost, lang, t),
+            })}{' '}
+            <Link to={`/land/${parcelId}/plan`}>{t('request.makeReportFirst')}</Link>
           </p>
         ) : null}
       </section>
@@ -315,6 +358,11 @@ export function RequestInvestmentPage() {
           value={openTo}
           onChange={setOpenTo}
         />
+        {openTo.length < AUDIENCE_SEGMENTS.length ? (
+          <button type="button" className="button button--small" onClick={() => setOpenTo([...AUDIENCE_SEGMENTS])}>
+            🌍 {t('request.showEveryone')}
+          </button>
+        ) : null}
         {errorBelow('openTo')}
         {openTo.includes('investor_international') || openTo.includes('partner_international') ? (
           <p className="callout callout--warn">{t('request.intlWarning')}</p>
@@ -323,7 +371,10 @@ export function RequestInvestmentPage() {
         <p className="callout callout--info">{t('requests.safety')}</p>
       </section>
 
-      <p className="callout callout--info">{t('share.draftNote')}</p>
+      <section className="card card--tight">
+        <CheckField label={`🌐 ${t('request.shareNow')}`} checked={shareNow} onChange={setShareNow} />
+        <p className="muted small">{shareNow ? t('request.shareNowHint') : t('share.draftNote')}</p>
+      </section>
       {saveError ? <p className="callout callout--error">{saveError}</p> : null}
 
       <div className="actions">

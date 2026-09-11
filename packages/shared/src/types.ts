@@ -646,6 +646,10 @@ export interface InvestmentRequest {
   fullyInsured: boolean;
   visibility: Visibility;
   sharedAt: string | null;
+  /** A paid promotion is running: shown first, and always labelled as promoted. */
+  featured: boolean;
+  /** Featured through this day, when it has ever been promoted. */
+  promotedUntil: string | null;
   origin: string;
   createdAt: string;
   updatedAt: string;
@@ -1397,6 +1401,32 @@ export interface SubscriptionPayment {
   expiresAt: string | null;
   createdAt: string;
   paidAt: string | null;
+  kind: 'subscription' | 'promotion';
+  /** For a promotion: its length, and the project it promotes. */
+  days: number | null;
+  targetId: string | null;
+}
+
+/** A promotion package on sale, as the sync server's operator priced it. */
+export interface PromotionPlan {
+  code: string;
+  name: string;
+  amountPaise: number;
+  days: number;
+  /** Also alerts, once, the investors and partners the project suits. */
+  alert: boolean;
+}
+
+/** One project's promotion: where it stands, what can be bought, what was paid. */
+export interface Promotion {
+  requestId: string;
+  promotedUntil: string | null;
+  featured: boolean;
+  paymentsAvailable: boolean;
+  plans: PromotionPlan[];
+  payments: SubscriptionPayment[];
+  /** sync_off | offline | not_shared | closed | payments_off | no_plans, or null. */
+  reason: string | null;
 }
 
 export interface Subscription {

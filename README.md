@@ -727,6 +727,42 @@ keeps a receipt of each payment (`subscription_payments`, never synced) and
 records `subscription.checkout_started` and `subscription.paid` — the second
 with the amount in paise — in `app_events`: the revenue line for metering.
 
+### Promotions
+
+The same payments buy **promotions** — advertising for farmers' projects, and
+the second paid add-on after subscriptions. From a suggestion card a farmer
+goes straight to **Ask for investment or a partner** (with or without a project
+report), can show the project to everyone and share it online in one step, and
+is then offered **⭐ Promote**:
+
+- a promoted project comes first in investors' and partners' lists and at the
+  top of the common timeline, for the days paid for — paying again adds days
+  after the last;
+- it is always labelled **Featured · Promoted**, so an advertisement looks like
+  one, and promotion never changes a project's fit score;
+- a package with an alert also notifies, once, the investors and partners the
+  project suits (fit above 50), on their own device after their next sync.
+
+The operator prices packages; nothing is on sale until they do:
+
+```bash
+python apps/sync/admin.py set-plan feature-week --kind promotion --name "Featured for 7 days" --price 99 --days 7
+python apps/sync/admin.py set-plan spotlight-week --kind promotion --name "Featured 7 days + investor alert" --price 199 --days 7 --alert
+python apps/sync/admin.py promote <project-id> --days 7      # free: a launch offer, a partner
+python apps/sync/admin.py unpromote <project-id>
+python apps/sync/admin.py promotions
+python apps/sync/admin.py revenue --days 30                  # money paid in, by plan
+```
+
+Only the server records a promotion (the `promotions` table) and stamps
+`promoted_until` onto the project everyone pulls; whatever a device pushes is
+overwritten. Devices record `promotion.checkout_started` and `promotion.paid`
+(with the amount in paise) in `app_events`.
+
+For development, `VG_PAYMENTS_SANDBOX=1` (with no Razorpay keys) opens a pretend
+payment page on the sync server, marked "TEST — no money moves", instead of
+Razorpay; everything after the payment runs as it would for real.
+
 ### Identity checks
 
 A villager verifies by signing in on DigiLocker — a free government service,
@@ -920,5 +956,6 @@ Every setting takes a `VG_`-prefixed environment variable.
 | `VG_KYC_DIGILOCKER_REDIRECT_URI` | none (sync server only) | Callback registered with it  |
 | `VG_KYC_SALT`       | none (sync server only)            | Salts identity fingerprints    |
 | `VG_KYC_SANDBOX`    | off                                | Pretend provider, testing only |
+| `VG_PAYMENTS_SANDBOX` | off                              | Pretend payments, testing only |
 | `VG_SYNC_PUBLIC_URL` | taken from each request           | Server's address for browsers  |
 | `VG_ALLOW_NETWORK`  | `true`                             | Permit the two online lookups  |

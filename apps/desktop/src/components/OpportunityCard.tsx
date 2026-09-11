@@ -8,6 +8,8 @@ interface OpportunityCardProps {
   opportunity: Opportunity;
   /** Absent for options that do not suit the land: there is nothing to choose. */
   onChoose?: () => void;
+  /** Put this option in front of investors and partners. */
+  onAsk?: () => void;
 }
 
 /**
@@ -19,7 +21,7 @@ interface OpportunityCardProps {
  * behind a disclosure so the recommendation can always be interrogated without
  * making the card wall of text.
  */
-export function OpportunityCard({ opportunity, onChoose }: OpportunityCardProps) {
+export function OpportunityCard({ opportunity, onChoose, onAsk }: OpportunityCardProps) {
   const { t, lang } = useI18n();
   const [open, setOpen] = useState(false);
 
@@ -110,11 +112,18 @@ export function OpportunityCard({ opportunity, onChoose }: OpportunityCardProps)
         >
           {open ? '▾' : '▸'} {t('plan.whyThis', { score: opportunity.score })}
         </button>
-        {onChoose ? (
-          <button type="button" className="button button--primary button--small" onClick={onChoose}>
-            {t('plan.makeReport')}
-          </button>
-        ) : null}
+        <span className="opp__actions">
+          {onAsk ? (
+            <button type="button" className="button button--small" onClick={onAsk}>
+              💼 {t('plan.askInvestment')}
+            </button>
+          ) : null}
+          {onChoose ? (
+            <button type="button" className="button button--primary button--small" onClick={onChoose}>
+              {t('plan.makeReport')}
+            </button>
+          ) : null}
+        </span>
       </div>
 
       {open ? (

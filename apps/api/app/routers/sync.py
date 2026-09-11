@@ -7,7 +7,7 @@ from sqlalchemy.orm import Session
 
 from ..db import get_session
 from ..schemas import SyncConfigInput, SyncRunOut, SyncStatusOut
-from ..services import kyc, subscription, sync_client, videos
+from ..services import kyc, promotion, subscription, sync_client, videos
 from .deps import fail
 
 router = APIRouter(prefix="/sync", tags=["sync"])
@@ -40,6 +40,10 @@ def run(session: Session = Depends(get_session)) -> SyncRunOut:
     videos.kick()
     subscription.check_pending(session)
     kyc.check_pending(session)
+    try:
+        promotion.refresh(session)  # one the operator granted since
+    except subscription.SubscriptionError:
+        pass  # offline again, or an older server: next time
     session.commit()
     return SyncRunOut(
         pushed=result.pushed, pulled=result.pulled, errors=result.errors, status=sync_client.status(session)

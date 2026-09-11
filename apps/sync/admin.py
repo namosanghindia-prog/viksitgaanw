@@ -2,6 +2,8 @@
 
     python apps/sync/admin.py list
     python apps/sync/admin.py set-plan video-month --name "Video uploads, 1 month" --price 99 --months 1
+    python apps/sync/admin.py set-plan feature-week --kind promotion --name "Featured for 7 days" --price 99 --days 7
+    python apps/sync/admin.py set-plan spotlight-week --kind promotion --name "Featured 7 days + investor alert" --price 199 --days 7 --alert
     python apps/sync/admin.py retire-plan video-month
     python apps/sync/admin.py plans
     python apps/sync/admin.py payments [--profile <profile-id>]
@@ -13,6 +15,10 @@
     python apps/sync/admin.py suspend <profile-id> --reason "Fake investment offers"
     python apps/sync/admin.py unsuspend <profile-id>
     python apps/sync/admin.py unverify <profile-id>
+    python apps/sync/admin.py promote <project-id> [--days 7] [--alert]
+    python apps/sync/admin.py unpromote <project-id>
+    python apps/sync/admin.py promotions
+    python apps/sync/admin.py revenue [--days 30]
 
 A subscription lets its profile upload videos directly (through Mux) instead
 of linking them on YouTube. People buy one from the app once a plan is on
@@ -39,7 +45,7 @@ import argparse
 import json
 import re
 import sys
-from datetime import date
+from datetime import date, timedelta
 from decimal import Decimal, InvalidOperation
 from pathlib import Path
 
@@ -91,20 +97,30 @@ def to_paise(price: str) -> int:
     return int(amount * 100)
 
 
-def set_plan(code: str, name: str, price: str, months: int) -> None:
+def set_plan(code: str, name: str, price: str, months: int | None, kind: str = "subscription",
+             days: int | None = None, alert: bool = False) -> None:
     if not re.fullmatch(r"[a-z0-9][a-z0-9-]{0,31}", code):
         sys.exit("A plan code is up to 32 lower-case letters, digits and dashes, like video-month.")
-    if not 1 <= months <= 36:
-        sys.exit("A plan lasts 1 to 36 months.")
+    if kind == "promotion":
+        if days is None or not 1 <= days <= 90:
+            sys.exit("A promotion lasts 1 to 90 days: give --days.")
+        months = 0
+    else:
+        if months is None or not 1 <= months <= 36:
+            sys.exit("A plan lasts 1 to 36 months: give --months.")
+        days, alert = None, False
     paise = to_paise(price)
     with server.db() as con:
         con.execute(
-            "INSERT INTO plans (code, name, amount_paise, months, active, created_at) VALUES (?, ?, ?, ?, 1, ?) "
+            "INSERT INTO plans (code, name, amount_paise, months, active, created_at, kind, days, alert) "
+            "VALUES (?, ?, ?, ?, 1, ?, ?, ?, ?) "
             "ON CONFLICT (code) DO UPDATE SET name = excluded.name, amount_paise = excluded.amount_paise, "
-            "months = excluded.months, active = 1",
-            (code, name, paise, months, server._now()),
+            "months = excluded.months, active = 1, kind = excluded.kind, days = excluded.days, alert = excluded.alert",
+            (code, name, paise, months, server._now(), kind, days, int(alert)),
         )
-    print(f"{code}: {name}, {_rupees(paise)} for {months} month{'s' if months > 1 else ''} -- on sale")
+    length = f"{days} day{'s' if days != 1 else ''}" if kind == "promotion" else f"{months} month{'s' if months > 1 else ''}"
+    extra = ", alerts matching investors" if alert else ""
+    print(f"{code}: {name}, {_rupees(paise)} for {length}{extra} -- on sale")
 
 
 def retire_plan(code: str) -> None:
@@ -120,7 +136,9 @@ def list_plans() -> None:
     if not rows:
         print("No plans yet. Add one with set-plan.")
     for row in rows:
-        print(f"{row['code']:24} {_rupees(row['amount_paise']):>10} {row['months']:>3} mo  "
+        length = f"{row['days']:>3} d " if row["kind"] == "promotion" else f"{row['months']:>3} mo"
+        kind = "promotion" + ("+alert" if row["alert"] else "") if row["kind"] == "promotion" else "subscription"
+        print(f"{row['code']:24} {_rupees(row['amount_paise']):>10} {length}  {kind:16} "
               f"{'on sale' if row['active'] else 'retired':8} {row['name']}")
 
 
@@ -210,6 +228,61 @@ def unsuspend(profile_id: str) -> None:
     print(f"{profile_id}: no longer suspended")
 
 
+def _title(con, entity_type: str, entity_id: str) -> str:
+    row = server._stored(con, entity_type, entity_id)
+    return json.loads(row["payload"]).get("title", "") if row is not None else "(not on this server)"
+
+
+def promote(entity_id: str, days: int, alert: bool) -> None:
+    """Feature a project free -- a launch offer, a partner, a refund made good."""
+    if not 1 <= days <= 365:
+        sys.exit("Give 1 to 365 days.")
+    with server.db() as con:
+        row = server._stored(con, "investment_request", entity_id)
+        if row is None or row["deleted"]:
+            sys.exit(f"No shared project {entity_id} here.")
+        until = server._extend_promotion(con, "investment_request", entity_id, row["owner_profile_id"], days, alert)
+        title = _title(con, "investment_request", entity_id)
+    print(f"{entity_id}: featured until {until}{' (alerting)' if alert else ''} -- {title}")
+
+
+def unpromote(entity_id: str) -> None:
+    with server.db() as con:
+        if con.execute("DELETE FROM promotions WHERE entity_id = ?", (entity_id,)).rowcount == 0:
+            sys.exit(f"{entity_id} is not promoted.")
+        server._stamp_promotion(con, "investment_request", entity_id)
+    print(f"{entity_id}: no longer featured")
+
+
+def list_promotions() -> None:
+    today = date.today().isoformat()
+    with server.db() as con:
+        names = _names(con)
+        rows = con.execute("SELECT * FROM promotions ORDER BY until DESC").fetchall()
+        titles = {row["entity_id"]: _title(con, row["entity_type"], row["entity_id"]) for row in rows}
+    if not rows:
+        print("No promotions.")
+    for row in rows:
+        state = "live" if row["until"] >= today else "ended"
+        print(f"{row['entity_id']:38} until {row['until']} {state:6} {names.get(row['profile_id'], '')[:24]:24} "
+              f"{titles[row['entity_id']]}")
+
+
+def revenue(days: int) -> None:
+    """What paid payments brought in, by kind and plan, over the last ``days`` days."""
+    since = (date.today() - timedelta(days=days)).isoformat()
+    with server.db() as con:
+        rows = con.execute(
+            "SELECT kind, plan, plan_name, COUNT(*) AS n, SUM(amount_paise) AS paise FROM payments "
+            "WHERE status = 'paid' AND paid_at >= ? GROUP BY kind, plan, plan_name ORDER BY paise DESC",
+            (since,),
+        ).fetchall()
+    total = sum(row["paise"] for row in rows)
+    print(f"Paid in the last {days} days: {_rupees(total)} (before Razorpay's fee and GST)")
+    for row in rows:
+        print(f"  {row['kind']:13} {row['plan']:24} {row['n']:>5} x  {_rupees(row['paise']):>12}  {row['plan_name']}")
+
+
 def unverify(profile_id: str) -> None:
     with server.db() as con:
         if con.execute("DELETE FROM verifications WHERE profile_id = ?", (profile_id,)).rowcount == 0:
@@ -232,7 +305,19 @@ def main() -> None:
     plan.add_argument("code")
     plan.add_argument("--name", required=True)
     plan.add_argument("--price", required=True, help="in rupees, e.g. 99")
-    plan.add_argument("--months", type=int, required=True)
+    plan.add_argument("--kind", choices=("subscription", "promotion"), default="subscription")
+    plan.add_argument("--months", type=int, help="a subscription's length")
+    plan.add_argument("--days", type=int, help="a promotion's length")
+    plan.add_argument("--alert", action="store_true", help="a promotion that also alerts matching investors")
+    pro = commands.add_parser("promote", help="feature a shared project free of charge")
+    pro.add_argument("entity_id")
+    pro.add_argument("--days", type=int, default=7)
+    pro.add_argument("--alert", action="store_true")
+    unp = commands.add_parser("unpromote", help="take a project off the featured list")
+    unp.add_argument("entity_id")
+    commands.add_parser("promotions", help="featured projects, live and ended")
+    rev = commands.add_parser("revenue", help="money paid in, by plan")
+    rev.add_argument("--days", type=int, default=30)
     retire = commands.add_parser("retire-plan", help="take a plan off sale")
     retire.add_argument("code")
     commands.add_parser("plans", help="plans and their prices")
@@ -260,7 +345,15 @@ def main() -> None:
     elif args.command == "unsubscribe":
         unsubscribe(args.profile_id)
     elif args.command == "set-plan":
-        set_plan(args.code, args.name, args.price, args.months)
+        set_plan(args.code, args.name, args.price, args.months, args.kind, args.days, args.alert)
+    elif args.command == "promote":
+        promote(args.entity_id, args.days, args.alert)
+    elif args.command == "unpromote":
+        unpromote(args.entity_id)
+    elif args.command == "promotions":
+        list_promotions()
+    elif args.command == "revenue":
+        revenue(args.days)
     elif args.command == "retire-plan":
         retire_plan(args.code)
     elif args.command == "plans":
